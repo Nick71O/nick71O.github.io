@@ -22,10 +22,10 @@ var maxCheckForPayNowButton = 50;
 var delayCheckForPayNowButton = 100;
 
 // Define the function to receive the discount variables from variables.js
-function initializeDiscountVariables(discountVariables) {
+function initializeDiscountVariables(globalVariables) {
     // Process the received discountVariables object
-    console.log(discountVariables.discountCode1);
-    console.log(discountVariables.autoRunTime);
+    console.log(globalVariables.discountCode1);
+    console.log(globalVariables.autoRunTime);
     // Use the variables as needed
 
     // Call Launch() after initializing discount variables
@@ -36,8 +36,8 @@ function initializeDiscountVariables(discountVariables) {
 // This function will be called from variables.js and receive the discountVariables object as an argument
 // If initializeDiscountVariables is called from variables.js before this script is loaded,
 // it will execute immediately after this code block due to asynchronous loading
-if (typeof discountVariables !== 'undefined') {
-    initializeDiscountVariables(discountVariables);
+if (typeof globalVariables !== 'undefined') {
+    initializeDiscountVariables(globalVariables);
 }
 
 
