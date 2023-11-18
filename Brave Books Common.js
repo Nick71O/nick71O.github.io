@@ -27,29 +27,76 @@ function initializeDiscountVariables(discountVariables) {
     console.log(discountVariables.discountCode1);
     console.log(discountVariables.autoRunTime);
     // Use the variables as needed
-  }
+
+    // Call Launch() after initializing discount variables
+    Launch();
+}
   
-  // Call initializeDiscountVariables function in variables.js
-  // This function will be called from variables.js and receive the discountVariables object as an argument
-  // If initializeDiscountVariables is called from variables.js before this script is loaded,
-  // it will execute immediately after this code block due to asynchronous loading
-  if (typeof discountVariables !== 'undefined') {
+// Call initializeDiscountVariables function in variables.js
+// This function will be called from variables.js and receive the discountVariables object as an argument
+// If initializeDiscountVariables is called from variables.js before this script is loaded,
+// it will execute immediately after this code block due to asynchronous loading
+if (typeof discountVariables !== 'undefined') {
     initializeDiscountVariables(discountVariables);
-  }
+}
 
 
-function initialize() {
-/*
-    // Create a script element
-    var script = document.createElement("script");
-
-    // Set the src attribute to the path of your countdown.js file
-    script.src = "https://nick71o.github.io/Brave%20Books%20Common.js";
-
-    // Append the script element to the HTML body or head
-    document.body.appendChild(script);
-    console.log("script: " + script.src);
-*/
+function Launch() {
+    // Your code to execute after initializing variables
+    console.log("Launch() function is executed!");
+    console.log("Show Modal");
+    showModal();
+    
+    // Inject CSS for the modal and content
+    var css = `
+            /* Styling for the modal */
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100px;
+                height: 94px;
+                background-color: rgba(0, 0, 0, 0.7);
+            }
+            .modal-content {
+                background-color: #f5f5f5;
+                margin: 10px;
+                padding: 8px 4px 2px 4px;
+                border-radius: 2px;
+                font-size: 10px;
+                height: -webkit-fill-available;
+            }
+            #countdownContainer {
+                margin: 6px 0px 3px 0px;
+                text-align: center;
+            }
+            #countdownLabel {
+                font-size: 9px;
+                color: black;
+            }
+            #runStopButton {
+                display: block;
+                margin: 0 auto;
+                padding: 4px 12px 4px 12px;
+                background-color: #007bff;
+                color: white;
+                font-size: 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                text-align: center;
+                text-decoration: none;
+            }
+            #runStopButton:hover {
+                background-color: #0056b3;
+            }
+        `;
+    var style = document.createElement("style");
+    style.type = "text/css";
+    style.appendChild(document.createTextNode(css));
+    document.head.appendChild(style);
+    
 }
 
 function reEnterAndSubmit() {
@@ -340,59 +387,6 @@ function toggleRunStop() {
     }
 }
 
-initialize();
-console.log("Show Modal");
-showModal();
-
-// Inject CSS for the modal and content
-var css = `
-        /* Styling for the modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100px;
-            height: 94px;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        .modal-content {
-            background-color: #f5f5f5;
-            margin: 10px;
-            padding: 8px 4px 2px 4px;
-            border-radius: 2px;
-            font-size: 10px;
-            height: -webkit-fill-available;
-        }
-        #countdownContainer {
-            margin: 6px 0px 3px 0px;
-            text-align: center;
-        }
-        #countdownLabel {
-            font-size: 9px;
-            color: black;
-        }
-        #runStopButton {
-            display: block;
-            margin: 0 auto;
-            padding: 4px 12px 4px 12px;
-            background-color: #007bff;
-            color: white;
-            font-size: 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-        #runStopButton:hover {
-            background-color: #0056b3;
-        }
-    `;
-var style = document.createElement("style");
-style.type = "text/css";
-style.appendChild(document.createTextNode(css));
-document.head.appendChild(style);
 
 
 
