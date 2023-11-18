@@ -1,8 +1,13 @@
 console.log('HELLO WORLD!');
 // Retrieve variables from localStorage
 
+// Access the globals object or the globalVariables function from the existing code
+var globals = window.globals; // Accessing the exposed globals object
+
 //console.log('common - isRunning: ' + isRunning);
 
+// Check if globals is defined before accessing the global variables
+if (typeof globals !== 'undefined') {
 // Access global variables from the existing code
 var discountCode1 = globals.getDiscountCode1();
 var discountCode2 = globals.getDiscountCode2();
@@ -62,4 +67,7 @@ function updateCountdown(autoRunTime) {
 
         countdownLabel.textContent = hours + "h " + minutes + "m " + seconds + "s";
     }, 1000);
+}
+} else {
+    console.log('globals is not defined. Make sure to include the existing code that defines globals.');
 }

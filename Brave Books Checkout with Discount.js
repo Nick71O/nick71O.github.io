@@ -51,7 +51,8 @@ function globalVariables() {
 
 // Access global variables using the exposed functions
 var globals = globalVariables();
-
+// Expose the globals object or the globalVariables function for use in other files
+window.globals = globals;
 
 function initialize() {
 /*
