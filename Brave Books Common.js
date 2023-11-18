@@ -1,7 +1,17 @@
 console.log('HELLO WORLD!');
 // Retrieve variables from localStorage
-var isRunning = localStorage.getItem('isRunning');
-console.log('common - isRunning: ' + isRunning);
+
+//console.log('common - isRunning: ' + isRunning);
+
+// Access global variables from the existing code
+var discountCode1 = globals.discountCode1;
+var discountCode2 = globals.discountCode2;
+var isRunning = globals.isRunning;
+// ... (access other variables)
+
+console.log("discountCode1:" + discountCode1); // Access discountCode1 from the existing code
+console.log("discountCode2: " + discountCode2); // Access discountCode2 from the existing code
+console.log("isRunning: " + isRunning); // Access discountCode2 from the existing code
 
 function updateCountdown(autoRunTime) {
     var countdownLabel = document.getElementById("countdownLabel");

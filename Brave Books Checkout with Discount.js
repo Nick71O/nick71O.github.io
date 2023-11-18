@@ -1,10 +1,11 @@
 ﻿var discountCode1 = "ARTIST"; // First discount code
 var discountCode2 = "ARTIST"; // Second discount code
+var autoRunTime = "4:30 AM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
 var attempts1 = 0; // Counter for discountCode1
 var attempts2 = 0; // Counter for discountCode2
 var maxAttempts1 = 5; // Number of times to use discountCode1 before switching to discountCode2
 var maxAttempts2 = 495; // Number of times to use discountCode2 before stopping
-var isRunning = false;
+//var isRunning = false;
 var submitButtonInterval;
 
 var delayBeforeRetry = 100;
@@ -20,11 +21,42 @@ var delayCheckForErrorMessagesRetry = 100;
 var maxCheckForPayNowButton = 50; 
 var delayCheckForPayNowButton = 100;
 
+// Encapsulate global variables within a function
+function globalVariables() {
+    var discountCode1 = "ARTIST";
+    var discountCode2 = "ARTIST";
+    var isRunning = false;
+    // ... (other variables)
+
+    // Expose necessary variables or functions externally
+    return {
+        discountCode1,
+        discountCode2,
+        isRunning
+        // ... (other variables)
+    };
+}
+
+// Access global variables using the exposed functions
+var globals = globalVariables();
 
 
+function initialize() {
+/*
+    // Create a script element
+    var script = document.createElement("script");
+
+    // Set the src attribute to the path of your countdown.js file
+    script.src = "https://nick71o.github.io/Brave%20Books%20Common.js";
+
+    // Append the script element to the HTML body or head
+    document.body.appendChild(script);
+    console.log("script: " + script.src);
+*/
+}
 
 function reEnterAndSubmit() {
-    if (!isRunning) {
+    if (!globals.isRunning) {
         closeModal();
         return;
     }
@@ -36,7 +68,7 @@ function reEnterAndSubmit() {
         useDiscountCode(discountCode2);
         attempts2++;
     } else {
-        console.log("Exceeded max retry attempts for both discount codes.");
+       //nmh console.log("Exceeded max retry attempts for both discount codes.");
         closeModal();
     }
 }
@@ -94,7 +126,7 @@ function useDiscountCode(code) {
 
 function checkForErrorMessage(ctLoop = 0) {
     console.log("Running checkForErrorMessage(), Loop " + (ctLoop + 1) + " of " + maxCheckForErrorMessages);
-    if (!isRunning) {
+    if (!globals.isRunning) {
         closeModal();
         return;
     }
@@ -125,7 +157,7 @@ function checkForErrorMessage(ctLoop = 0) {
                     checkForErrorMessage(ctLoop + 1);
                 }, delayCheckForErrorMessagesRetry);
             } else {
-                console.log("Exceeded maximum attempts to find Discount Span.");
+                //nmh console.log("Exceeded maximum attempts to find Discount Span.");
                 reEnterAndSubmit();
             }
         }
@@ -134,7 +166,7 @@ function checkForErrorMessage(ctLoop = 0) {
 
 function findAndClickPayNowButton(attempts = 0) {
     console.log("Running findAndClickPayNowButton(), Loop " + (attempts + 1) + " of " + maxCheckForPayNowButton);
-    if (!isRunning) {
+    if (!globals.isRunning) {
         closeModal();
         return;
     }
@@ -165,7 +197,7 @@ function findAndClickPayNowButton(attempts = 0) {
                 findAndClickPayNowButton(attempts + 1);
             }, delayCheckForPayNowButton);
         } else {
-            console.log("Exceeded maximum attempts to find the 'Pay now' button.");
+            //nmh console.log("Exceeded maximum attempts to find the 'Pay now' button.");
             reEnterAndSubmit();
         }
     }
@@ -176,7 +208,7 @@ function waitForSubmitButtonEnabled(submitButton) {
         submitButton.click();
     } else {
         submitButtonInterval = setInterval(function () {
-            if (!isRunning) {
+            if (!globals.isRunning) {
                 clearInterval(submitButtonInterval);
                 closeModal();
                 return;
@@ -188,6 +220,62 @@ function waitForSubmitButtonEnabled(submitButton) {
         }, delaySubmitButtonEnabled);
     }
 }
+/*
+function updateCountdown(autoRunTime) {
+    var countdownLabel = document.getElementById("countdownLabel");
+
+    // Parse the autoRunTime into hours, minutes, and AM/PM
+    var timeComponents = autoRunTime.split(" ");
+    var time = timeComponents[0].split(":");
+    var targetHours = parseInt(time[0], 10);
+    var targetMinutes = parseInt(time[1], 10);
+    var ampm = timeComponents[1].toUpperCase();
+
+    // Adjust targetHours for PM if necessary
+    if (ampm === "PM" && targetHours < 12) {
+        targetHours += 12;
+    }
+
+    // Adjust targetHours for midnight (12 AM)
+    if (ampm === "AM" && targetHours === 12) {
+        targetHours = 0;
+    }
+
+    // Set the target time to today with the specified hours and minutes
+    var targetDate = new Date();
+    targetDate.setHours(targetHours);
+    targetDate.setMinutes(targetMinutes);
+    targetDate.setSeconds(0);
+
+    // If the target time is in the past, set it for tomorrow
+    var currentDate = new Date();
+    if (targetDate < currentDate) {
+        targetDate.setDate(targetDate.getDate() + 1);
+    }
+
+    //console.log("Target Time:", targetDate.toLocaleTimeString());
+
+    var countdownInterval = setInterval(function () {
+        var now = new Date().getTime();
+        var distance = targetDate - now;
+
+        var hours = Math.floor(distance / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        //console.log("Remaining Time:", hours + "h " + minutes + "m " + seconds + "s");
+
+        if (distance <= 0 || globals.isRunning) {
+            clearInterval(countdownInterval);
+            countdownLabel.textContent = "";
+            toggleRunStop();
+            return;
+        }
+
+        countdownLabel.textContent = hours + "h " + minutes + "m " + seconds + "s";
+    }, 1000);
+}
+*/
 
 function showModal() {
     var modal = document.createElement("div");
@@ -201,15 +289,28 @@ function showModal() {
     runStopButton.textContent = "Run";
     runStopButton.id = "runStopButton";
     runStopButton.onclick = toggleRunStop;
-    //runStopButton.style.fontSize = "18px";
 
     modalContent.appendChild(runStopButton);
     modal.appendChild(modalContent);
 
+    // Creating countdownLabel outside the button
+    var countdownContainer = document.createElement("div");
+    countdownContainer.id = "countdownContainer";
+
+    var countdownLabel = document.createElement("label");
+    countdownLabel.id = "countdownLabel";
+    countdownLabel.textContent = "";
+
+    countdownContainer.appendChild(countdownLabel);
+    modalContent.appendChild(countdownContainer);
+
     document.body.appendChild(modal);
 
     modal.style.display = "block";
+
+    updateCountdown(autoRunTime);
 }
+
 
 function closeModal() {
     var runStopButton = document.getElementById("runStopButton");
@@ -228,7 +329,7 @@ function toggleRunStop() {
     if (runStopButton) {
         if (runStopButton.textContent === "Run") {
             runStopButton.textContent = "Stop";
-            isRunning = true;
+            globals.isRunning = true;
             attempts1 = 0; // Reset attempts for discountCode1
             attempts2 = 0; // Reset attempts for discountCode2
             console.log("---RUNNING!---");
@@ -236,37 +337,60 @@ function toggleRunStop() {
         }
         else {
             runStopButton.textContent = "Run";
-            isRunning = false;
+            globals.isRunning = false;
             console.log("---STOPPED!---");
         }
     }
 }
 
+initialize();
 console.log("Show Modal");
 showModal();
 
-// Inject CSS
+// Inject CSS for the modal and content
 var css = `
-    /* Styling for the modal */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 85px;
-        height: 85px;
-        background-color: rgba(0, 0, 0, 0.7);
-    }
-    .modal-content {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background-color: #fff;
-        padding: 15px;
-        border-radius: 7px;
-        font-size: 18px;
-    }
+        /* Styling for the modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100px;
+            height: 94px;
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .modal-content {
+            background-color: #f5f5f5;
+            margin: 10px;
+            padding: 8px 4px 2px 4px;
+            border-radius: 2px;
+            font-size: 10px;
+            height: -webkit-fill-available;
+        }
+        #countdownContainer {
+            margin: 6px 0px 3px 0px;
+            text-align: center;
+        }
+        #countdownLabel {
+            font-size: 9px;
+            color: black;
+        }
+        #runStopButton {
+            display: block;
+            margin: 0 auto;
+            padding: 4px 12px 4px 12px;
+            background-color: #007bff;
+            color: white;
+            font-size: 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+        #runStopButton:hover {
+            background-color: #0056b3;
+        }
     `;
 var style = document.createElement("style");
 style.type = "text/css";
