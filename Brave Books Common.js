@@ -1,4 +1,7 @@
 console.log('HELLO WORLD!');
+// Retrieve variables from localStorage
+var isRunning = localStorage.getItem('isRunning');
+console.log('common - isRunning: ' + isRunning);
 
 function updateCountdown(autoRunTime) {
     var countdownLabel = document.getElementById("countdownLabel");
