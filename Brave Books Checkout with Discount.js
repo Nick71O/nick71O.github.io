@@ -1,28 +1,38 @@
 ﻿console.log('HELLO WORLD!');
+/*
 function initializeDiscountVariables(callback) {
     console.log('HELLO WORLD2!');
-    var discountVariables = {
-      discountCode1: "ARTIST",
-      discountCode2: "ARTIST",
-      autoRunTime: "3:30 PM",
-      maxAttempts1: 5,
-      maxAttempts2: 495,
-      delayBeforeRetry: 100,
-      delayBeforeInput: 50,
-      delayBeforeApplyButton: 50,
-      delaySubmitButtonEnabled: 100,
-      maxCheckForErrorMessages: 50,
-      delayCheckForErrorMessages: 500,
-      delayCheckForErrorMessagesRetry: 100,
-      maxCheckForPayNowButton: 50,
-      delayCheckForPayNowButton: 100,
-    };
+
   
     // Call the callback function and pass the variables object
     callback(discountVariables);
   }
+  */
 
+  var discountVariables = {
+    discountCode1: "ARTIST",
+    discountCode2: "ARTIST",
+    autoRunTime: "3:30 PM",
+    maxAttempts1: 5,
+    maxAttempts2: 495,
+    delayBeforeRetry: 100,
+    delayBeforeInput: 50,
+    delayBeforeApplyButton: 50,
+    delaySubmitButtonEnabled: 100,
+    maxCheckForErrorMessages: 50,
+    delayCheckForErrorMessages: 500,
+    delayCheckForErrorMessagesRetry: 100,
+    maxCheckForPayNowButton: 50,
+    delayCheckForPayNowButton: 100,
+  };
 
+// Assuming initializeDiscountVariables is defined in main.js
+if (typeof initializeDiscountVariables === 'function') {
+    console.log('HELLO WORLD2!');
+    initializeDiscountVariables(discountVariables);
+  } else {
+    console.log('initializeDiscountVariables function is not defined in main.js');
+  }
 // Retrieve variables from localStorage
 
 // Access the globals object or the globalVariables function from the existing code

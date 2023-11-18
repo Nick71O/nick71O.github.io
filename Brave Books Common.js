@@ -21,15 +21,21 @@ var delayCheckForErrorMessagesRetry = 100;
 var maxCheckForPayNowButton = 50; 
 var delayCheckForPayNowButton = 100;
 
-initializeDiscountVariables(function (globalVariables) {
-    console.log("inside initializeDiscountVariables");
-    // This is the callback function that receives the globalVariables object
-    console.log(globalVariables.discountCode1);
-    console.log(globalVariables.autoRunTime);
+// Define the function to receive the discount variables from variables.js
+function initializeDiscountVariables(discountVariables) {
+    // Process the received discountVariables object
+    console.log(discountVariables.discountCode1);
+    console.log(discountVariables.autoRunTime);
+    // Use the variables as needed
+  }
   
-    // You can use these variables within this function as needed
-    // ...
-  });
+  // Call initializeDiscountVariables function in variables.js
+  // This function will be called from variables.js and receive the discountVariables object as an argument
+  // If initializeDiscountVariables is called from variables.js before this script is loaded,
+  // it will execute immediately after this code block due to asynchronous loading
+  if (typeof discountVariables !== 'undefined') {
+    initializeDiscountVariables(discountVariables);
+  }
 
 
 function initialize() {
