@@ -1,3 +1,5 @@
+console.log('HELLO WORLD!');
+
 function updateCountdown(autoRunTime) {
     var countdownLabel = document.getElementById("countdownLabel");
 
