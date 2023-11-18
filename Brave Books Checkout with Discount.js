@@ -1,241 +1,50 @@
-﻿//var discountCode1 = "ARTIST"; // First discount code
-////var discountCode2 = "ARTIST"; // Second discount code
-var autoRunTime = "6:30 AM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
-var attempts1 = 0; // Counter for discountCode1
-var attempts2 = 0; // Counter for discountCode2
-var maxAttempts1 = 5; // Number of times to use discountCode1 before switching to discountCode2
-var maxAttempts2 = 495; // Number of times to use discountCode2 before stopping
-//var isRunning = false;
-var submitButtonInterval;
-
-var delayBeforeRetry = 100;
-
-var delayBeforeInput = 50;
-var delayBeforeApplyButton = 50;
-var delaySubmitButtonEnabled = 100;
-
-var maxCheckForErrorMessages = 50;
-var delayCheckForErrorMessages = 500;
-var delayCheckForErrorMessagesRetry = 100;
-
-var maxCheckForPayNowButton = 50; 
-var delayCheckForPayNowButton = 100;
-
-// Encapsulate global variables within a function
-function globalVariables() {
-    var discountCode1 = "ARTIST";
-    var discountCode2 = "ARTIST";
-    var isRunning = false;
-    // ... (other variables)
-
-    // Expose necessary variables or functions externally
-    return {
-        discountCode1,
-        discountCode2,
-        isRunning
-        // ... (other variables)
-/*
-        getDiscountCode1: function() {
-            return discountCode1;
-        },
-        getDiscountCode2: function() {
-            return discountCode2;
-        },
-        getIsRunning: function() {
-            return isRunning;
-        }
-        */
+﻿console.log('HELLO WORLD!');
+function initializeDiscountVariables(callback) {
+    console.log('HELLO WORLD2!');
+    var discountVariables = {
+      discountCode1: "ARTIST",
+      discountCode2: "ARTIST",
+      autoRunTime: "3:30 PM",
+      maxAttempts1: 5,
+      maxAttempts2: 495,
+      delayBeforeRetry: 100,
+      delayBeforeInput: 50,
+      delayBeforeApplyButton: 50,
+      delaySubmitButtonEnabled: 100,
+      maxCheckForErrorMessages: 50,
+      delayCheckForErrorMessages: 500,
+      delayCheckForErrorMessagesRetry: 100,
+      maxCheckForPayNowButton: 50,
+      delayCheckForPayNowButton: 100,
     };
+  
+    // Call the callback function and pass the variables object
+    callback(discountVariables);
+  }
 
-    
-}
 
-// Access global variables using the exposed functions
-var globals = globalVariables();
-// Expose the globals object or the globalVariables function for use in other files
-window.globals = globals;
+// Retrieve variables from localStorage
 
-function initialize() {
+// Access the globals object or the globalVariables function from the existing code
+//var globals = window.globals; // Accessing the exposed globals object
+
+//console.log('common - isRunning: ' + isRunning);
 /*
-    // Create a script element
-    var script = document.createElement("script");
+// Check if globals is defined before accessing the global variables
+if (typeof globals !== 'undefined') {
+// Access global variables from the existing code
+var discountCode1 = globals.getDiscountCode1();
+var discountCode2 = globals.getDiscountCode2();
+var isRunning = globals.getIsRunning();
+// ... (access other variables)
 
-    // Set the src attribute to the path of your countdown.js file
-    script.src = "https://nick71o.github.io/Brave%20Books%20Common.js";
-
-    // Append the script element to the HTML body or head
-    document.body.appendChild(script);
-    console.log("script: " + script.src);
+console.log("discountCode1:" + discountCode1); // Access discountCode1 from the existing code
+console.log("discountCode2: " + discountCode2); // Access discountCode2 from the existing code
+console.log("isRunning: " + isRunning); // Access discountCode2 from the existing code
 */
-}
 
-function reEnterAndSubmit() {
-    if (!globals.isRunning) {
-        closeModal();
-        return;
-    }
-
-    if (attempts1 < maxAttempts1) {
-        useDiscountCode(globals.discountCode1);
-        attempts1++;
-    } else if (attempts2 < maxAttempts2) {
-        useDiscountCode(globals.discountCode2);
-        attempts2++;
-    } else {
-       //nmh console.log("Exceeded max retry attempts for both discount codes.");
-        closeModal();
-    }
-}
-
-function useDiscountCode(code) {
-    console.log("Running useDiscountCode(), Loop " + (attempts1 + attempts2 + 1) + " of " + (maxAttempts1 + maxAttempts2));
-    var reductionsInput = document.getElementsByName("reductions")[0];
-
-    if (reductionsInput) {
-        reductionsInput.focus();
-
-        // Input the text
-        reductionsInput.value = code;
-        console.log("Inputted: " + code);
-
-        // Create a new 'input' event
-        var inputEvent = new Event('input', { bubbles: true, cancelable: true });
-        reductionsInput.dispatchEvent(inputEvent);
-
-        setTimeout(function () {
-            // Clear the input
-            reductionsInput.value = "";
-            console.log("Cleared the input field.");
-
-            // Create another 'input' event after clearing
-            reductionsInput.dispatchEvent(inputEvent);
-
-            setTimeout(function () {
-                // Input the text again
-                reductionsInput.value = code;
-                console.log("Inputted again: " + code);
-
-                // Create another 'input' event after inputting again
-                reductionsInput.dispatchEvent(inputEvent);
-
-                setTimeout(function () {
-                    var submitButton = document.querySelector('button[type="submit"][aria-label="Apply Discount Code"]');
-                    if (submitButton) {
-                        console.log("'Apply' button found.");
-                        waitForSubmitButtonEnabled(submitButton);
-                        setTimeout(function () {
-                            checkForErrorMessage();
-                        }, delayCheckForErrorMessages);
-                    } else {
-                        console.log("'Apply' button not found.");
-                        reEnterAndSubmit();
-                    }
-                }, delayBeforeApplyButton);
-            }, delayBeforeInput);
-        }, delayBeforeInput);
-    } else {
-        console.log("Input element with name 'reductions' not found.");
-    }
-}
-
-function checkForErrorMessage(ctLoop = 0) {
-    console.log("Running checkForErrorMessage(), Loop " + (ctLoop + 1) + " of " + maxCheckForErrorMessages);
-    if (!globals.isRunning) {
-        closeModal();
-        return;
-    }
-
-    var elements = document.querySelectorAll('*');
-    var errorMessage = Array.from(elements).find(element => element.textContent.includes("Enter a valid discount code or gift card"));
-
-    if (errorMessage) {
-        console.log("Error Message Found: Enter a valid discount code or gift card");
-        setTimeout(function () {
-            reEnterAndSubmit();
-        }, delayBeforeRetry);
-    } else {
-        var discountSpans = document.querySelectorAll('span');
-        var discountSpanFound = Array.from(discountSpans).find(span => (
-            span.textContent.toLowerCase() === globals.discountCode1.toLowerCase() ||
-            span.textContent.toLowerCase() === globals.discountCode2.toLowerCase()
-        ));
-
-        if (discountSpanFound) {
-            console.log("Discount span found: " + discountSpanFound.textContent);
-            findAndClickPayNowButton();
-        } else {
-            console.log("No Discount Span Found.");
-
-            if (ctLoop < maxCheckForErrorMessages) {
-                setTimeout(function () {
-                    checkForErrorMessage(ctLoop + 1);
-                }, delayCheckForErrorMessagesRetry);
-            } else {
-                //nmh console.log("Exceeded maximum attempts to find Discount Span.");
-                reEnterAndSubmit();
-            }
-        }
-    }
-}
-
-function findAndClickPayNowButton(attempts = 0) {
-    console.log("Running findAndClickPayNowButton(), Loop " + (attempts + 1) + " of " + maxCheckForPayNowButton);
-    if (!globals.isRunning) {
-        closeModal();
-        return;
-    }
-
-    var payNowButton = document.querySelector('button[type="button"][aria-label="Pay now"]');
-
-    if (!payNowButton) {
-        var buttons = document.querySelectorAll('button[type="submit"]');
-        for (var i = 0; i < buttons.length; i++) {
-            var button = buttons[i];
-            var buttonText = button.textContent;
-            if (buttonText.includes("Pay now")) {
-                payNowButton = button;
-                break;
-            }
-        }
-    }
-
-    if (payNowButton) {
-        payNowButton.click();
-        console.log("Pay now button found and clicked!");
-        closeModal();
-    } else {
-        console.log("Pay now button not found.");
-
-        if (attempts < maxCheckForPayNowButton) {
-            setTimeout(function () {
-                findAndClickPayNowButton(attempts + 1);
-            }, delayCheckForPayNowButton);
-        } else {
-            //nmh console.log("Exceeded maximum attempts to find the 'Pay now' button.");
-            reEnterAndSubmit();
-        }
-    }
-}
-
-function waitForSubmitButtonEnabled(submitButton) {
-    if (submitButton && !submitButton.disabled) {
-        submitButton.click();
-    } else {
-        submitButtonInterval = setInterval(function () {
-            if (!globals.isRunning) {
-                clearInterval(submitButtonInterval);
-                closeModal();
-                return;
-            }
-            if (submitButton && !submitButton.disabled) {
-                clearInterval(submitButtonInterval);
-                submitButton.click();
-            }
-        }, delaySubmitButtonEnabled);
-    }
-}
 /*
-function updateCountdown(autoRunTime) {
+function updateCountdown(autoRunTime, isRunningRef) {
     var countdownLabel = document.getElementById("countdownLabel");
 
     // Parse the autoRunTime into hours, minutes, and AM/PM
@@ -267,8 +76,6 @@ function updateCountdown(autoRunTime) {
         targetDate.setDate(targetDate.getDate() + 1);
     }
 
-    //console.log("Target Time:", targetDate.toLocaleTimeString());
-
     var countdownInterval = setInterval(function () {
         var now = new Date().getTime();
         var distance = targetDate - now;
@@ -277,9 +84,7 @@ function updateCountdown(autoRunTime) {
         var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         var seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        //console.log("Remaining Time:", hours + "h " + minutes + "m " + seconds + "s");
-
-        if (distance <= 0 || globals.isRunning) {
+        if (distance <= 0 || isRunningRef.value) {
             clearInterval(countdownInterval);
             countdownLabel.textContent = "";
             toggleRunStop();
@@ -290,125 +95,8 @@ function updateCountdown(autoRunTime) {
     }, 1000);
 }
 */
-
-function showModal() {
-    var modal = document.createElement("div");
-    modal.className = "modal";
-    modal.id = "myModal";
-
-    var modalContent = document.createElement("div");
-    modalContent.className = "modal-content";
-
-    var runStopButton = document.createElement("button");
-    runStopButton.textContent = "Run";
-    runStopButton.id = "runStopButton";
-    runStopButton.onclick = toggleRunStop;
-
-    modalContent.appendChild(runStopButton);
-    modal.appendChild(modalContent);
-
-    // Creating countdownLabel outside the button
-    var countdownContainer = document.createElement("div");
-    countdownContainer.id = "countdownContainer";
-
-    var countdownLabel = document.createElement("label");
-    countdownLabel.id = "countdownLabel";
-    countdownLabel.textContent = "";
-
-    countdownContainer.appendChild(countdownLabel);
-    modalContent.appendChild(countdownContainer);
-
-    document.body.appendChild(modal);
-
-    modal.style.display = "block";
-
-    var isRunningRef = { value: globals.isRunning };
-    updateCountdown(autoRunTime, isRunningRef);
+/*
+} else {
+    console.log('globals is not defined. Make sure to include the existing code that defines globals.');
 }
-
-
-function closeModal() {
-    var runStopButton = document.getElementById("runStopButton");
-    if (runStopButton) {
-        if (runStopButton.textContent === "Stop") {
-            runStopButton.click();
-            console.log("Stopping the automation.");
-        }
-    } else {
-        console.log("Run/Stop button not found in the modal.");
-    }
-}
-
-function toggleRunStop() {
-    var runStopButton = document.getElementById("runStopButton");
-    if (runStopButton) {
-        if (runStopButton.textContent === "Run") {
-            runStopButton.textContent = "Stop";
-            globals.isRunning = true;
-            attempts1 = 0; // Reset attempts for discountCode1
-            attempts2 = 0; // Reset attempts for discountCode2
-            console.log("---RUNNING!---");
-            reEnterAndSubmit();
-        }
-        else {
-            runStopButton.textContent = "Run";
-            globals.isRunning = false;
-            console.log("---STOPPED!---");
-        }
-    }
-}
-
-initialize();
-console.log("Show Modal");
-showModal();
-
-// Inject CSS for the modal and content
-var css = `
-        /* Styling for the modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100px;
-            height: 94px;
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-        .modal-content {
-            background-color: #f5f5f5;
-            margin: 10px;
-            padding: 8px 4px 2px 4px;
-            border-radius: 2px;
-            font-size: 10px;
-            height: -webkit-fill-available;
-        }
-        #countdownContainer {
-            margin: 6px 0px 3px 0px;
-            text-align: center;
-        }
-        #countdownLabel {
-            font-size: 9px;
-            color: black;
-        }
-        #runStopButton {
-            display: block;
-            margin: 0 auto;
-            padding: 4px 12px 4px 12px;
-            background-color: #007bff;
-            color: white;
-            font-size: 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-align: center;
-            text-decoration: none;
-        }
-        #runStopButton:hover {
-            background-color: #0056b3;
-        }
-    `;
-var style = document.createElement("style");
-style.type = "text/css";
-style.appendChild(document.createTextNode(css));
-document.head.appendChild(style);
-
+*/
