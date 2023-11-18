@@ -1,6 +1,6 @@
 var discountCode1 = "ARTIST"; // First discount code
 var discountCode2 = "ARTIST"; // Second discount code
-var autoRunTime = "2:30 PM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
+//var autoRunTime = "2:30 PM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
 var attempts1 = 0; // Counter for discountCode1
 var attempts2 = 0; // Counter for discountCode2
 var maxAttempts1 = 5; // Number of times to use discountCode1 before switching to discountCode2
@@ -21,24 +21,26 @@ var delayCheckForErrorMessagesRetry = 100;
 var maxCheckForPayNowButton = 50; 
 var delayCheckForPayNowButton = 100;
 
-// Define the function to receive the discount variables from variables.js
-function initializeDiscountVariables(globalVariables) {
-    // Process the received discountVariables object
+
+// Define the function to receive the global variables from variables.js
+function initializeGlobalVariables(globalVariables) {
+    // Process the received globalVariables object
     console.log(globalVariables.discountCode1);
     console.log(globalVariables.autoRunTime);
     // Use the variables as needed
-
-    // Call Launch() after initializing discount variables
+    
+    // Call Launch() after initializing global variables
     Launch();
-}
+  }
   
-// Call initializeDiscountVariables function in variables.js
-// This function will be called from variables.js and receive the discountVariables object as an argument
-// If initializeDiscountVariables is called from variables.js before this script is loaded,
-// it will execute immediately after this code block due to asynchronous loading
-if (typeof globalVariables !== 'undefined') {
-    initializeDiscountVariables(globalVariables);
-}
+  // Call initializeGlobalVariables function in variables.js
+  // This function will be called from variables.js and receive the globalVariables object as an argument
+  // If initializeGlobalVariables is called from variables.js before this script is loaded,
+  // it will execute immediately after this code block due to asynchronous loading
+  if (typeof globalVariables !== 'undefined') {
+    initializeGlobalVariables(globalVariables);
+  }
+
 
 
 function Launch() {
@@ -352,7 +354,7 @@ function showModal() {
 
     modal.style.display = "block";
 
-    updateCountdown(autoRunTime);
+    updateCountdown(globalVariables.autoRunTime);
 }
 
 
