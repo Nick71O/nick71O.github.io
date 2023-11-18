@@ -1,6 +1,6 @@
 ﻿//var discountCode1 = "ARTIST"; // First discount code
 ////var discountCode2 = "ARTIST"; // Second discount code
-var autoRunTime = "4:30 AM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
+var autoRunTime = "6:30 AM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
 var attempts1 = 0; // Counter for discountCode1
 var attempts2 = 0; // Counter for discountCode2
 var maxAttempts1 = 5; // Number of times to use discountCode1 before switching to discountCode2
@@ -30,11 +30,11 @@ function globalVariables() {
 
     // Expose necessary variables or functions externally
     return {
-        //discountCode1,
-        //discountCode2,
-        //isRunning
+        discountCode1,
+        discountCode2,
+        isRunning
         // ... (other variables)
-
+/*
         getDiscountCode1: function() {
             return discountCode1;
         },
@@ -44,6 +44,7 @@ function globalVariables() {
         getIsRunning: function() {
             return isRunning;
         }
+        */
     };
 
     
@@ -321,7 +322,8 @@ function showModal() {
 
     modal.style.display = "block";
 
-    updateCountdown(autoRunTime);
+    var isRunningRef = { value: globals.isRunning };
+    updateCountdown(autoRunTime, isRunningRef);
 }
 
 
