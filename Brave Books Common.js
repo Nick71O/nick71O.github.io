@@ -264,7 +264,7 @@ function waitForSubmitButtonEnabled(submitButton) {
         }, delaySubmitButtonEnabled);
     }
 }
-/*
+
 function updateCountdown(autoRunTime) {
     var countdownLabel = document.getElementById("countdownLabel");
 
@@ -297,7 +297,7 @@ function updateCountdown(autoRunTime) {
         targetDate.setDate(targetDate.getDate() + 1);
     }
 
-    //console.log("Target Time:", targetDate.toLocaleTimeString());
+    console.log("Target Time:", targetDate.toLocaleTimeString());
 
     var countdownInterval = setInterval(function () {
         var now = new Date().getTime();
@@ -319,7 +319,7 @@ function updateCountdown(autoRunTime) {
         countdownLabel.textContent = hours + "h " + minutes + "m " + seconds + "s";
     }, 1000);
 }
-*/
+
 
 function showModal() {
     var modal = document.createElement("div");
