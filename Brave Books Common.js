@@ -4,15 +4,15 @@ console.log('HELLO WORLD!');
 //console.log('common - isRunning: ' + isRunning);
 
 // Access global variables from the existing code
-var discountCode1 = globals.discountCode1;
-var discountCode2 = globals.discountCode2;
-var isRunning = globals.isRunning;
+var discountCode1 = globals.getDiscountCode1();
+var discountCode2 = globals.getDiscountCode2();
+var isRunning = globals.getIsRunning();
 // ... (access other variables)
 
 console.log("discountCode1:" + discountCode1); // Access discountCode1 from the existing code
 console.log("discountCode2: " + discountCode2); // Access discountCode2 from the existing code
 console.log("isRunning: " + isRunning); // Access discountCode2 from the existing code
-
+console.log('HELLO WORLD2!');
 function updateCountdown(autoRunTime) {
     var countdownLabel = document.getElementById("countdownLabel");
 

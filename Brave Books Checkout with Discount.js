@@ -1,5 +1,5 @@
-﻿var discountCode1 = "ARTIST"; // First discount code
-var discountCode2 = "ARTIST"; // Second discount code
+﻿//var discountCode1 = "ARTIST"; // First discount code
+////var discountCode2 = "ARTIST"; // Second discount code
 var autoRunTime = "4:30 AM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
 var attempts1 = 0; // Counter for discountCode1
 var attempts2 = 0; // Counter for discountCode2
@@ -30,11 +30,23 @@ function globalVariables() {
 
     // Expose necessary variables or functions externally
     return {
-        discountCode1,
-        discountCode2,
-        isRunning
+        //discountCode1,
+        //discountCode2,
+        //isRunning
         // ... (other variables)
+
+        getDiscountCode1: function() {
+            return discountCode1;
+        },
+        getDiscountCode2: function() {
+            return discountCode2;
+        },
+        getIsRunning: function() {
+            return isRunning;
+        }
     };
+
+    
 }
 
 // Access global variables using the exposed functions
@@ -62,10 +74,10 @@ function reEnterAndSubmit() {
     }
 
     if (attempts1 < maxAttempts1) {
-        useDiscountCode(discountCode1);
+        useDiscountCode(globals.discountCode1);
         attempts1++;
     } else if (attempts2 < maxAttempts2) {
-        useDiscountCode(discountCode2);
+        useDiscountCode(globals.discountCode2);
         attempts2++;
     } else {
        //nmh console.log("Exceeded max retry attempts for both discount codes.");
@@ -142,8 +154,8 @@ function checkForErrorMessage(ctLoop = 0) {
     } else {
         var discountSpans = document.querySelectorAll('span');
         var discountSpanFound = Array.from(discountSpans).find(span => (
-            span.textContent.toLowerCase() === discountCode1.toLowerCase() ||
-            span.textContent.toLowerCase() === discountCode2.toLowerCase()
+            span.textContent.toLowerCase() === globals.discountCode1.toLowerCase() ||
+            span.textContent.toLowerCase() === globals.discountCode2.toLowerCase()
         ));
 
         if (discountSpanFound) {
