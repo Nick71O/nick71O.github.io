@@ -1,47 +1,31 @@
-var discountCode1 = "ARTIST"; // First discount code
-var discountCode2 = "ARTIST"; // Second discount code
-//var autoRunTime = "2:30 PM"; // Replace this with your desired autoRunTime (e.g., "8:58 AM")
 var attempts1 = 0; // Counter for discountCode1
 var attempts2 = 0; // Counter for discountCode2
-var maxAttempts1 = 5; // Number of times to use discountCode1 before switching to discountCode2
-var maxAttempts2 = 495; // Number of times to use discountCode2 before stopping
 var isRunning = false;
 var submitButtonInterval;
 
-var delayBeforeRetry = 100;
-
-var delayBeforeInput = 50;
-var delayBeforeApplyButton = 50;
-var delaySubmitButtonEnabled = 100;
-
-var maxCheckForErrorMessages = 50;
-var delayCheckForErrorMessages = 500;
-var delayCheckForErrorMessagesRetry = 100;
-
-var maxCheckForPayNowButton = 50; 
-var delayCheckForPayNowButton = 100;
-
-
-// Define the function to receive the global variables from variables.js
+/*
+ * Receives and processes global variables from another script (e.g., Brave Books Checkout with Discount.js).
+ * @param {Object} globalVariables - Object containing global variables.
+ */
 function initializeGlobalVariables(globalVariables) {
     // Process the received globalVariables object
-    console.log(globalVariables.discountCode1);
-    console.log(globalVariables.autoRunTime);
-    // Use the variables as needed
+    console.log("discountCode1: " + globalVariables.discountCode1);
+    console.log("discountCode2: " + globalVariables.discountCode2);
+    console.log("autoRunTime: " + globalVariables.autoRunTime);
+    console.log("maxAttempts1: " + globalVariables.maxAttempts1);
+    console.log("maxAttempts2: " + globalVariables.maxAttempts2);
     
     // Call Launch() after initializing global variables
     Launch();
   }
   
-  // Call initializeGlobalVariables function in variables.js
-  // This function will be called from variables.js and receive the globalVariables object as an argument
-  // If initializeGlobalVariables is called from variables.js before this script is loaded,
+  // Call initializeGlobalVariables function in Brave Books Checkout with Discount.js
+  // This function will be called from Brave Books Checkout with Discount.js and receive the globalVariables object as an argument
+  // If initializeGlobalVariables is called from Brave Books Checkout with Discount.js before this script is loaded,
   // it will execute immediately after this code block due to asynchronous loading
   if (typeof globalVariables !== 'undefined') {
     initializeGlobalVariables(globalVariables);
   }
-
-
 
 function Launch() {
     // Your code to execute after initializing variables
@@ -107,20 +91,20 @@ function reEnterAndSubmit() {
         return;
     }
 
-    if (attempts1 < maxAttempts1) {
-        useDiscountCode(discountCode1);
+    if (attempts1 < globalVariables.maxAttempts1) {
+        useDiscountCode(globalVariables.discountCode1);
         attempts1++;
-    } else if (attempts2 < maxAttempts2) {
-        useDiscountCode(discountCode2);
+    } else if (attempts2 < globalVariables.maxAttempts2) {
+        useDiscountCode(globalVariables.discountCode2);
         attempts2++;
     } else {
-       //nmh console.log("Exceeded max retry attempts for both discount codes.");
+        console.log("Exceeded max retry attempts for both discount codes.");
         closeModal();
     }
 }
 
 function useDiscountCode(code) {
-    console.log("Running useDiscountCode(), Loop " + (attempts1 + attempts2 + 1) + " of " + (maxAttempts1 + maxAttempts2));
+    console.log("Running useDiscountCode(), Loop " + (attempts1 + attempts2 + 1) + " of " + (globalVariables.maxAttempts1 + globalVariables.maxAttempts2));
     var reductionsInput = document.getElementsByName("reductions")[0];
 
     if (reductionsInput) {
@@ -157,21 +141,21 @@ function useDiscountCode(code) {
                         waitForSubmitButtonEnabled(submitButton);
                         setTimeout(function () {
                             checkForErrorMessage();
-                        }, delayCheckForErrorMessages);
+                        }, globalVariables.delayCheckForErrorMessages);
                     } else {
                         console.log("'Apply' button not found.");
                         reEnterAndSubmit();
                     }
-                }, delayBeforeApplyButton);
-            }, delayBeforeInput);
-        }, delayBeforeInput);
+                }, globalVariables.delayBeforeApplyButton);
+            }, globalVariables.delayBeforeInput);
+        }, globalVariables.delayBeforeInput);
     } else {
         console.log("Input element with name 'reductions' not found.");
     }
 }
 
 function checkForErrorMessage(ctLoop = 0) {
-    console.log("Running checkForErrorMessage(), Loop " + (ctLoop + 1) + " of " + maxCheckForErrorMessages);
+    console.log("Running checkForErrorMessage(), Loop " + (ctLoop + 1) + " of " + globalVariables.maxCheckForErrorMessages);
     if (!isRunning) {
         closeModal();
         return;
@@ -184,12 +168,12 @@ function checkForErrorMessage(ctLoop = 0) {
         console.log("Error Message Found: Enter a valid discount code or gift card");
         setTimeout(function () {
             reEnterAndSubmit();
-        }, delayBeforeRetry);
+        }, globalVariables.delayBeforeRetry);
     } else {
         var discountSpans = document.querySelectorAll('span');
         var discountSpanFound = Array.from(discountSpans).find(span => (
-            span.textContent.toLowerCase() === discountCode1.toLowerCase() ||
-            span.textContent.toLowerCase() === discountCode2.toLowerCase()
+            span.textContent.toLowerCase() === globalVariables.discountCode1.toLowerCase() ||
+            span.textContent.toLowerCase() === globalVariables.discountCode2.toLowerCase()
         ));
 
         if (discountSpanFound) {
@@ -198,12 +182,12 @@ function checkForErrorMessage(ctLoop = 0) {
         } else {
             console.log("No Discount Span Found.");
 
-            if (ctLoop < maxCheckForErrorMessages) {
+            if (ctLoop < globalVariables.maxCheckForErrorMessages) {
                 setTimeout(function () {
                     checkForErrorMessage(ctLoop + 1);
-                }, delayCheckForErrorMessagesRetry);
+                }, globalVariables.delayCheckForErrorMessagesRetry);
             } else {
-                //nmh console.log("Exceeded maximum attempts to find Discount Span.");
+                console.log("Exceeded maximum attempts to find Discount Span.");
                 reEnterAndSubmit();
             }
         }
@@ -211,7 +195,7 @@ function checkForErrorMessage(ctLoop = 0) {
 }
 
 function findAndClickPayNowButton(attempts = 0) {
-    console.log("Running findAndClickPayNowButton(), Loop " + (attempts + 1) + " of " + maxCheckForPayNowButton);
+    console.log("Running findAndClickPayNowButton(), Loop " + (attempts + 1) + " of " + globalVariables.maxCheckForPayNowButton);
     if (!isRunning) {
         closeModal();
         return;
@@ -238,12 +222,12 @@ function findAndClickPayNowButton(attempts = 0) {
     } else {
         console.log("Pay now button not found.");
 
-        if (attempts < maxCheckForPayNowButton) {
+        if (attempts < globalVariables.maxCheckForPayNowButton) {
             setTimeout(function () {
                 findAndClickPayNowButton(attempts + 1);
-            }, delayCheckForPayNowButton);
+            }, globalVariables.delayCheckForPayNowButton);
         } else {
-            //nmh console.log("Exceeded maximum attempts to find the 'Pay now' button.");
+            console.log("Exceeded maximum attempts to find the 'Pay now' button.");
             reEnterAndSubmit();
         }
     }
@@ -263,7 +247,7 @@ function waitForSubmitButtonEnabled(submitButton) {
                 clearInterval(submitButtonInterval);
                 submitButton.click();
             }
-        }, delaySubmitButtonEnabled);
+        }, globalVariables.delaySubmitButtonEnabled);
     }
 }
 
@@ -388,9 +372,5 @@ function toggleRunStop() {
         }
     }
 }
-
-
-
-
 
 

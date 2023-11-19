@@ -1,15 +1,4 @@
-﻿console.log('HELLO WORLD!');
-/*
-function initializeDiscountVariables(callback) {
-    console.log('HELLO WORLD2!');
-
-  
-    // Call the callback function and pass the variables object
-    callback(discountVariables);
-  }
-  */
-
-  var globalVariables = {
+﻿  var globalVariables = {
     discountCode1: "ARTIST",
     discountCode2: "ARTIST",
     autoRunTime: "12:45 PM",
@@ -28,8 +17,9 @@ function initializeDiscountVariables(callback) {
   
   // Call initializeGlobalVariables function in main.js
   if (typeof initializeGlobalVariables === 'function') {
-    console.log('HELLO WORLD2!');
+    console.log('Running initializeGlobalVariables');
     initializeGlobalVariables(globalVariables);
   } else {
-    console.error('initializeGlobalVariables function is not defined in main.js');
+    console.log('initializeGlobalVariables function is not defined in "Brave Books Common.js"');
+    console.error('initializeGlobalVariables function is not defined in "Brave Books Common.js"');
   }
