@@ -359,9 +359,6 @@ function showModal() {
     countdownLabel.id = "countdownLabel";
     countdownLabel.textContent = "";
 
-    // Apply CSS to place countdownLabel on a new line
-    //countdownLabel.style.display = "block";
-
     countdownContainer.appendChild(autoStartCheckbox);
     countdownContainer.appendChild(autoStartLabel);
     countdownContainer.appendChild(document.createElement("br")); // Line break
@@ -406,6 +403,7 @@ function toggleRunStop() {
     var runStopButton = document.getElementById("runStopButton");
     if (runStopButton) {
         if (runStopButton.textContent === "Run") {
+            clearInterval(countdownInterval);
             runStopButton.textContent = "Stop";
             isRunning = true;
             attempts1 = 0; // Reset attempts for discountCode1
@@ -414,6 +412,7 @@ function toggleRunStop() {
             reEnterAndSubmit();
         }
         else {
+            clearInterval(countdownInterval);
             runStopButton.textContent = "Run";
             isRunning = false;
             console.log("---STOPPED!---");
