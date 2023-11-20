@@ -42,8 +42,8 @@ function Launch() {
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 100px;
-                height: 94px;
+                width: 200px;
+                height: 194px;
                 background-color: rgba(0, 0, 0, 0.7);
             }
             .modal-content {
@@ -77,6 +77,12 @@ function Launch() {
             }
             #runStopButton:hover {
                 background-color: #0056b3;
+            }
+            #autoStartCheckbox {
+                width: 20px;
+                height: 20px;
+                margin-right: 5px;
+                vertical-align: middle;
             }
         `;
     var style = document.createElement("style");
@@ -324,24 +330,31 @@ function showModal() {
     modalContent.appendChild(runStopButton);
     modal.appendChild(modalContent);
 
+    var hr = document.createElement("hr");
+    modalContent.appendChild(hr);
+
     var countdownContainer = document.createElement("div");
     countdownContainer.id = "countdownContainer";
-    
+
     var autoStartCheckbox = document.createElement("input");
     autoStartCheckbox.type = "checkbox";
     autoStartCheckbox.id = "autoStartCheckbox";
     autoStartCheckbox.checked = globalVariables.autoRunEnabled;
 
     var autoStartLabel = document.createElement("label");
-    autoStartLabel.textContent = "Starting";
+    autoStartLabel.textContent = "Auto Starting";
     autoStartLabel.setAttribute("for", "autoStartCheckbox");
 
     var countdownLabel = document.createElement("label");
     countdownLabel.id = "countdownLabel";
     countdownLabel.textContent = "";
 
+    // Apply CSS to place countdownLabel on a new line
+    countdownLabel.style.display = "block";
+
     countdownContainer.appendChild(autoStartCheckbox);
     countdownContainer.appendChild(autoStartLabel);
+    countdownContainer.appendChild(document.createElement("br")); // Line break
     countdownContainer.appendChild(countdownLabel);
     modalContent.appendChild(countdownContainer);
 
