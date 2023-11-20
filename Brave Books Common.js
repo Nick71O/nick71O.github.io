@@ -80,10 +80,9 @@ function Launch() {
                 background-color: #0056b3;
             }
             #autoStartCheckbox {
-                width: 20px;
-                height: 20px;
-                margin-right: 5px;
-                vertical-align: middle;
+                -webkit-appearance: checkbox; /* WebKit-based browsers */
+                -moz-appearance: checkbox; /* Firefox */
+                appearance: checkbox; /* Standard */
             }
         `;
     var style = document.createElement("style");
