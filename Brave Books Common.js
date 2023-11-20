@@ -43,17 +43,21 @@ function Launch() {
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 200px;
-                height: 194px;
-                background-color: rgba(0, 0, 0, 0.7);
+                width: 118px;
+                height: 126px;
+                //background-color: rgba(0, 0, 0, 0.7);
             }
             .modal-content {
-                background-color: #f5f5f5;
-                margin: 10px;
+                background-color: rgba(245, 245, 245, 0.85);
+                margin: 12px;
                 padding: 8px 4px 2px 4px;
-                border-radius: 2px;
+                border: 1px solid darkgray;
+                border-radius: 3px;
                 font-size: 10px;
                 height: -webkit-fill-available;
+            }
+            .modal-content hr {
+                margin-top: 8px;
             }
             #countdownContainer {
                 margin: 6px 0px 3px 0px;
@@ -63,12 +67,8 @@ function Launch() {
                 color: black;
             }
             #countdownLabel {
-            }
 
-            #countdownContainer hr {
-                margin-top: 20px;
             }
-            
             #runStopButton {
                 display: block;
                 margin: 0 auto;
@@ -352,7 +352,7 @@ function showModal() {
     autoStartCheckbox.checked = globalVariables.autoRunEnabled;
 
     var autoStartLabel = document.createElement("label");
-    autoStartLabel.textContent = "Auto Starting";
+    autoStartLabel.textContent = "Auto Run:";
     autoStartLabel.setAttribute("for", "autoStartCheckbox");
 
     var countdownLabel = document.createElement("label");
