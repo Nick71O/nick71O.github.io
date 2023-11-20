@@ -365,7 +365,7 @@ function showModal() {
             updateCountdown(globalVariables.autoRunTime);
         } else {
             console.log("Auto Starting checkbox unchecked. Stopping countdown.");
-            clearInterval(countdownInterval); // Clear any ongoing countdown
+            //clearInterval(countdownInterval); // Clear any ongoing countdown
             countdownLabel.textContent = ""; // Clear the countdown display
         }
     });
