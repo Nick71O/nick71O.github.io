@@ -58,11 +58,17 @@ function Launch() {
             #countdownContainer {
                 margin: 6px 0px 3px 0px;
                 text-align: center;
-            }
-            #countdownLabel {
-                font-size: 9px;
+                line-height: 1.7;
+                font-size: 10px;
                 color: black;
             }
+            #countdownLabel {
+            }
+
+            #countdownContainer hr {
+                margin-top: 20px;
+            }
+            
             #runStopButton {
                 display: block;
                 margin: 0 auto;
@@ -80,6 +86,10 @@ function Launch() {
                 background-color: #0056b3;
             }
             #autoStartCheckbox {
+                width: 15px;
+                height: 15px;
+                margin-right: 6px;
+                vertical-align: text-bottom;
                 -webkit-appearance: checkbox; /* WebKit-based browsers */
                 -moz-appearance: checkbox; /* Firefox */
                 appearance: checkbox; /* Standard */
