@@ -368,6 +368,14 @@ function showModal() {
     countdownContainer.appendChild(countdownLabel);
     modalContent.appendChild(countdownContainer);
 
+    document.body.appendChild(modal);
+    modal.style.display = "block";
+
+    if (autoStartCheckbox.checked) {
+        console.log("Auto Starting checkbox checked. Starting countdown on load.");
+        updateCountdown(globalVariables.autoRunTime);
+    }
+
     autoStartCheckbox.addEventListener("change", function () {
         var isChecked = autoStartCheckbox.checked;
         if (isChecked) {
@@ -379,14 +387,6 @@ function showModal() {
             countdownLabel.textContent = ""; // Clear the countdown display
         }
     });
-
-    if (autoStartCheckbox.checked) {
-        console.log("Auto Starting checkbox checked. Starting countdown on load.");
-        updateCountdown(globalVariables.autoRunTime);
-    }
-    
-    document.body.appendChild(modal);
-    modal.style.display = "block";
 }
 
 
