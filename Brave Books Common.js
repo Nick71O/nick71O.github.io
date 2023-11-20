@@ -2,6 +2,7 @@ var attempts1 = 0; // Counter for discountCode1
 var attempts2 = 0; // Counter for discountCode2
 var isRunning = false;
 var submitButtonInterval;
+var countdownInterval;
 
 /*
  * Receives and processes global variables from another script (e.g., "Brave Books Checkout with Discount.js").
@@ -292,7 +293,7 @@ function updateCountdown(autoRunTime) {
 
     console.log("Target Time:", targetDate.toLocaleTimeString());
 
-    var countdownInterval = setInterval(function () {
+    countdownInterval = setInterval(function () {
         var now = new Date().getTime();
         var distance = targetDate - now;
 
@@ -365,7 +366,7 @@ function showModal() {
             updateCountdown(globalVariables.autoRunTime);
         } else {
             console.log("Auto Starting checkbox unchecked. Stopping countdown.");
-            //clearInterval(countdownInterval); // Clear any ongoing countdown
+            clearInterval(countdownInterval); // Clear any ongoing countdown
             countdownLabel.textContent = ""; // Clear the countdown display
         }
     });
