@@ -360,7 +360,7 @@ function showModal() {
     countdownLabel.textContent = "";
 
     // Apply CSS to place countdownLabel on a new line
-    countdownLabel.style.display = "block";
+    //countdownLabel.style.display = "block";
 
     countdownContainer.appendChild(autoStartCheckbox);
     countdownContainer.appendChild(autoStartLabel);
