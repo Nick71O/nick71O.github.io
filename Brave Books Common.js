@@ -324,28 +324,26 @@ function showModal() {
     modalContent.appendChild(runStopButton);
     modal.appendChild(modalContent);
 
-    // Creating countdownLabel outside the button
     var countdownContainer = document.createElement("div");
     countdownContainer.id = "countdownContainer";
-
-    var countdownLabel = document.createElement("label");
-    countdownLabel.id = "countdownLabel";
-    countdownLabel.textContent = "";
-
-    countdownContainer.appendChild(countdownLabel);
-    modalContent.appendChild(countdownContainer);
-
+    
     var autoStartCheckbox = document.createElement("input");
     autoStartCheckbox.type = "checkbox";
     autoStartCheckbox.id = "autoStartCheckbox";
     autoStartCheckbox.checked = globalVariables.autoRunEnabled;
 
     var autoStartLabel = document.createElement("label");
-    autoStartLabel.textContent = "Auto Starting";
+    autoStartLabel.textContent = "Starting";
     autoStartLabel.setAttribute("for", "autoStartCheckbox");
 
-    modalContent.appendChild(autoStartCheckbox);
-    modalContent.appendChild(autoStartLabel);
+    var countdownLabel = document.createElement("label");
+    countdownLabel.id = "countdownLabel";
+    countdownLabel.textContent = "";
+
+    countdownContainer.appendChild(autoStartCheckbox);
+    countdownContainer.appendChild(autoStartLabel);
+    countdownContainer.appendChild(countdownLabel);
+    modalContent.appendChild(countdownContainer);
 
     autoStartCheckbox.addEventListener("change", function () {
         var isChecked = autoStartCheckbox.checked;
