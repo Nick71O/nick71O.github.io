@@ -4,14 +4,15 @@ var isRunning = false;
 var submitButtonInterval;
 
 /*
- * Receives and processes global variables from another script (e.g., Brave Books Checkout with Discount.js).
+ * Receives and processes global variables from another script (e.g., "Brave Books Checkout with Discount.js").
  * @param {Object} globalVariables - Object containing global variables.
  */
 function initializeGlobalVariables(globalVariables) {
     // Process the received globalVariables object
+    console.log("autoRunEnabled: " + globalVariables.autoRunEnabled);
+    console.log("autoRunTime: " + globalVariables.autoRunTime);
     console.log("discountCode1: " + globalVariables.discountCode1);
     console.log("discountCode2: " + globalVariables.discountCode2);
-    console.log("autoRunTime: " + globalVariables.autoRunTime);
     console.log("maxAttempts1: " + globalVariables.maxAttempts1);
     console.log("maxAttempts2: " + globalVariables.maxAttempts2);
     
@@ -19,9 +20,9 @@ function initializeGlobalVariables(globalVariables) {
     Launch();
   }
   
-  // Call initializeGlobalVariables function in Brave Books Checkout with Discount.js
-  // This function will be called from Brave Books Checkout with Discount.js and receive the globalVariables object as an argument
-  // If initializeGlobalVariables is called from Brave Books Checkout with Discount.js before this script is loaded,
+  // Call initializeGlobalVariables function in "Brave Books Checkout with Discount.js"
+  // This function will be called from "Brave Books Checkout with Discount.js" and receive the globalVariables object as an argument
+  // If initializeGlobalVariables is called from "Brave Books Checkout with Discount.js" before this script is loaded,
   // it will execute immediately after this code block due to asynchronous loading
   if (typeof globalVariables !== 'undefined') {
     initializeGlobalVariables(globalVariables);
@@ -334,11 +335,32 @@ function showModal() {
     countdownContainer.appendChild(countdownLabel);
     modalContent.appendChild(countdownContainer);
 
+    var autoStartCheckbox = document.createElement("input");
+    autoStartCheckbox.type = "checkbox";
+    autoStartCheckbox.id = "autoStartCheckbox";
+    autoStartCheckbox.checked = globalVariables.autoRunEnabled;
+
+    var autoStartLabel = document.createElement("label");
+    autoStartLabel.textContent = "Auto Starting";
+    autoStartLabel.setAttribute("for", "autoStartCheckbox");
+
+    modalContent.appendChild(autoStartCheckbox);
+    modalContent.appendChild(autoStartLabel);
+
+    autoStartCheckbox.addEventListener("change", function () {
+        var isChecked = autoStartCheckbox.checked;
+        if (isChecked) {
+            console.log("Auto Starting checkbox checked. Starting countdown.");
+            updateCountdown(globalVariables.autoRunTime);
+        } else {
+            console.log("Auto Starting checkbox unchecked. Stopping countdown.");
+            clearInterval(countdownInterval); // Clear any ongoing countdown
+            countdownLabel.textContent = ""; // Clear the countdown display
+        }
+    });
+
     document.body.appendChild(modal);
-
     modal.style.display = "block";
-
-    updateCountdown(globalVariables.autoRunTime);
 }
 
 

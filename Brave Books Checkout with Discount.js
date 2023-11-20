@@ -1,6 +1,7 @@
 ﻿  var globalVariables = {
     discountCode1: "ARTIST",
     discountCode2: "ARTIST",
+    autoRunEnabled: true,
     autoRunTime: "12:45 PM",
     maxAttempts1: 5,
     maxAttempts2: 495,
@@ -15,11 +16,12 @@
     delayCheckForPayNowButton: 100,
   };
   
-  // Call initializeGlobalVariables function in main.js
+  // Call initializeGlobalVariables function in "Brave Books Common.js"
   if (typeof initializeGlobalVariables === 'function') {
     console.log('Running initializeGlobalVariables');
     initializeGlobalVariables(globalVariables);
   } else {
-    console.log('initializeGlobalVariables function is not defined in "Brave Books Common.js"');
-    console.error('initializeGlobalVariables function is not defined in "Brave Books Common.js"');
+    var msg = 'initializeGlobalVariables function is not defined in "Brave Books Common.js"';
+    console.log(msg);
+    console.error(msg);
   }
