@@ -313,8 +313,7 @@ function updateCountdown(autoRunTime) {
         //console.log("Remaining Time:", hours + "h " + minutes + "m " + seconds + "s");
 
         if (distance <= 0 || isRunning) {
-            clearInterval(countdownInterval);
-            countdownLabel.textContent = "";
+            clearAutoStart();
             toggleRunStop();
             return;
         }
@@ -323,6 +322,17 @@ function updateCountdown(autoRunTime) {
     }, 1000);
 }
 
+function clearAutoStart() {
+    clearInterval(countdownInterval);
+    var countdownLabel = document.getElementById("countdownLabel");
+    if (countdownLabel) {
+        countdownLabel.textContent = "";
+    }
+    var autoStartCheckbox = document.getElementById("autoStartCheckbox");
+    if (autoStartCheckbox) {
+        autoStartCheckbox.checked = false;
+    }
+}
 
 function showModal() {
     var modal = document.createElement("div");
@@ -402,8 +412,8 @@ function closeModal() {
 function toggleRunStop() {
     var runStopButton = document.getElementById("runStopButton");
     if (runStopButton) {
+        clearAutoStart();
         if (runStopButton.textContent === "Run") {
-            clearInterval(countdownInterval);
             runStopButton.textContent = "Stop";
             isRunning = true;
             attempts1 = 0; // Reset attempts for discountCode1
@@ -412,7 +422,6 @@ function toggleRunStop() {
             reEnterAndSubmit();
         }
         else {
-            clearInterval(countdownInterval);
             runStopButton.textContent = "Run";
             isRunning = false;
             console.log("---STOPPED!---");
