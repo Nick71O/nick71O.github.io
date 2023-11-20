@@ -380,6 +380,11 @@ function showModal() {
         }
     });
 
+    if (autoStartCheckbox.checked) {
+        console.log("Auto Starting checkbox checked. Starting countdown on load.");
+        updateCountdown(globalVariables.autoRunTime);
+    }
+    
     document.body.appendChild(modal);
     modal.style.display = "block";
 }
