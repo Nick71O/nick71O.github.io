@@ -188,6 +188,7 @@ function checkForErrorMessage(ctLoop = 0) {
     if (maxUsageMessage) {
         console.log("Error Message Found: This discount has reached its usage limit");
         toggleRunStop();
+        return;
         // setTimeout(function () {
         //     reEnterAndSubmit();
         // }, globalVariables.delayBeforeRetry);
