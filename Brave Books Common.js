@@ -457,6 +457,5 @@ function toggleRunStop() {
         }
     }
 }
-}
 
 
