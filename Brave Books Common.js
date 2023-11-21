@@ -58,6 +58,8 @@ function Launch() {
             }
             .modal-content hr {
                 margin-top: 8px;
+                border: none; /* Remove default border */
+                border-top: 1px solid darkgray;
             }
             #countdownContainer {
                 margin: 6px 0px 3px 0px;
