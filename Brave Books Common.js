@@ -43,7 +43,7 @@ function Launch() {
                 position: fixed;
                 top: 0;
                 left: 0;
-                width: 118px;
+                width: 140px;
                 height: 126px;
                 //background-color: rgba(0, 0, 0, 0.7);
             }
