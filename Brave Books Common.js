@@ -188,10 +188,14 @@ function checkForErrorMessage(ctLoop = 0) {
         }, globalVariables.delayBeforeRetry);
     } else {
         var discountSpans = document.querySelectorAll('span');
-        var discountSpanFound = Array.from(discountSpans).find(span => (
-            span.textContent.toLowerCase() === globalVariables.discountCode1.toLowerCase() ||
-            span.textContent.toLowerCase() === globalVariables.discountCode2.toLowerCase()
-        ));
+        var discountSpanFound = Array.from(discountSpans).find(span => {
+            const discountCode1 = globalVariables.discountCode1 ? globalVariables.discountCode1.toLowerCase() : null;
+            const discountCode2 = globalVariables.discountCode2 ? globalVariables.discountCode2.toLowerCase() : null;
+            return (
+                span.textContent.toLowerCase() === discountCode1 ||
+                span.textContent.toLowerCase() === discountCode2
+            );
+        });
 
         if (discountSpanFound) {
             console.log("Discount span found: " + discountSpanFound.textContent);
