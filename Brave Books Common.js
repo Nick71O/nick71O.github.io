@@ -82,8 +82,14 @@ function Launch() {
                 text-align: center;
                 text-decoration: none;
             }
+            #runStopButton[textContent="Stop"] {
+                background-color: red;
+            }
             #runStopButton:hover {
                 background-color: #0056b3;
+            }
+            #runStopButton[textContent="Stop"]:hover {
+                background-color: darkred;
             }
             #autoStartCheckbox {
                 width: 15px;
@@ -186,7 +192,7 @@ function checkForErrorMessage(ctLoop = 0) {
     var elements = document.querySelectorAll('*');
     var maxUsageMessage = Array.from(elements).find(element => element.textContent.includes("This discount has reached its usage limit"));
     if (maxUsageMessage) {
-        console.log("Error Message Found: This discount has reached its usage limit");
+        console.log("Error Message Found: This discount has reached its usage limit.");
         toggleRunStop();
         return;
         // setTimeout(function () {
