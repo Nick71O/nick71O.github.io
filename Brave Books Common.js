@@ -441,7 +441,7 @@ function closeModal() {
 function toggleRunStop() {
     var runStopButton = document.getElementById("runStopButton");
     var autoStartCheckbox = document.getElementById("autoStartCheckbox");
-    var autoStartCheckboxLabel = document.getElementById("autoStartCheckboxLabel");
+    var autoStartCheckboxLabel = document.querySelector('label[for="autoStartCheckbox"]');
 
     if (runStopButton && autoStartCheckbox && autoStartCheckboxLabel) {
         clearAutoStart();
@@ -455,6 +455,7 @@ function toggleRunStop() {
             attempts1 = 0;
             attempts2 = 0;
             console.log("---RUNNING!---");
+
             reEnterAndSubmit();
         } else {
             runStopButton.textContent = "Run";
