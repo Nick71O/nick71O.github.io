@@ -362,7 +362,7 @@ function showModal() {
     autoStartCheckbox.checked = globalVariables.autoRunEnabled;
 
     var autoStartLabel = document.createElement("label");
-    autoStartLabel.textContent = "Auto Run:";
+    autoStartLabel.textContent = "Run @ " + globalVariables.autoRunTime;
     autoStartLabel.setAttribute("for", "autoStartCheckbox");
 
     var countdownLabel = document.createElement("label");
@@ -379,19 +379,19 @@ function showModal() {
     modal.style.display = "block";
 
     if (autoStartCheckbox.checked) {
-        console.log("Auto Starting checkbox checked. Starting countdown on load.");
+        //console.log("Auto Starting checkbox checked. Starting countdown on load.");
         updateCountdown(globalVariables.autoRunTime);
     }
 
     autoStartCheckbox.addEventListener("change", function () {
         var isChecked = autoStartCheckbox.checked;
         if (isChecked) {
-            console.log("Auto Starting checkbox checked. Starting countdown.");
+            //console.log("Auto Starting checkbox checked. Starting countdown.");
             updateCountdown(globalVariables.autoRunTime);
         } else {
-            console.log("Auto Starting checkbox unchecked. Stopping countdown.");
-            clearInterval(countdownInterval); // Clear any ongoing countdown
-            countdownLabel.textContent = ""; // Clear the countdown display
+            //console.log("Auto Starting checkbox unchecked. Stopping countdown.");
+            clearInterval(countdownInterval);
+            countdownLabel.textContent = "";
         }
     });
 }
