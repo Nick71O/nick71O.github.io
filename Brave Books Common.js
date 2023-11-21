@@ -102,6 +102,10 @@ function Launch() {
                 -moz-appearance: checkbox; /* Firefox */
                 appearance: checkbox; /* Standard */
             }
+            .disabled-text {
+                color: #999; /* Change text color to mimic disabled state */
+            }
+        
         `;
     var style = document.createElement("style");
     style.type = "text/css";
@@ -437,27 +441,31 @@ function closeModal() {
 function toggleRunStop() {
     var runStopButton = document.getElementById("runStopButton");
     var autoStartCheckbox = document.getElementById("autoStartCheckbox");
+    var autoStartCheckboxLabel = document.getElementById("autoStartCheckboxLabel");
 
-    if (runStopButton && autoStartCheckbox) {
+    if (runStopButton && autoStartCheckbox && autoStartCheckboxLabel) {
         clearAutoStart();
 
         if (runStopButton.textContent === "Run") {
             runStopButton.textContent = "Stop";
             runStopButton.classList.add("stop");
             autoStartCheckbox.disabled = true;
+            autoStartCheckboxLabel.classList.add("disabled-text");
             isRunning = true;
-            attempts1 = 0; // Reset attempts for discountCode1
-            attempts2 = 0; // Reset attempts for discountCode2
+            attempts1 = 0;
+            attempts2 = 0;
             console.log("---RUNNING!---");
             reEnterAndSubmit();
         } else {
             runStopButton.textContent = "Run";
             runStopButton.classList.remove("stop");
             autoStartCheckbox.disabled = false;
+            autoStartCheckboxLabel.classList.remove("disabled-text");
             isRunning = false;
             console.log("---STOPPED!---");
         }
     }
 }
+
 
 
