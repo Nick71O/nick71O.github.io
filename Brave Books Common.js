@@ -187,7 +187,9 @@ function checkForErrorMessage(ctLoop = 0) {
     var maxUsageMessage = Array.from(elements).find(element => element.textContent.includes("This discount has reached its usage limit"));
     if (maxUsageMessage) {
         console.log("Error Message Found: This discount has reached its usage limit");
-        reEnterAndSubmit();
+        setTimeout(function () {
+            reEnterAndSubmit();
+        }, globalVariables.delayBeforeRetry);
     }
 
     var errorMessage = Array.from(elements).find(element => element.textContent.includes("Enter a valid discount code or gift card"));
