@@ -83,7 +83,7 @@ function Launch() {
                 text-decoration: none;
             }
             #runStopButton.stop {
-                background-color: red;
+                background-color: #dd1d1d;
             }
             #runStopButton:hover {
                 background-color: #0056b3;
