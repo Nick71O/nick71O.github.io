@@ -82,13 +82,13 @@ function Launch() {
                 text-align: center;
                 text-decoration: none;
             }
-            #runStopButton[textContent="Stop"] {
+            #runStopButton.stop {
                 background-color: red;
             }
             #runStopButton:hover {
                 background-color: #0056b3;
             }
-            #runStopButton[textContent="Stop"]:hover {
+            #runStopButton.stop:hover {
                 background-color: darkred;
             }
             #autoStartCheckbox {
@@ -105,7 +105,6 @@ function Launch() {
     style.type = "text/css";
     style.appendChild(document.createTextNode(css));
     document.head.appendChild(style);
-    
 }
 
 function reEnterAndSubmit() {
@@ -439,14 +438,15 @@ function toggleRunStop() {
         clearAutoStart();
         if (runStopButton.textContent === "Run") {
             runStopButton.textContent = "Stop";
+            runStopButton.classList.add("stop");
             isRunning = true;
             attempts1 = 0; // Reset attempts for discountCode1
             attempts2 = 0; // Reset attempts for discountCode2
             console.log("---RUNNING!---");
             reEnterAndSubmit();
-        }
-        else {
+        } else {
             runStopButton.textContent = "Run";
+            runStopButton.classList.remove("stop");
             isRunning = false;
             console.log("---STOPPED!---");
         }
