@@ -122,8 +122,8 @@ function reEnterAndSubmit() {
 
 function useDiscountCode(code) {
     if (code === null || code === '') {
-        toggleRunStop();
         console.log("Missing discount code. Aborting useDiscountCode.");
+        toggleRunStop();
         return;
     }
     console.log("Running useDiscountCode(), Loop " + (attempts1 + attempts2 + 1) + " of " + (globalVariables.maxAttempts1 + globalVariables.maxAttempts2));
