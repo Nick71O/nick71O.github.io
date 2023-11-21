@@ -184,8 +184,13 @@ function checkForErrorMessage(ctLoop = 0) {
     }
 
     var elements = document.querySelectorAll('*');
-    var errorMessage = Array.from(elements).find(element => element.textContent.includes("Enter a valid discount code or gift card"));
+    var maxUsageMessage = Array.from(elements).find(element => element.textContent.includes("This discount has reached its usage limit"));
+    if (maxUsageMessage) {
+        console.log("Error Message Found: This discount has reached its usage limit");
+        reEnterAndSubmit();
+    }
 
+    var errorMessage = Array.from(elements).find(element => element.textContent.includes("Enter a valid discount code or gift card"));
     if (errorMessage) {
         console.log("Error Message Found: Enter a valid discount code or gift card");
         setTimeout(function () {
