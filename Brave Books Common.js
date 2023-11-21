@@ -121,6 +121,10 @@ function reEnterAndSubmit() {
 }
 
 function useDiscountCode(code) {
+    if (code === null || code === '') {
+        console.log("Missing discount code. Aborting useDiscountCode.");
+        return;
+    }
     console.log("Running useDiscountCode(), Loop " + (attempts1 + attempts2 + 1) + " of " + (globalVariables.maxAttempts1 + globalVariables.maxAttempts2));
     var reductionsInput = document.getElementsByName("reductions")[0];
 
