@@ -122,6 +122,7 @@ function reEnterAndSubmit() {
 
 function useDiscountCode(code) {
     if (code === null || code === '') {
+        toggleRunStop();
         console.log("Missing discount code. Aborting useDiscountCode.");
         return;
     }
