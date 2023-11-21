@@ -434,11 +434,15 @@ function closeModal() {
 
 function toggleRunStop() {
     var runStopButton = document.getElementById("runStopButton");
-    if (runStopButton) {
+    var autoStartCheckbox = document.getElementById("autoStartCheckbox");
+
+    if (runStopButton && autoStartCheckbox) {
         clearAutoStart();
+
         if (runStopButton.textContent === "Run") {
             runStopButton.textContent = "Stop";
             runStopButton.classList.add("stop");
+            autoStartCheckbox.disabled = true;
             isRunning = true;
             attempts1 = 0; // Reset attempts for discountCode1
             attempts2 = 0; // Reset attempts for discountCode2
@@ -447,10 +451,12 @@ function toggleRunStop() {
         } else {
             runStopButton.textContent = "Run";
             runStopButton.classList.remove("stop");
+            autoStartCheckbox.disabled = false;
             isRunning = false;
             console.log("---STOPPED!---");
         }
     }
+}
 }
 
 
