@@ -250,6 +250,9 @@ function findAndClickPayNowButton(attempts = 0) {
     var payNowButton = document.querySelector('button[type="button"][aria-label="Pay now"]');
 
     if (!payNowButton) {
+        payNowButton = document.querySelector('button[type="button"][aria-label="Authorize purchase"]');
+    }
+    if (!payNowButton) {
         var buttons = document.querySelectorAll('button[type="submit"]');
         for (var i = 0; i < buttons.length; i++) {
             var button = buttons[i];
