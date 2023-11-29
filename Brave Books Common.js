@@ -12,8 +12,8 @@ function initializeGlobalVariables(globalVariables) {
     // Process the received globalVariables object
     console.log("autoRunEnabled: " + globalVariables.autoRunEnabled);
     console.log("autoRunTime: " + globalVariables.autoRunTime);
-    console.log("discountCode1: " + globalVariables.discountCode1);
-    console.log("discountCode2: " + globalVariables.discountCode2);
+    console.log('discountCode1: "' + globalVariables.discountCode1 + '"');
+    console.log('discountCode2: "' + globalVariables.discountCode2 + '"');
     console.log("maxAttempts1: " + globalVariables.maxAttempts1);
     console.log("maxAttempts2: " + globalVariables.maxAttempts2);
     
@@ -145,7 +145,7 @@ function useDiscountCode(code) {
 
         // Input the text
         reductionsInput.value = code;
-        console.log("Inputted: " + code);
+        console.log('Inputted: "' + code + '"');
 
         // Create a new 'input' event
         var inputEvent = new Event('input', { bubbles: true, cancelable: true });
@@ -162,7 +162,7 @@ function useDiscountCode(code) {
             setTimeout(function () {
                 // Input the text again
                 reductionsInput.value = code;
-                console.log("Inputted again: " + code);
+                console.log('Inputted again: "' + code + '"');
 
                 // Create another 'input' event after inputting again
                 reductionsInput.dispatchEvent(inputEvent);
@@ -223,7 +223,7 @@ function checkForErrorMessage(ctLoop = 0) {
         });
 
         if (discountSpanFound) {
-            console.log("Discount span found: " + discountSpanFound.textContent);
+            console.log('Discount span found: "' + discountSpanFound.textContent + '"');
             findAndClickPayNowButton();
         } else {
             console.log("No Discount Span Found.");
