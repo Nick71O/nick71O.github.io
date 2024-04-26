@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <style type="text/css">
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .newStyle1 {
+            padding: 10px;
+        }
+        #txtLengthOfStay
+        {
+            width: 153px;
+        }
+        #txtArrivalDate
+        {
+            width: 153px;
+        }
+        #txtDepartureDate {
+            width: 153px;
+        }
+        .style4
+        {
+            border: 1px solid black;
+        }
+        .style1
+        {
+            width: 115px;
+        }
+        .style2
+        {
+            width: 160px;
+        }
+        .style3
+        {
+            width: 109px;
+        }
+        ul, ol{
+             margin:0px;
+        }
+    </style>
+    <script type="text/javascript">
+        const baseCampgroundURL = "https://thousandtrails.com/new-jersey/lake-shore-rv-resort"
+        const baseURL = "https://members.thousandtrails.com"
+
+        function loadDefaultSetting() {
+            var today = new Date();
+            today.setMonth(today.getMonth() + 9);
+            var dd = today.getDate();
+            var mm = today.getMonth()+1; //January is 0!
+            var yyyy = today.getFullYear();
+            if(dd<10){dd='0'+dd;}
+            if(mm<10){mm='0'+mm;}
+            //var futureArrivalDate = yyyy + '-' + mm + '-' + dd;
+            //console.log(futureArrivalDate);
+
+            let txtArrivalDate = document.getElementById("txtArrivalDate");
+            txtArrivalDate.value = "08/14/2023";
+
+            let txtDepartureDate = document.getElementById("txtDepartureDate");
+            txtDepartureDate.value = "08/20/2023";
+
+
+            //let txtLengthOfStay = document.getElementById("txtLengthOfStay");
+            //txtLengthOfStay.value = 7;
+
+            let arrivalDayOfTheWeek = document.getElementById('arrivalDayOfTheWeek');
+            //var dayOfWeek = getDayOfTheWeek(futureArrivalDate);
+            //arrivalDayOfTheWeek.innerHTML = "(" + dayOfWeek + ")";
+            //selectLoop(dayOfWeek);
+            //getLoopCount(dayOfWeek);          
+        }
+        function getDayOfTheWeek(inDate) {
+            var result = "";
+            //if you want to parse the time in the local computer's time zone:
+            //Date.parse('2020-03-19T00:00:00.000')
+            //inDate = inDate + "T00:00:00.000"
+            if (Date.parse(inDate)) {
+                var mydate = new Date(inDate);
+                var dayOfWeek = mydate.toLocaleString('en-us', {weekday:'long'})
+                result = dayOfWeek;
+            }
+            return result;
+        }
+        //function selectLoop(valueToSet){
+        //    if (valueToSet) {
+        //        var selectObj = document.getElementById("ddlLoop");
+        //        selectObj.selectedIndex = 0; //reset
+
+        //        for (var i = 0; i < selectObj.options.length; i++) {
+        //            //console.log("loop: " + i + " - " + selectObj.options[i].value + " = " + valueToSet.toLowerCase());
+        //            if (selectObj.options[i].value == valueToSet.toLowerCase()) {
+        //                selectObj.options[i].selected = true;
+        //                return;
+        //            }
+        //        }
+        //    }
+        //}
+        function openTabs(arrivalDate, departureDate) {
+            arrivalDate = arrivalDate.replace(/\//g, "%2F");
+            departureDate = departureDate.replace(/\//g, "%2F");
+            var loginURL = baseURL + "/login/index"
+            var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
+            var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
+
+            console.log(bookingURL);
+            window.open(loginURL + bookingQueryString);
+        }
+        function openBaseUrl(){
+            var url = baseCampgroundURL
+            window.open(url);
+        }
+        //function getLoopCount(dayOfWeek){
+        //    var count = ""
+        //    if (dayOfWeek.toLowerCase() == "friday"){
+        //        count = fridayLoopCount;
+        //    }
+        //    else if (dayOfWeek.toLowerCase() == "saturday"){
+        //        count = saturdayLoopCount;
+        //    }
+        //    else if (dayOfWeek.toLowerCase() == "sunday"){
+        //        count = sundayLoopCount;
+        //    }        
+         
+        //    var totalCampsites = document.getElementById('totalCampsites');
+        //    if (count) {
+        //        totalCampsites.innerHTML = "(" + count + " Campsites)";
+        //    }else{
+        //        totalCampsites.innerHTML = "";
+        //    }  
+        //}
+        function openCampsitePages() {
+            let txtArrivalDate = document.getElementById("txtArrivalDate");
+            var arrivalDate = txtArrivalDate.value;
+            console.log("arrivalDate: " + arrivalDate);
+
+            let txtDepartureDate = document.getElementById("txtDepartureDate");
+            var departureDate = txtDepartureDate.value;
+            departureDate = departureDate.replace(/-/g, "%2F");
+            console.log("departureDate: " + departureDate);
+
+            if (arrivalDate && departureDate) {
+                openTabs(arrivalDate, departureDate);
+            } else {
+                console.log("Missing required input");
+                alert("Missing required input");
+            }
+        }
+    </script>
+
+</head>
+<body onload="loadDefaultSetting()">
+    <div class="newStyle1">
+        <h2>Thousand Trails Lake &amp; Shore Campground Booking Launch Pad</h2>
+
+        <div style="padding-top:10px; padding-bottom:40px;">
+            Instructions:
+            <ol>
+                <li>Click the link below to open the Thousand Trails website.</li>
+                <li>Make sure it opened in the Chrome browser.</li>
+                <li>Login with your credentials.</li>
+                <li>Adjust the Chrome extension and run Javascript.</li>
+                <li>Adjust the booking configurations below.</li>
+                <li>Click Open Campsite Pages.</li>                
+            </ol>
+        </div>
+
+        <button onclick="openBaseUrl()">Open Thousand Trails Lake &amp; Shore Campground Booking Page</button>  
+
+        <table class="style4" cellpadding="4px;" style="margin-top:55px;">
+            <tr>
+                <td colspan="3" style="text-align:center; font-weight:bold;">
+                    Booking Configurations
+                </td>
+            </tr>
+            <tr>
+                <td class="style1">
+                    Arrival Date
+                </td>
+                <td class="style2">
+                    <input id="txtArrivalDate" type="text" placeholder="MM/DD/YYYY" />
+                </td>
+                <td class="style3">
+                    <span id="arrivalDayOfTheWeek"></span>
+                </td>
+            </tr>
+            <tr>
+                <td class="style1">
+                    Departure Date
+                </td>
+                <td class="style2">
+                    <input id="txtDepartureDate" type="text" placeholder="MM/DD/YYYY" />
+                </td>
+                <td class="style3">
+                    <span id="departureDayOfTheWeek"></span>
+                    <span id="numberOfNights"></span>
+                </td>
+            </tr>
+            <!--<tr>
+                <td class="style1">
+                    Length of Stay
+                </td>
+                <td class="style2">
+                    <input id="txtLengthOfStay" type="text" />
+                </td>
+                <td class="style3">
+                </td>
+            </tr>-->
+            <tr>
+                <td colspan="3" style="padding-top:20px; text-align:center;">
+                    <button onclick="openCampsitePages()">Open Campsite Booking Page</button>
+                </td>
+            </tr>
+        </table>
+        <br />
+        <br />
+
+    </div>
+</body>
+
+<script type="text/javascript">
+    const txtArrivalDate = document.getElementById('txtArrivalDate');
+    const txtDepartureDate = document.getElementById('txtDepartureDate');
+    const arrivalDayOfTheWeek = document.getElementById('arrivalDayOfTheWeek');
+    const departureDayOfTheWeek = document.getElementById('departureDayOfTheWeek');
+
+    const arrivalDateInputHandler = function(e) {
+        var dayOfWeek = getDayOfTheWeek(e.target.value);
+        if (dayOfWeek){
+            arrivalDayOfTheWeek.innerHTML = "(" + dayOfWeek + ")";
+        }else{
+            arrivalDayOfTheWeek.innerHTML = "";
+        }
+        //selectLoop(dayOfWeek);
+        //getLoopCount(dayOfWeek); 
+    }
+    const departureDateInputHandler = function (e) {
+        var dayOfWeek = getDayOfTheWeek(e.target.value);
+        if (dayOfWeek) {
+            departureDayOfTheWeek.innerHTML = "(" + dayOfWeek + ")";
+        } else {
+            departureDayOfTheWeek.innerHTML = "";
+        }      
+        //selectLoop(dayOfWeek);
+        //getLoopCount(dayOfWeek);
+    }
+
+
+    txtArrivalDate.addEventListener('input', arrivalDateInputHandler);
+    txtArrivalDate.addEventListener('propertychange', arrivalDateInputHandler); // for IE8
+    txtDepartureDate.addEventListener('input', departureDateInputHandler);
+    txtDepartureDate.addEventListener('propertychange', departureDateInputHandler); // for IE8
+
+    // Firefox/Edge18-/IE9+ don’t fire on <select><option>
+    // txtArrivalDate.addEventListener('change', inputHandler); 
+</script>
+</html>
