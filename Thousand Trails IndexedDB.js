@@ -2,7 +2,7 @@ console.log('Hello From Thousand Trails IndexedDB.js');
 
 const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 const dbName = 'ThousandTrailsDB';
-const dbVersion = 2;
+const dbVersion = 3;
 let db;
 
 // Function to initialize IndexedDB and return a promise
@@ -15,7 +15,7 @@ function initializeDB() {
             // Your upgrade logic here
             if (!db.objectStoreNames.contains('SiteConstants')) {
                 const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
-                siteConstantsStore.createIndex('value', 'value');
+                //siteConstantsStore.createIndex('value', 'value');
             }
 
             if (!db.objectStoreNames.contains('Availability')) {
@@ -75,8 +75,7 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
             } else {
                 // If SiteConstants record doesn't exist, insert it
                 const newSiteConstantsData = {
-                    key: 'SiteConstants',
-                    value: {
+                    key: {
                         DesiredArrivalDate: newArrivalDate,
                         DesiredDepartureDate: newDepartureDate,
                         BookingPreference: 'None',
