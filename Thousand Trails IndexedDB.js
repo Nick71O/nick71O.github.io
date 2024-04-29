@@ -70,7 +70,7 @@ function updateSiteConstantsDates2(newArrivalDate, newDepartureDate) {
     const transaction = db.transaction(['SiteConstants'], 'readwrite');
     const siteConstantsStore = transaction.objectStore('SiteConstants');
 
-    const siteConstantsRequest = siteConstantsStore.get('siteConstants');
+    const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
 
     siteConstantsRequest.onsuccess = function (event) {
         const siteConstantsData = event.target.result;
@@ -80,7 +80,7 @@ function updateSiteConstantsDates2(newArrivalDate, newDepartureDate) {
             siteConstantsData.DesiredArrivalDate = newArrivalDate;
             siteConstantsData.DesiredDepartureDate = newDepartureDate;
 
-            const updateRequest = siteConstantsStore.put(siteConstantsData, 'siteConstants');
+            const updateRequest = siteConstantsStore.put(siteConstantsData, 'SiteConstants');
 
             updateRequest.onsuccess = function () {
                 console.log('SiteConstants updated with new dates.');
