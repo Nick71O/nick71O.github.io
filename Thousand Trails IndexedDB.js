@@ -68,7 +68,7 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
                 siteConstantsData.DesiredArrivalDate = newArrivalDate;
                 siteConstantsData.DesiredDepartureDate = newDepartureDate;
 
-                const updateRequest = siteConstantsStore.put(siteConstantsData, 'SiteConstants');
+                const updateRequest = siteConstantsStore.put(siteConstantsData); // Remove 'SiteConstants' parameter
 
                 updateRequest.onsuccess = function () {
                     console.log('SiteConstants updated with new dates.');
@@ -117,6 +117,7 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
         console.error('Error updating SiteConstants:', error);
     }
 }
+
 
 async function deleteAllAvailabilityRecords(db) {
     try {
