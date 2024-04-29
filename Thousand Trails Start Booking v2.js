@@ -1,13 +1,13 @@
 ﻿const selectSiteButtonXPath = "//*[@id='btnSelect0']";
-const arrivalDateXPath = "//*[@id='cartCheckin']";
-const departureDateXPath = "//*[@id='cartCheckout']";
-const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
+//const arrivalDateXPath = "//*[@id='cartCheckin']";
+//const departureDateXPath = "//*[@id='cartCheckout']";
+//const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
 const currentTimeStamp = formatDateTime(Date.now());
 
 const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
-const arrivalDateElements = getElementsByXPath(arrivalDateXPath);
-const departureDateElements = getElementsByXPath(departureDateXPath);
-const numberOfNightsElements = getElementsByXPath(numberOfNightsXPath);
+//const arrivalDateElements = getElementsByXPath(arrivalDateXPath);
+//const departureDateElements = getElementsByXPath(departureDateXPath);
+//const numberOfNightsElements = getElementsByXPath(numberOfNightsXPath);
 
 // Function to get elements by XPath
 function getElementsByXPath(xpath, parent) {
@@ -44,16 +44,19 @@ async function openThousandTrailsDB() {
         await logAvailabilityRecords(db);
 
         const siteConstants = await getSiteConstants(db);
-        const arrivalDate = siteConstants.DesiredArrivalDate;
-        const departureDate = siteConstants.DesiredDepartureDate;
+        const scDesiredArrivalDate = siteConstants.DesiredArrivalDate;
+        const scDesiredDepartureDate = siteConstants.DesiredDepartureDate;
+        console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate);
 
-        console.log('Arrival Date: ', arrivalDate);
-        console.log('Departure Date: ', departureDate);
+        var bookingArrivalDate = (new Date(document.getElementById('cartCheckin').innerHTML));
+        var bookingDepartureDate = (new Date(document.getElementById('cartCheckout').innerHTML));
+        var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
+        console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-US') + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-US') + "    Number of Nights: " + bookingNumberOfNights);
 
-        const availabilityRecord = await getAvailabilityRecord(db, arrivalDate);
+        const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
 
-        console.log('If (' + numberOfNightsElements + ' = 1 && availabilityRecord: ' + availabilityRecord + ')');
-        if (numberOfNightsElements === 1 && availabilityRecord) {
+        console.log('If (' + bookingNumberOfNights + ' = 1 && availabilityRecord: ' + availabilityRecord + ')');
+        if (bookingNumberOfNights === 1 && availabilityRecord) {
             console.log('Load updateAvailabilityRecord');
             await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
         }
