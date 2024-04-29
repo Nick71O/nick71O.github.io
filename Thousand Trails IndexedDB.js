@@ -52,7 +52,21 @@ function logError(errorType, errorMessage) {
 //const newDepartureDate = '05/15/2024';
 //updateSiteConstantsDates(newArrivalDate, newDepartureDate);
 
-function updateSiteConstantsDates(newArrivalDate, newDepartureDate) {
+async function updateSiteConstantsDates(newArrivalDate, newDepartureDate) {
+    try {
+        // Wait for db initialization
+        db = await initializeDB();
+        console.log('DB initialized successfully.');
+
+        // Now you can safely call functions that require db
+        await updateSiteConstantsDates2(newArrivalDate, newDepartureDate);
+        // Call other functions as needed
+    } catch (error) {
+        console.error('Error performing operations:', error);
+    }
+}
+
+function updateSiteConstantsDates2(newArrivalDate, newDepartureDate) {
     const transaction = db.transaction(['SiteConstants'], 'readwrite');
     const siteConstantsStore = transaction.objectStore('SiteConstants');
 
