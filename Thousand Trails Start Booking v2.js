@@ -94,7 +94,7 @@ async function getSiteConstants(db) {
 }
 
 async function getAvailabilityRecord(db, arrivalDate) {
-    arrivalDate = arrivalDate..toLocaleDateString('en-us', formatDateOptions);
+    arrivalDate = arrivalDate.toLocaleDateString('en-us', formatDateOptions);
     console.log('Hello from getAvailabilityRecord(' + arrivalDate + ')');
 
     const transaction = db.transaction(['Availability'], 'readonly');
