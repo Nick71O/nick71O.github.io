@@ -100,25 +100,25 @@ async function getAvailabilityRecord(db, arrivalDate) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['Availability'], 'readonly');
         const availabilityStore = transaction.objectStore('Availability');
-        const index = availabilityStore.index('Checked');
-
-        // Create an IDBKeyRange to filter rows where 'Checked' is null or empty
-        const range = IDBKeyRange.only(null); // Only retrieve rows where 'Checked' is null
-
-        const request = index.openCursor(range, 'next'); // Open cursor with the range
+        const request = availabilityStore.openCursor();
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
 
             if (cursor) {
                 const record = cursor.value;
-                const nextAvailability = {
-                    arrivalDate: record.ArrivalDate,
-                    departureDate: record.DepartureDate
-                };
-                resolve(nextAvailability);
+                console.log('record.Checked === ' + record.Checked + ')');
+                if (record.Checked === null || record.Checked === '') {
+                    const nextAvailability = {
+                        arrivalDate: record.ArrivalDate,
+                        departureDate: record.DepartureDate
+                    };
+                    resolve(nextAvailability);
+                } else {
+                    cursor.continue(); // Move to the next record
+                }
             } else {
-                // No more rows with 'Checked' as null, resolve with null
+                // No more rows, resolve with null
                 resolve(null);
             }
         };
@@ -128,6 +128,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
         };
     });
 }
+
 
 
 
