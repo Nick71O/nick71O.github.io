@@ -96,13 +96,44 @@ async function getSiteConstants(db) {
 async function getAvailabilityRecord(db, arrivalDate) {
     const transaction = db.transaction(['Availability'], 'readonly');
     const availabilityStore = transaction.objectStore('Availability');
-    const index = availabilityStore.index('ArrivalDate');
+    const index = availabilityStore.index('Checked');
 
     return new Promise((resolve, reject) => {
-        const request = index.get(arrivalDate);
+        const request = index.openCursor(IDBKeyRange.only(null), 'next'); // Only get records with 'Checked' as null
 
         request.onsuccess = function (event) {
-            resolve(event.target.result);
+            const cursor = event.target.result;
+
+            if (cursor) {
+                const record = cursor.value;
+                const nextAvailability = {
+                    arrivalDate: record.ArrivalDate,
+                    departureDate: record.DepartureDate
+                };
+                resolve(nextAvailability);
+            } else {
+                // No more rows with 'Checked' as null, check if there are more rows
+                const countRequest = availabilityStore.count();
+
+                countRequest.onsuccess = function (event) {
+                    const rowCount = event.target.result;
+                    if (rowCount > 0) {
+                        // Time to process the AvailabilityTable
+                        processAvailabilityTable(db).then(() => {
+                            resolve(null); // Return null as no next availability date to check
+                        }).catch(error => {
+                            reject(error);
+                        });
+                    } else {
+                        // No more rows and no rows with 'Checked' as null
+                        resolve(null);
+                    }
+                };
+
+                countRequest.onerror = function (event) {
+                    reject(event.target.error);
+                };
+            }
         };
 
         request.onerror = function (event) {
@@ -110,6 +141,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
         };
     });
 }
+
 
 async function updateAvailabilityRecord(db, record, checkedTimeStamp) {
     const transaction = db.transaction(['Availability'], 'readwrite');
