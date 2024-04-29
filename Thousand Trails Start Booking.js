@@ -142,7 +142,7 @@ async function click() {
 
         getAvailability(getPrevious);
         await sleep(8000);
-        //console.log("Available Dates length: " + availableDates.length);
+        console.log("Available Dates length: " + availableDates.length);
 
         //bookingPreference switch: none | trailing | leading | consecutive
         switch (bookingPreference.toLowerCase()) {
