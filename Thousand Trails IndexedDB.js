@@ -63,45 +63,58 @@ function logError(errorType, errorMessage) {
 //const newDepartureDate = '05/15/2024';
 //updateSiteConstantsDates(newArrivalDate, newDepartureDate);
 
-function updateSiteConstantsDates(newArrivalDate, newDepartureDate) {
-    const transaction = db.transaction(['SiteConstants'], 'readwrite');
-    const siteConstantsStore = transaction.objectStore('SiteConstants');
+// Ensure db is initialized before calling this function
+async function updateSiteConstantsDates(newArrivalDate, newDepartureDate) {
+    if (!db) {
+        console.error('IndexedDB is not initialized.');
+        return;
+    }
 
-    const siteConstantsRequest = siteConstantsStore.get('siteConstants');
+    try {
+        const transaction = db.transaction(['SiteConstants'], 'readwrite');
+        const siteConstantsStore = transaction.objectStore('SiteConstants');
 
-    siteConstantsRequest.onsuccess = function (event) {
-        const siteConstantsData = event.target.result;
+        const siteConstantsRequest = siteConstantsStore.get('siteConstants');
 
-        if (siteConstantsData) {
-            // Update the DesiredArrivalDate and DesiredDepartureDate
-            siteConstantsData.DesiredArrivalDate = newArrivalDate;
-            siteConstantsData.DesiredDepartureDate = newDepartureDate;
+        siteConstantsRequest.onsuccess = function (event) {
+            const siteConstantsData = event.target.result;
 
-            const updateRequest = siteConstantsStore.put(siteConstantsData, 'siteConstants');
+            if (siteConstantsData) {
+                siteConstantsData.DesiredArrivalDate = newArrivalDate;
+                siteConstantsData.DesiredDepartureDate = newDepartureDate;
 
-            updateRequest.onsuccess = function () {
-                console.log('SiteConstants updated with new dates.');
+                const updateRequest = siteConstantsStore.put(siteConstantsData, 'siteConstants');
+
+                updateRequest.onsuccess = function () {
+                    console.log('SiteConstants updated with new dates.');
+                };
+
+                updateRequest.onerror = function (event) {
+                    logError('Update SiteConstants', event.target.error);
+                };
+            } else {
+                logError('Update SiteConstants', 'SiteConstants not found.');
+            }
+        };
+
+        siteConstantsRequest.onerror = function (event) {
+            logError('Fetch SiteConstants', event.target.error);
+        };
+
+        await new Promise((resolve, reject) => {
+            transaction.oncomplete = function () {
+                console.log('Transaction completed.');
+                resolve();
             };
 
-            updateRequest.onerror = function (event) {
-                logError('Update SiteConstants', event.target.error);
+            transaction.onerror = function (event) {
+                logError('Transaction', event.target.error);
+                reject(event.target.error);
             };
-        } else {
-            logError('Update SiteConstants', 'SiteConstants not found.');
-        }
-    };
-
-    siteConstantsRequest.onerror = function (event) {
-        logError('Fetch SiteConstants', event.target.error);
-    };
-
-    transaction.oncomplete = function () {
-        console.log('Transaction completed.');
-    };
-
-    transaction.onerror = function (event) {
-        logError('Transaction', event.target.error);
-    };
+        });
+    } catch (error) {
+        console.error('Error in updateSiteConstantsDates:', error);
+    }
 }
 
 function deleteAllAvailabilityRecords() {
