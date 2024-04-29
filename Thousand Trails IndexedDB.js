@@ -2,12 +2,13 @@ console.log('Hello From Thousand Trails IndexedDB.js');
 
 const dbName = 'ThousandTrailsDB';
 const dbVersion = 2;
+let db;
 
 // Open or create the database
 const request = indexedDB.open(dbName, dbVersion);
 
 request.onupgradeneeded = function(event) {
-  const db = event.target.result;
+  db = event.target.result;
 
   // Create or upgrade object stores if needed
   if (!db.objectStoreNames.contains('SiteConstants')) {
@@ -24,7 +25,7 @@ request.onupgradeneeded = function(event) {
 };
 
 request.onsuccess = function(event) {
-  const db = event.target.result;
+  db = event.target.result;
   console.log('Database opened successfully.');
 
   // Start a new transaction
