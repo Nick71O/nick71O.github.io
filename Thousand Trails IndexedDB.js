@@ -1,56 +1,54 @@
 console.log('Hello From Thousand Trails IndexedDB.js');
 
 const dbName = 'ThousandTrailsDB';
-const dbVersion = 1;
+const dbVersion = 2;
 
 // Open or create the database
 const request = indexedDB.open(dbName, dbVersion);
 
-// Define the structure of the database
-request.onupgradeneeded = function (event) {
-    const db = event.target.result;
+request.onupgradeneeded = function(event) {
+  const db = event.target.result;
 
-    // Create SiteConstants table
+  // Create or upgrade object stores if needed
+  if (!db.objectStoreNames.contains('SiteConstants')) {
     const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
     siteConstantsStore.createIndex('value', 'value');
+  }
 
-    // Create Availability table
+  if (!db.objectStoreNames.contains('Availability')) {
     const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
     availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
     availabilityStore.createIndex('DepartureDate', 'DepartureDate');
     availabilityStore.createIndex('Checked', 'Checked');
-
-    console.log('request.onupgradeneeded');
+  }
 };
 
-request.onsuccess = function (event) {
-    const db = event.target.result;
-    console.log('ThousandTrailsDB opened successfully!');
+request.onsuccess = function(event) {
+  const db = event.target.result;
+  console.log('Database opened successfully.');
 
-    // Start a new transaction
-    const transaction = db.transaction(['SiteConstants'], 'readwrite');
-    const siteConstantsStore = transaction.objectStore('SiteConstants');
+  // Start a new transaction
+  const transaction = db.transaction(['SiteConstants'], 'readwrite');
+  console.log('Transaction created successfully.');
 
-    // Populate SiteConstants with initial data
-    siteConstantsStore.add({ key: 'DesiredArrivalDate', value: '05/03/2024' });
-    siteConstantsStore.add({ key: 'DesiredDepartureDate', value: '05/05/2024' });
-    siteConstantsStore.add({ key: 'BookingPreference', value: 'None' });
-    siteConstantsStore.add({ key: 'MinimumConsecutiveDays', value: '4' });
+  const siteConstantsStore = transaction.objectStore('SiteConstants');
+  console.log('Object store accessed successfully.');
 
-    transaction.oncomplete = function () {
-        console.log('Transaction completed');
-    };
+  // Your code for SiteConstants operations here...
 
-    transaction.onerror = function (event) {
-        console.error('Transaction error:', event.target.error);
-    };
+  transaction.oncomplete = function() {
+    console.log('Transaction completed.');
+  };
 
-    console.log('request.onsuccess');
+  transaction.onerror = function(event) {
+    console.error('Transaction error:', event.target.error);
+  };
 };
 
-request.onerror = function (event) {
-    console.error('Error opening database', event.target.error);
+request.onerror = function(event) {
+  console.error('Error opening database:', event.target.error);
 };
+
 
 
 
