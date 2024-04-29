@@ -2,7 +2,6 @@ console.log('Hello From Thousand Trails IndexedDB.js');
 
 const dbName = 'ThousandTrailsDB';
 const dbVersion = 1;
-let db;
 
 // Open or create the database
 const request = indexedDB.open(dbName, dbVersion);
