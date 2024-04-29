@@ -99,7 +99,8 @@ async function getAvailabilityRecord(db, arrivalDate) {
     const index = availabilityStore.index('Checked');
 
     return new Promise((resolve, reject) => {
-        const range = IDBKeyRange.bound(null, null, false, false); // Range for 'Checked' being null
+        // Create an IDBKeyRange to filter rows where 'Checked' is null or empty
+        const range = IDBKeyRange.lowerBound('', true); // Empty string is less than all non-empty strings
 
         const request = index.openCursor(range, 'next'); // Open cursor with the range
 
@@ -114,7 +115,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
                 };
                 resolve(nextAvailability);
             } else {
-                // No more rows with 'Checked' as null, check if there are more rows
+                // No more rows with 'Checked' as null or empty, check if there are more rows
                 const countRequest = availabilityStore.count();
 
                 countRequest.onsuccess = function (event) {
@@ -127,7 +128,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
                             reject(error);
                         });
                     } else {
-                        // No more rows and no rows with 'Checked' as null
+                        // No more rows and no rows with 'Checked' as null or empty
                         resolve(null);
                     }
                 };
