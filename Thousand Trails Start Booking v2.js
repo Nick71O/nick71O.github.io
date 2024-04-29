@@ -99,7 +99,9 @@ async function getAvailabilityRecord(db, arrivalDate) {
     const index = availabilityStore.index('Checked');
 
     return new Promise((resolve, reject) => {
-        const request = index.openCursor(IDBKeyRange.only(null), 'next'); // Only get records with 'Checked' as null
+        const range = IDBKeyRange.bound(null, null, false, false); // Range for 'Checked' being null
+
+        const request = index.openCursor(range, 'next'); // Open cursor with the range
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
@@ -141,6 +143,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
         };
     });
 }
+
 
 
 async function updateAvailabilityRecord(db, record, checkedTimeStamp) {
