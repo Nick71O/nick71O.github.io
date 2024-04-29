@@ -52,59 +52,51 @@ function logError(errorType, errorMessage) {
 //const newDepartureDate = '05/15/2024';
 //updateSiteConstantsDates(newArrivalDate, newDepartureDate);
 
-async function updateSiteConstantsDates(newArrivalDate, newDepartureDate) {
+
+async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     try {
-        // Wait for db initialization
-        db = await initializeDB();
-        console.log('DB initialized successfully.');
+        const transaction = db.transaction(['SiteConstants'], 'readwrite');
+        const siteConstantsStore = transaction.objectStore('SiteConstants');
 
-        // Now you can safely call functions that require db
-        await updateSiteConstantsDates2(newArrivalDate, newDepartureDate);
-        // Call other functions as needed
+        const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
+
+        siteConstantsRequest.onsuccess = function (event) {
+            const siteConstantsData = event.target.result;
+
+            if (siteConstantsData) {
+                // Update the DesiredArrivalDate and DesiredDepartureDate
+                siteConstantsData.DesiredArrivalDate = newArrivalDate;
+                siteConstantsData.DesiredDepartureDate = newDepartureDate;
+
+                const updateRequest = siteConstantsStore.put(siteConstantsData, 'SiteConstants');
+
+                updateRequest.onsuccess = function () {
+                    console.log('SiteConstants updated with new dates.');
+                };
+
+                updateRequest.onerror = function (event) {
+                    logError('Update SiteConstants', event.target.error);
+                };
+            } else {
+                logError('Update SiteConstants', 'SiteConstants not found.');
+            }
+        };
+
+        siteConstantsRequest.onerror = function (event) {
+            logError('Fetch SiteConstants', event.target.error);
+        };
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            logError('Transaction', event.target.error);
+        };
+
     } catch (error) {
-        console.error('Error performing operations:', error);
+        console.error('Error updating SiteConstants:', error);
     }
-}
-
-function updateSiteConstantsDates2(newArrivalDate, newDepartureDate) {
-    const transaction = db.transaction(['SiteConstants'], 'readwrite');
-    const siteConstantsStore = transaction.objectStore('SiteConstants');
-
-    const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
-
-    siteConstantsRequest.onsuccess = function (event) {
-        const siteConstantsData = event.target.result;
-
-        if (siteConstantsData) {
-            // Update the DesiredArrivalDate and DesiredDepartureDate
-            siteConstantsData.DesiredArrivalDate = newArrivalDate;
-            siteConstantsData.DesiredDepartureDate = newDepartureDate;
-
-            const updateRequest = siteConstantsStore.put(siteConstantsData, 'SiteConstants');
-
-            updateRequest.onsuccess = function () {
-                console.log('SiteConstants updated with new dates.');
-            };
-
-            updateRequest.onerror = function (event) {
-                logError('Update SiteConstants', event.target.error);
-            };
-        } else {
-            logError('Update SiteConstants', 'SiteConstants not found.');
-        }
-    };
-
-    siteConstantsRequest.onerror = function (event) {
-        logError('Fetch SiteConstants', event.target.error);
-    };
-
-    transaction.oncomplete = function () {
-        console.log('Transaction completed.');
-    };
-
-    transaction.onerror = function (event) {
-        logError('Transaction', event.target.error);
-    };
 }
 
 function deleteAllAvailabilityRecords() {
