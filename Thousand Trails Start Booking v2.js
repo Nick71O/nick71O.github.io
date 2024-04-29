@@ -39,6 +39,10 @@ function formatDateTime(date) {
 async function openThousandTrailsDB() {
     try {
         const db = await initializeDB();
+        console.log('DB initialized successfully.');
+        await logSiteConstants(db);
+        await logAvailabilityRecords(db);
+
         const siteConstants = await getSiteConstants(db);
         const arrivalDate = siteConstants.DesiredArrivalDate;
         const departureDate = siteConstants.DesiredDepartureDate;
@@ -58,7 +62,7 @@ async function openThousandTrailsDB() {
         console.log('Next Availability Date:', nextAvailabilityDate);
 
     } catch (error) {
-        console.error('Error:', error);
+        console.error('Error performing operations:', error);
     }
 }
 
