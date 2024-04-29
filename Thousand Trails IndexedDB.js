@@ -164,6 +164,11 @@ async function insertAvailabilityRecords(db) {
                 const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
                 const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
+                console.log('desiredArrivalDate' + desiredArrivalDate);
+                console.log('desiredDepartureDate' + desiredDepartureDate);
+                console.log('dateDifference' + dateDifference);
+                console.log('daysDifference' + daysDifference);
+
                 // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
                 for (let i = 0; i <= daysDifference; i++) {
                     const currentDate = new Date(desiredArrivalDate);
