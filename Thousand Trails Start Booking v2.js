@@ -52,8 +52,8 @@ async function openThousandTrailsDB() {
 
         const availabilityRecord = await getAvailabilityRecord(db, arrivalDate);
 
-        console.log('If (' + numberOfNightsElements.length + ' = 1 && availabilityRecord: ' + availabilityRecord + ')');
-        if (numberOfNightsElements.length === 1 && availabilityRecord) {
+        console.log('If (' + numberOfNightsElements + ' = 1 && availabilityRecord: ' + availabilityRecord + ')');
+        if (numberOfNightsElements === 1 && availabilityRecord) {
             console.log('Load updateAvailabilityRecord');
             await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
         }
@@ -138,6 +138,7 @@ async function getNextAvailabilityDate(db) {
         request.onsuccess = function (event) {
             const cursor = event.target.result;
 
+            console.log('cursor: ', cursor);
             if (cursor) {
                 if (!cursor.value.Checked || cursor.value.Checked === '') {
                     const arrivalDate = cursor.value.ArrivalDate;
