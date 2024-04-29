@@ -1,3 +1,5 @@
+console.log('Hello From Thousand Trails IndexedDB.js');
+
 const dbName = 'ThousandTrailsDB';
 const dbVersion = 1;
 let db;
@@ -18,6 +20,8 @@ request.onupgradeneeded = function (event) {
     availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
     availabilityStore.createIndex('DepartureDate', 'DepartureDate');
     availabilityStore.createIndex('Checked', 'Checked');
+
+    console.log('request.onupgradeneeded');
 };
 
 request.onsuccess = function (event) {
@@ -40,6 +44,8 @@ request.onsuccess = function (event) {
     transaction.onerror = function (event) {
         console.error('Transaction error:', event.target.error);
     };
+
+    console.log('request.onsuccess');
 };
 
 request.onerror = function (event) {
