@@ -2,80 +2,48 @@ const dbName = 'ThousandTrailsDB';
 const dbVersion = 1;
 let db;
 
-const openDBRequest = indexedDB.open(dbName, dbVersion);
+// Open or create the database
+const request = indexedDB.open(dbName, dbVersion);
 
-openDBRequest.onerror = function(event) {
-  console.error('Failed to open IndexedDB:', event.target.error);
+// Define the structure of the database
+request.onupgradeneeded = function(event) {
+  const db = event.target.result;
+
+  // Create SiteConstants table
+  const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
+  siteConstantsStore.createIndex('value', 'value');
+
+  // Create Availability table
+  const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
+  availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
+  availabilityStore.createIndex('DepartureDate', 'DepartureDate');
+  availabilityStore.createIndex('Checked', 'Checked');
 };
 
-openDBRequest.onsuccess = function(event) {
-  db = event.target.result;
-  console.log('IndexedDB opened successfully.');
+request.onsuccess = function(event) {
+  const db = event.target.result;
 
-  // Check if SiteConstants already exist
-  const transaction = db.transaction(['SiteConstants'], 'readwrite');
-  const siteConstantsStore = transaction.objectStore('SiteConstants');
+  // Populate SiteConstants with initial data
+  const siteConstantsTx = db.transaction('SiteConstants', 'readwrite');
+  const siteConstantsStore = siteConstantsTx.objectStore('SiteConstants');
+  
+  siteConstantsStore.add({ key: 'DesiredArrivalDate', value: '05/03/2024' });
+  siteConstantsStore.add({ key: 'DesiredDepartureDate', value: '05/05/2024' });
+  siteConstantsStore.add({ key: 'BookingPreference', value: 'None' });
+  siteConstantsStore.add({ key: 'MinimumConsecutiveDays', value: '4' });
 
-  const siteConstantsRequest = siteConstantsStore.get('siteConstants');
-
-  siteConstantsRequest.onsuccess = function(event) {
-    const siteConstantsData = event.target.result;
-
-    if (siteConstantsData) {
-      console.log('SiteConstants already exist.');
-    } else {
-      // SiteConstants do not exist, create new entry
-      setSiteConstants();
-    }
+  siteConstantsTx.oncomplete = function() {
+    console.log('SiteConstants initialized');
   };
 
-  siteConstantsRequest.onerror = function(event) {
-    console.error('Error fetching SiteConstants:', event.target.error);
+  siteConstantsTx.onerror = function(event) {
+    console.error('Error initializing SiteConstants', event.target.error);
   };
 };
 
-openDBRequest.onupgradeneeded = function(event) {
-  db = event.target.result;
-  console.log('Creating object stores');
-
-  // Check if "Availability" table already exists
-  if (!db.objectStoreNames.contains('Availability')) {
-    // Create Availability table only if it doesn't exist
-    const availabilityObjectStore = db.createObjectStore('Availability', { keyPath: 'id', autoIncrement: true });
-    availabilityObjectStore.createIndex('ArrivalDate', 'ArrivalDate', { unique: false });
-    availabilityObjectStore.createIndex('DepartureDate', 'DepartureDate', { unique: false });
-    availabilityObjectStore.createIndex('Checked', 'Checked', { unique: false });
-
-    console.log('Availability table created');
-  } else {
-    console.log('Availability table already exists.');
-  }
+request.onerror = function(event) {
+  console.error('Error opening database', event.target.error);
 };
-
-function setSiteConstants() {
-  const transaction = db.transaction(['SiteConstants'], 'readwrite');
-  const siteConstantsStore = transaction.objectStore('SiteConstants');
-
-  const siteConstantsData = {
-    key: 'siteConstants',
-    DesiredArrivalDate: '05/03/2024',
-    DesiredDepartureDate: '05/05/2024',
-    BookingPreference: 'None',
-    MinimumConsecutiveDays: '4'
-  };
-
-  const addRequest = siteConstantsStore.add(siteConstantsData, 'siteConstants');
-
-  addRequest.onsuccess = function() {
-    console.log('New SiteConstants entry added.');
-  };
-
-  addRequest.onerror = function(event) {
-    console.error('Error adding new SiteConstants entry:', event.target.error);
-  };
-}
-
-
 
 
 // Call the function with new dates
