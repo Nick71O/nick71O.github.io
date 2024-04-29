@@ -2,7 +2,7 @@ console.log('Hello From Thousand Trails IndexedDB.js');
 
 const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 const dbName = 'ThousandTrailsDB';
-const dbVersion = 3;
+const dbVersion = 2;
 let db;
 
 // Function to initialize IndexedDB and return a promise
@@ -15,13 +15,14 @@ function initializeDB() {
             // Your upgrade logic here
             if (!db.objectStoreNames.contains('SiteConstants')) {
                 const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
-                //siteConstantsStore.createIndex('value', 'value');
+                siteConstantsStore.createIndex('value', 'value');
             }
 
             if (!db.objectStoreNames.contains('Availability')) {
                 const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
                 availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
                 availabilityStore.createIndex('DepartureDate', 'DepartureDate');
+                availabilityStore.createIndex('Available', 'Available');
                 availabilityStore.createIndex('Checked', 'Checked');
             }
         };
@@ -38,9 +39,6 @@ function initializeDB() {
         };
     });
 }
-
-
-
 
 
 // Helper function for error logging
@@ -75,7 +73,8 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
             } else {
                 // If SiteConstants record doesn't exist, insert it
                 const newSiteConstantsData = {
-                    key: {
+                    key: 'SiteConstants',
+                    value: {
                         DesiredArrivalDate: newArrivalDate,
                         DesiredDepartureDate: newDepartureDate,
                         BookingPreference: 'None',
@@ -175,6 +174,7 @@ async function insertAvailabilityRecords(db) {
                     const newRecord = {
                         ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
                         DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
+                        Available: false,
                         Checked: null // Leave Checked blank (null)
                     };
 
