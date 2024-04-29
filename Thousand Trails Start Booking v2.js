@@ -47,15 +47,22 @@ async function openThousandTrailsDB() {
         const arrivalDate = siteConstants.DesiredArrivalDate;
         const departureDate = siteConstants.DesiredDepartureDate;
 
+        console.log('Arrival Date: ', arrivalDate);
+        console.log('Departure Date: ', departureDate);
+
         const availabilityRecord = await getAvailabilityRecord(db, arrivalDate);
 
+        console.log('If (' + numberOfNightsElements.length + ' = 1 && availabilityRecord: ' + availabilityRecord + ')');
         if (numberOfNightsElements.length === 1 && availabilityRecord) {
+            console.log('Load updateAvailabilityRecord');
             await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
         }
 
         const nextAvailabilityDate = await getNextAvailabilityDate(db);
+        console.log('nextAvailabilityDate: ', nextAvailabilityDate);
 
         if (!nextAvailabilityDate) {
+            console.log('Load processAvailabilityTable');
             await processAvailabilityTable(db);
         }
 
