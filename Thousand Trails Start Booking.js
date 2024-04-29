@@ -1,6 +1,6 @@
 ﻿
 //bookingPreference switch: none | trailing | leading | consecutive
-const bookingPreference = "trailing";
+const bookingPreference = "none";
 const minimumConsecutiveDays = 4;
 
 const baseURL = "https://members.thousandtrails.com";
@@ -331,7 +331,7 @@ async function getAvailability(getPrevious) {
             var title = myURL[i].getAttribute('title');
             if (title != null) {
                 title = title.replace("Select ", "");
-                //console.log(title);
+                console.log(title);
                 var convertedStartDate = (new Date(title))
                 if (convertedStartDate != "Invalid Date") {
                     availableDates.push(convertedStartDate.toLocaleDateString('en-US'));
@@ -354,7 +354,7 @@ async function getAvailability(getPrevious) {
                     var title = myURL[i].getAttribute('title');
                     if (title != null) {
                         title = title.replace("Select ", "");
-                        //console.log(title);
+                        console.log(title);
                         var convertedStartDate = (new Date(title));
                         if (convertedStartDate != "Invalid Date") {
                             availableDates.push(convertedStartDate.toLocaleDateString('en-US'));
