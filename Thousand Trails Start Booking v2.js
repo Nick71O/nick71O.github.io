@@ -66,7 +66,7 @@ async function openThousandTrailsDB() {
 
         if (!nextAvailabilityDate) {
             console.log('Load processAvailabilityTable');
-            await processAvailabilityTable(db);
+           // await processAvailabilityTable(db);
         }
 
         console.log('Next Availability Date:', nextAvailabilityDate);
@@ -94,6 +94,8 @@ async function getSiteConstants(db) {
 }
 
 async function getAvailabilityRecord(db, arrivalDate) {
+    console.log('Hello from getAvailabilityRecord(' + arrivalDate + ')');
+
     const transaction = db.transaction(['Availability'], 'readonly');
     const availabilityStore = transaction.objectStore('Availability');
     const index = availabilityStore.index('Checked');
