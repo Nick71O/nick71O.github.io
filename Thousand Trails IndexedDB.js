@@ -202,3 +202,66 @@ async function insertAvailabilityRecords(db) {
         console.error('Error inserting availability records:', error);
     }
 }
+
+async function logSiteConstants(db) {
+    try {
+        const transaction = db.transaction(['SiteConstants'], 'readonly');
+        const objectStore = transaction.objectStore('SiteConstants');
+
+        const getAllRequest = objectStore.getAll();
+
+        getAllRequest.onsuccess = function (event) {
+            const records = event.target.result;
+            console.log('SiteConstants records:');
+            records.forEach(record => {
+                console.log(record);
+            });
+        };
+
+        getAllRequest.onerror = function (event) {
+            logError('Fetch SiteConstants Records', event.target.error);
+        };
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            logError('Transaction', event.target.error);
+        };
+    } catch (error) {
+        console.error('Error fetching SiteConstants records:', error);
+    }
+}
+
+
+async function logAvailabilityRecords(db) {
+    try {
+        const transaction = db.transaction(['Availability'], 'readonly');
+        const objectStore = transaction.objectStore('Availability');
+
+        const getAllRequest = objectStore.getAll();
+
+        getAllRequest.onsuccess = function (event) {
+            const records = event.target.result;
+            console.log('Availability records:');
+            records.forEach(record => {
+                console.log(record);
+            });
+        };
+
+        getAllRequest.onerror = function (event) {
+            logError('Fetch Availability Records', event.target.error);
+        };
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            logError('Transaction', event.target.error);
+        };
+    } catch (error) {
+        console.error('Error fetching availability records:', error);
+    }
+}
