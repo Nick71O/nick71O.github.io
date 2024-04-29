@@ -26,6 +26,7 @@ request.onupgradeneeded = function (event) {
 
 request.onsuccess = function (event) {
     const db = event.target.result;
+    console.log('ThousandTrailsDB opened successfully!');
 
     // Start a new transaction
     const transaction = db.transaction(['SiteConstants'], 'readwrite');
