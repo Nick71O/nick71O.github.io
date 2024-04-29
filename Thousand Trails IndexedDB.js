@@ -118,80 +118,87 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     }
 }
 
+async function deleteAllAvailabilityRecords(db) {
+    try {
+        const transaction = db.transaction(['Availability'], 'readwrite');
+        const objectStore = transaction.objectStore('Availability');
 
-function deleteAllAvailabilityRecords() {
-    const transaction = db.transaction(['Availability'], 'readwrite');
-    const objectStore = transaction.objectStore('Availability');
+        const request = objectStore.clear();
 
-    const request = objectStore.clear();
+        request.onsuccess = function () {
+            console.log('All records deleted from the Availability table.');
+        };
 
-    request.onsuccess = function () {
-        console.log('All records deleted from the Availability table.');
-    };
+        request.onerror = function (event) {
+            logError('Delete Records', event.target.error);
+        };
 
-    request.onerror = function (event) {
-        logError('Delete Records', event.target.error);
-    };
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
 
-    transaction.oncomplete = function () {
-        console.log('Transaction completed.');
-    };
-
-    transaction.onerror = function (event) {
-        logError('Transaction', event.target.error);
-    };
+        transaction.onerror = function (event) {
+            logError('Transaction', event.target.error);
+        };
+    } catch (error) {
+        console.error('Error deleting records:', error);
+    }
 }
 
-function insertAvailabilityRecords() {
-    const transaction = db.transaction(['SiteConstants', 'Availability'], 'readonly');
-    const siteConstantsStore = transaction.objectStore('SiteConstants');
-    const availabilityStore = transaction.objectStore('Availability');
+async function insertAvailabilityRecords(db) {
+    try {
+        const transaction = db.transaction(['SiteConstants', 'Availability'], 'readonly');
+        const siteConstantsStore = transaction.objectStore('SiteConstants');
+        const availabilityStore = transaction.objectStore('Availability');
 
-    const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
+        const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
 
-    siteConstantsRequest.onsuccess = function (event) {
-        const siteConstantsData = event.target.result;
+        siteConstantsRequest.onsuccess = function (event) {
+            const siteConstantsData = event.target.result;
 
-        if (siteConstantsData) {
-            const desiredArrivalDate = new Date(siteConstantsData.DesiredArrivalDate);
-            const desiredDepartureDate = new Date(siteConstantsData.DesiredDepartureDate);
+            if (siteConstantsData) {
+                const desiredArrivalDate = new Date(siteConstantsData.DesiredArrivalDate);
+                const desiredDepartureDate = new Date(siteConstantsData.DesiredDepartureDate);
 
-            // Calculate days between DesiredArrivalDate and DesiredDepartureDate
-            const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
-            const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
+                // Calculate days between DesiredArrivalDate and DesiredDepartureDate
+                const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
+                const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
-            // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
-            for (let i = 0; i <= daysDifference; i++) {
-                const currentDate = new Date(desiredArrivalDate);
-                currentDate.setDate(currentDate.getDate() + i);
+                // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
+                for (let i = 0; i <= daysDifference; i++) {
+                    const currentDate = new Date(desiredArrivalDate);
+                    currentDate.setDate(currentDate.getDate() + i);
 
-                const nextDay = new Date(currentDate);
-                nextDay.setDate(nextDay.getDate() + 1);
+                    const nextDay = new Date(currentDate);
+                    nextDay.setDate(nextDay.getDate() + 1);
 
-                const newRecord = {
-                    ArrivalDate: currentDate.toLocaleDateString(),
-                    DepartureDate: nextDay.toLocaleDateString(),
-                    Checked: null // Leave Checked blank (null)
-                };
+                    const newRecord = {
+                        ArrivalDate: currentDate.toLocaleDateString(),
+                        DepartureDate: nextDay.toLocaleDateString(),
+                        Checked: null // Leave Checked blank (null)
+                    };
 
-                availabilityStore.add(newRecord);
+                    availabilityStore.add(newRecord);
+                }
+
+                console.log('Availability records inserted successfully.');
+            } else {
+                logError('Fetch SiteConstants', 'SiteConstants not found.');
             }
+        };
 
-            console.log('Availability records inserted successfully.');
-        } else {
-            logError('Fetch SiteConstants', 'SiteConstants not found.');
-        }
-    };
+        siteConstantsRequest.onerror = function (event) {
+            logError('Fetch SiteConstants', event.target.error);
+        };
 
-    siteConstantsRequest.onerror = function (event) {
-        logError('Fetch SiteConstants', event.target.error);
-    };
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
 
-    transaction.oncomplete = function () {
-        console.log('Transaction completed.');
-    };
-
-    transaction.onerror = function (event) {
-        logError('Transaction', event.target.error);
-    };
+        transaction.onerror = function (event) {
+            logError('Transaction', event.target.error);
+        };
+    } catch (error) {
+        console.error('Error inserting availability records:', error);
+    }
 }
