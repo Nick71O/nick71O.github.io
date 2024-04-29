@@ -24,7 +24,7 @@ request.onsuccess = function(event) {
   const db = event.target.result;
 
   // Populate SiteConstants with initial data
-  const siteConstantsTx = db.transaction('SiteConstants', 'readwrite');
+  const siteConstantsTx = db.transaction(['SiteConstants'], 'readwrite'); // Updated line
   const siteConstantsStore = siteConstantsTx.objectStore('SiteConstants');
   
   siteConstantsStore.add({ key: 'DesiredArrivalDate', value: '05/03/2024' });
@@ -44,6 +44,7 @@ request.onsuccess = function(event) {
 request.onerror = function(event) {
   console.error('Error opening database', event.target.error);
 };
+
 
 
 // Call the function with new dates
