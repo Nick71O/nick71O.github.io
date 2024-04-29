@@ -60,7 +60,7 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
 
         const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
 
-        siteConstantsRequest.onsuccess = function (event) {
+        siteConstantsRequest.onsuccess = async function (event) {
             const siteConstantsData = event.target.result;
 
             if (siteConstantsData) {
@@ -78,7 +78,26 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
                     logError('Update SiteConstants', event.target.error);
                 };
             } else {
-                logError('Update SiteConstants', 'SiteConstants not found.');
+                // If SiteConstants record doesn't exist, insert it
+                const newSiteConstantsData = {
+                    key: 'SiteConstants',
+                    value: {
+                        DesiredArrivalDate: newArrivalDate,
+                        DesiredDepartureDate: newDepartureDate,
+                        BookingPreference: 'None',
+                        MinimumConsecutiveDays: '4'
+                    }
+                };
+
+                const addRequest = siteConstantsStore.add(newSiteConstantsData);
+
+                addRequest.onsuccess = function () {
+                    console.log('New SiteConstants record added.');
+                };
+
+                addRequest.onerror = function (event) {
+                    logError('Add SiteConstants', event.target.error);
+                };
             }
         };
 
@@ -98,6 +117,7 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
         console.error('Error updating SiteConstants:', error);
     }
 }
+
 
 function deleteAllAvailabilityRecords() {
     const transaction = db.transaction(['Availability'], 'readwrite');
@@ -127,7 +147,7 @@ function insertAvailabilityRecords() {
     const siteConstantsStore = transaction.objectStore('SiteConstants');
     const availabilityStore = transaction.objectStore('Availability');
 
-    const siteConstantsRequest = siteConstantsStore.get('siteConstants');
+    const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
 
     siteConstantsRequest.onsuccess = function (event) {
         const siteConstantsData = event.target.result;
