@@ -4,51 +4,40 @@ const dbName = 'ThousandTrailsDB';
 const dbVersion = 2;
 let db;
 
-// Open or create the database
-const request = indexedDB.open(dbName, dbVersion);
+// Function to initialize IndexedDB and return a promise
+function initializeDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(dbName, dbVersion);
 
-request.onupgradeneeded = function(event) {
-  db = event.target.result;
+        request.onupgradeneeded = function (event) {
+            db = event.target.result;
+            // Your upgrade logic here
+            if (!db.objectStoreNames.contains('SiteConstants')) {
+                const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
+                siteConstantsStore.createIndex('value', 'value');
+            }
 
-  // Create or upgrade object stores if needed
-  if (!db.objectStoreNames.contains('SiteConstants')) {
-    const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
-    siteConstantsStore.createIndex('value', 'value');
-  }
+            if (!db.objectStoreNames.contains('Availability')) {
+                const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
+                availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
+                availabilityStore.createIndex('DepartureDate', 'DepartureDate');
+                availabilityStore.createIndex('Checked', 'Checked');
+            }
+        };
 
-  if (!db.objectStoreNames.contains('Availability')) {
-    const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
-    availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
-    availabilityStore.createIndex('DepartureDate', 'DepartureDate');
-    availabilityStore.createIndex('Checked', 'Checked');
-  }
-};
+        request.onsuccess = function (event) {
+            db = event.target.result;
+            console.log('Database opened successfully.');
+            resolve(db); // Resolve the promise with the opened db
+        };
 
-request.onsuccess = function(event) {
-  db = event.target.result;
-  console.log('Database opened successfully.');
+        request.onerror = function (event) {
+            console.error('Error opening database:', event.target.error);
+            reject(event.target.error); // Reject the promise on error
+        };
+    });
+}
 
-  // Start a new transaction
-  const transaction = db.transaction(['SiteConstants'], 'readwrite');
-  console.log('Transaction created successfully.');
-
-  const siteConstantsStore = transaction.objectStore('SiteConstants');
-  console.log('Object store accessed successfully.');
-
-  // Your code for SiteConstants operations here...
-
-  transaction.oncomplete = function() {
-    console.log('Transaction completed.');
-  };
-
-  transaction.onerror = function(event) {
-    console.error('Transaction error:', event.target.error);
-  };
-};
-
-request.onerror = function(event) {
-  console.error('Error opening database:', event.target.error);
-};
 
 
 
@@ -63,58 +52,45 @@ function logError(errorType, errorMessage) {
 //const newDepartureDate = '05/15/2024';
 //updateSiteConstantsDates(newArrivalDate, newDepartureDate);
 
-// Ensure db is initialized before calling this function
-async function updateSiteConstantsDates(newArrivalDate, newDepartureDate) {
-    if (!db) {
-        console.error('IndexedDB is not initialized.');
-        return;
-    }
+function updateSiteConstantsDates(newArrivalDate, newDepartureDate) {
+    const transaction = db.transaction(['SiteConstants'], 'readwrite');
+    const siteConstantsStore = transaction.objectStore('SiteConstants');
 
-    try {
-        const transaction = db.transaction(['SiteConstants'], 'readwrite');
-        const siteConstantsStore = transaction.objectStore('SiteConstants');
+    const siteConstantsRequest = siteConstantsStore.get('siteConstants');
 
-        const siteConstantsRequest = siteConstantsStore.get('siteConstants');
+    siteConstantsRequest.onsuccess = function (event) {
+        const siteConstantsData = event.target.result;
 
-        siteConstantsRequest.onsuccess = function (event) {
-            const siteConstantsData = event.target.result;
+        if (siteConstantsData) {
+            // Update the DesiredArrivalDate and DesiredDepartureDate
+            siteConstantsData.DesiredArrivalDate = newArrivalDate;
+            siteConstantsData.DesiredDepartureDate = newDepartureDate;
 
-            if (siteConstantsData) {
-                siteConstantsData.DesiredArrivalDate = newArrivalDate;
-                siteConstantsData.DesiredDepartureDate = newDepartureDate;
+            const updateRequest = siteConstantsStore.put(siteConstantsData, 'siteConstants');
 
-                const updateRequest = siteConstantsStore.put(siteConstantsData, 'siteConstants');
-
-                updateRequest.onsuccess = function () {
-                    console.log('SiteConstants updated with new dates.');
-                };
-
-                updateRequest.onerror = function (event) {
-                    logError('Update SiteConstants', event.target.error);
-                };
-            } else {
-                logError('Update SiteConstants', 'SiteConstants not found.');
-            }
-        };
-
-        siteConstantsRequest.onerror = function (event) {
-            logError('Fetch SiteConstants', event.target.error);
-        };
-
-        await new Promise((resolve, reject) => {
-            transaction.oncomplete = function () {
-                console.log('Transaction completed.');
-                resolve();
+            updateRequest.onsuccess = function () {
+                console.log('SiteConstants updated with new dates.');
             };
 
-            transaction.onerror = function (event) {
-                logError('Transaction', event.target.error);
-                reject(event.target.error);
+            updateRequest.onerror = function (event) {
+                logError('Update SiteConstants', event.target.error);
             };
-        });
-    } catch (error) {
-        console.error('Error in updateSiteConstantsDates:', error);
-    }
+        } else {
+            logError('Update SiteConstants', 'SiteConstants not found.');
+        }
+    };
+
+    siteConstantsRequest.onerror = function (event) {
+        logError('Fetch SiteConstants', event.target.error);
+    };
+
+    transaction.oncomplete = function () {
+        console.log('Transaction completed.');
+    };
+
+    transaction.onerror = function (event) {
+        logError('Transaction', event.target.error);
+    };
 }
 
 function deleteAllAvailabilityRecords() {
