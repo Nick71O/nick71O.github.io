@@ -154,48 +154,50 @@ async function insertAvailabilityRecords(db) {
 
         const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
 
-        siteConstantsRequest.onsuccess = function (event) {
-            const siteConstantsData = event.target.result;
+        const siteConstantsData = await new Promise((resolve, reject) => {
+            siteConstantsRequest.onsuccess = function (event) {
+                resolve(event.target.result);
+            };
 
-            if (siteConstantsData) {
-                const desiredArrivalDate = new Date(siteConstantsData.DesiredArrivalDate);
-                const desiredDepartureDate = new Date(siteConstantsData.DesiredDepartureDate);
+            siteConstantsRequest.onerror = function (event) {
+                reject(event.target.error);
+            };
+        });
 
-                // Calculate days between DesiredArrivalDate and DesiredDepartureDate
-                const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
-                const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
+        if (siteConstantsData) {
+            const desiredArrivalDate = new Date(siteConstantsData.DesiredArrivalDate);
+            const desiredDepartureDate = new Date(siteConstantsData.DesiredDepartureDate);
 
-                console.log('desiredArrivalDate' + desiredArrivalDate);
-                console.log('desiredDepartureDate' + desiredDepartureDate);
-                console.log('dateDifference' + dateDifference);
-                console.log('daysDifference' + daysDifference);
+            // Calculate days between DesiredArrivalDate and DesiredDepartureDate
+            const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
+            const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
-                // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
-                for (let i = 0; i <= daysDifference; i++) {
-                    const currentDate = new Date(desiredArrivalDate);
-                    currentDate.setDate(currentDate.getDate() + i);
+            console.log('desiredArrivalDate' + desiredArrivalDate);
+            console.log('desiredDepartureDate' + desiredDepartureDate);
+            console.log('dateDifference' + dateDifference);
+            console.log('daysDifference' + daysDifference);
 
-                    const nextDay = new Date(currentDate);
-                    nextDay.setDate(nextDay.getDate() + 1);
+            // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
+            for (let i = 0; i <= daysDifference; i++) {
+                const currentDate = new Date(desiredArrivalDate);
+                currentDate.setDate(currentDate.getDate() + i);
 
-                    const newRecord = {
-                        ArrivalDate: currentDate.toLocaleDateString(),
-                        DepartureDate: nextDay.toLocaleDateString(),
-                        Checked: null // Leave Checked blank (null)
-                    };
+                const nextDay = new Date(currentDate);
+                nextDay.setDate(nextDay.getDate() + 1);
 
-                    availabilityStore.add(newRecord);
-                }
+                const newRecord = {
+                    ArrivalDate: currentDate.toLocaleDateString(),
+                    DepartureDate: nextDay.toLocaleDateString(),
+                    Checked: null // Leave Checked blank (null)
+                };
 
-                console.log('Availability records inserted successfully.');
-            } else {
-                logError('Fetch SiteConstants', 'SiteConstants not found.');
+                availabilityStore.add(newRecord);
             }
-        };
 
-        siteConstantsRequest.onerror = function (event) {
-            logError('Fetch SiteConstants', event.target.error);
-        };
+            console.log('Availability records inserted successfully.');
+        } else {
+            logError('Fetch SiteConstants', 'SiteConstants not found.');
+        }
 
         transaction.oncomplete = function () {
             console.log('Transaction completed.');
@@ -208,6 +210,7 @@ async function insertAvailabilityRecords(db) {
         console.error('Error inserting availability records:', error);
     }
 }
+
 
 async function logSiteConstants(db) {
     try {
