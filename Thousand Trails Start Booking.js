@@ -8,6 +8,7 @@ const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 
 // XPath of button to click
 var buttonXPath = "//*[@id='btnSelect1']";
+var selectSiteButtonXPath = "//*[@id='btnSelect0']";
 var availabilityButtonXPath = "//*[@id='site-list']/div[2]/div/div[2]/div[1]/button";
 //var availabilityCalendarXPath = "//*[@id='calendar5148']/div/div[2]/div/table";
 var availabilityCalendarXPath = "//*[@id='calendar5148']";
@@ -183,7 +184,6 @@ async function click() {
 
             case "leading":
                 console.log("Found Departure Date: " + availableDates.contains(departureDate.toLocaleDateString('en-US')))
-                /*
                 if (availableDates.length > 0) {
                     var foundArrivalDate;
                     var foundDepartureDate;
@@ -215,11 +215,9 @@ async function click() {
                         }
                     }
                 }
-                */
                 break;
 
             case "consecutive":
-                /*
                 var arr = getDatesInRange(availableDates, arrivalDate, departureDate);
                 var startDate;
                 var endDate;
@@ -280,7 +278,6 @@ async function click() {
                     }
                 }
                 break;
-                */
 
             default:
             // code block
