@@ -47,12 +47,6 @@ function logError(errorType, errorMessage) {
     console.error(`Error (${errorType}):`, errorMessage);
 }
 
-// Call the function with new dates
-//const newArrivalDate = '05/10/2024';
-//const newDepartureDate = '05/15/2024';
-//updateSiteConstantsDates(newArrivalDate, newDepartureDate);
-
-
 async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     try {
         const transaction = db.transaction(['SiteConstants'], 'readwrite');
