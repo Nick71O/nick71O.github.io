@@ -97,13 +97,14 @@ async function getAvailabilityRecord(db, arrivalDate) {
     arrivalDate = arrivalDate.toLocaleDateString('en-us', formatDateOptions);
     console.log('Hello from getAvailabilityRecord(' + arrivalDate + ')');
 
-    const transaction = db.transaction(['Availability'], 'readonly');
-    const availabilityStore = transaction.objectStore('Availability');
-    const index = availabilityStore.index('Checked');
-
     return new Promise((resolve, reject) => {
+        const transaction = db.transaction(['Availability'], 'readonly');
+        const availabilityStore = transaction.objectStore('Availability');
+        const index = availabilityStore.index('Checked');
+
         // Create an IDBKeyRange to filter rows where 'Checked' is null or empty
-        const range = IDBKeyRange.lowerBound('', true); // Empty string is less than all non-empty strings
+        const range = IDBKeyRange.only(null); // Only retrieve rows where 'Checked' is null
+
         const request = index.openCursor(range, 'next'); // Open cursor with the range
 
         request.onsuccess = function (event) {
@@ -117,27 +118,8 @@ async function getAvailabilityRecord(db, arrivalDate) {
                 };
                 resolve(nextAvailability);
             } else {
-                // No more rows with 'Checked' as null or empty, check if there are more rows
-                const countRequest = availabilityStore.count();
-
-                countRequest.onsuccess = function (event) {
-                    const rowCount = event.target.result;
-                    if (rowCount > 0) {
-                        // Time to process the AvailabilityTable
-                        processAvailabilityTable(db).then(() => {
-                            resolve(null); // Return null as no next availability date to check
-                        }).catch(error => {
-                            reject(error);
-                        });
-                    } else {
-                        // No more rows and no rows with 'Checked' as null or empty
-                        resolve(null);
-                    }
-                };
-
-                countRequest.onerror = function (event) {
-                    reject(event.target.error);
-                };
+                // No more rows with 'Checked' as null, resolve with null
+                resolve(null);
             }
         };
 
@@ -146,6 +128,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
         };
     });
 }
+
 
 
 
