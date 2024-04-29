@@ -160,8 +160,9 @@ async function getNextAvailabilityDate(db) {
 
 async function processAvailabilityTable(db) {
     const transaction = db.transaction(['Availability'], 'readonly');
-    const availabilityStore = transaction.objectStore('Availability');
-    const index = availabilityStore.index('Available');
+    const objectStore = transaction.objectStore('Availability');
+
+    const index = objectStore.index('Available');
 
     const availableDates = [];
 
