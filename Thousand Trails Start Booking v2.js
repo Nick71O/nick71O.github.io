@@ -94,6 +94,7 @@ async function getSiteConstants(db) {
 }
 
 async function getAvailabilityRecord(db, arrivalDate) {
+    arrivalDate = arrivalDate..toLocaleDateString('en-us', formatDateOptions);
     console.log('Hello from getAvailabilityRecord(' + arrivalDate + ')');
 
     const transaction = db.transaction(['Availability'], 'readonly');
@@ -103,7 +104,6 @@ async function getAvailabilityRecord(db, arrivalDate) {
     return new Promise((resolve, reject) => {
         // Create an IDBKeyRange to filter rows where 'Checked' is null or empty
         const range = IDBKeyRange.lowerBound('', true); // Empty string is less than all non-empty strings
-
         const request = index.openCursor(range, 'next'); // Open cursor with the range
 
         request.onsuccess = function (event) {
