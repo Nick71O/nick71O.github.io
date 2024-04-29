@@ -162,11 +162,11 @@ async function insertAvailabilityRecords(db) {
 
                 console.log('desiredArrivalDate: ' + desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
                 console.log('desiredDepartureDate: ' + desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
-                console.log('dateDifference: ' + dateDifference);
+                //console.log('dateDifference: ' + dateDifference);
                 console.log('daysDifference: ' + daysDifference);
 
                 // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
-                for (let i = 0; i <= daysDifference; i++) {
+                for (let i = 0; i < daysDifference; i++) {
                     const currentDate = new Date(desiredArrivalDate);
                     currentDate.setDate(currentDate.getDate() + i);
 
@@ -174,8 +174,8 @@ async function insertAvailabilityRecords(db) {
                     nextDay.setDate(nextDay.getDate() + 1);
 
                     const newRecord = {
-                        ArrivalDate: currentDate.toLocaleDateString(),
-                        DepartureDate: nextDay.toLocaleDateString(),
+                        ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
+                        DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
                         Checked: null // Leave Checked blank (null)
                     };
 
