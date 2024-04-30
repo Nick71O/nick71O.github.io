@@ -48,15 +48,13 @@ function logError(errorType, errorMessage) {
 }
 
 // Add or update an entry in the SiteConstants table based on name
-// Function to add or update a SiteConstant in the IndexedDB
 async function addOrUpdateSiteConstant(db, name, value) {
     const transaction = db.transaction(["SiteConstants"], "readwrite");
     const store = transaction.objectStore("SiteConstants");
 
     try {
         const existingValue = await store.get(name);
-
-        console.log('Existing Value:', existingValue); // Log existing value for debugging
+        console.log('Existing Value:', existingValue);
 
         if (existingValue) {
             existingValue.value = value;
@@ -69,10 +67,10 @@ async function addOrUpdateSiteConstant(db, name, value) {
         }
     } catch (error) {
         console.error(`Error adding or updating SiteConstant '${name}':`, error);
+        console.error('Error stack trace:', error.stack); // Log error stack trace
         throw error; // Re-throw the error to be caught by the caller
     }
 }
-
 
 
 // retrieve an entry from the SiteConstants table based on name
