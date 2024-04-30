@@ -2,7 +2,7 @@ console.log('Hello From Thousand Trails IndexedDB.js');
 
 const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 const dbName = 'ThousandTrailsDB';
-const dbVersion = 4;
+const dbVersion = 5;
 let db;
 
 // Function to initialize IndexedDB and return a promise
