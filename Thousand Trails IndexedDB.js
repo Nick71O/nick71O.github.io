@@ -165,8 +165,8 @@ async function insertAvailabilityRecords(db) {
             return; // Exit the function if constants are not found
         }
 
-        const desiredArrivalDate = new Date(desiredArrivalConstant.value);
-        const desiredDepartureDate = new Date(desiredDepartureConstant.value);
+        const desiredArrivalDate = new Date(desiredArrivalConstant.Value);
+        const desiredDepartureDate = new Date(desiredDepartureConstant.Value);
 
         const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
         const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
