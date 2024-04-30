@@ -134,7 +134,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
             const cursor = event.target.result;
             if (cursor) {
                 const record = cursor.value;
-                console.log('If (' + new Date(record.ArrivalDate).getTime() + ' === ' + new Date(arrivalDate).getTime() + ')');
+                //console.log('If (' + new Date(record.ArrivalDate).getTime() + ' === ' + new Date(arrivalDate).getTime() + ')');
                 if (new Date(record.ArrivalDate).getTime() === new Date(arrivalDate).getTime()) { // Match found
                     console.log('Record:', record); // Log record
                     resolve(record); // Resolve with the matched record
@@ -174,9 +174,9 @@ async function getNextAvailabilityDate(db) {
 
             if (cursor) {
                 const record = cursor.value;
-                console.log('record.Checked === ' + record.Checked + ')');
+                //console.log('record.Checked === ' + record.Checked + ')');
                 if ((record.Checked === null || record.Checked === '') && new Date(record.ArrivalDate) < lowestArrivalDate) {
-                    console.log("getNextAvailabilityDate() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
+                    //console.log("getNextAvailabilityDate() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
                     lowestArrivalDate = new Date(record.ArrivalDate);
                     nextAvailability = {
                         arrivalDate: record.ArrivalDate,
