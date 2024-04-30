@@ -53,16 +53,18 @@ async function openThousandTrailsDB() {
         var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
         console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-US') + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-US') + "    Number of Nights: " + bookingNumberOfNights);
 
-        const availabilityRecord = await getAvailabilityRecord(db);
-
+        
         console.log('If (' + bookingNumberOfNights + ' = 1 && availabilityRecord: ' + availabilityRecord + ')');
-        if (bookingNumberOfNights === 1 && availabilityRecord) {
+        if (bookingNumberOfNights === 1) {
             console.log('Load updateAvailabilityRecord');
             await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
         }
 
+
+        //get the
         const nextAvailabilityDate = await getNextAvailabilityDate(db);
-        console.log('nextAvailabilityDate: ', nextAvailabilityDate);
+        const nextAvailabilityString = `arrivaldate=${nextAvailabilityDate.ArrivalDate}&departuredate=${nextAvailabilityDate.DepartureDate}`;
+        console.log('nextAvailabilityString: ' + nextAvailabilityString);
 
         if (!nextAvailabilityDate) {
             console.log('Load processAvailabilityTable');
@@ -97,8 +99,8 @@ async function getSiteConstants(db) {
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
 //Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
 //If there are no more rows returned, but the 'Availability' table has more than 0 rows it is time to process the AvailabilityTable.
-async function getAvailabilityRecord(db) {
-    console.log('Hello from getAvailabilityRecord()');
+async function getNextAvailabilityDate(db) {
+    console.log('Hello from getNextAvailabilityDate()');
 
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['Availability'], 'readonly');
@@ -115,7 +117,7 @@ async function getAvailabilityRecord(db) {
                 const record = cursor.value;
                 console.log('record.Checked === ' + record.Checked + ')');
                 if ((record.Checked === null || record.Checked === '') && new Date(record.ArrivalDate) < lowestArrivalDate) {
-                    console.log("getAvailabilityRecord() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
+                    console.log("getNextAvailabilityDate() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
                     lowestArrivalDate = new Date(record.ArrivalDate);
                     nextAvailability = {
                         arrivalDate: record.ArrivalDate,
@@ -126,7 +128,7 @@ async function getAvailabilityRecord(db) {
             } else {
                 // Resolve with the nextAvailability or null if no suitable record found
                 if (nextAvailability !== null) {
-                    console.log("getAvailabilityRecord() FOUND Lowest Arrival Date\n   Arrival: " + nextAvailability.ArrivalDate + "    Departure: " + nextAvailability.DepartureDate);
+                    console.log("getNextAvailabilityDate() FOUND Lowest Arrival Date\n   Arrival: " + nextAvailability.ArrivalDate + "    Departure: " + nextAvailability.DepartureDate);
                     resolve({ arrivalDate: nextAvailability.arrivalDate, departureDate: nextAvailability.departureDate });
                 } else {
                     resolve(null);
@@ -162,37 +164,7 @@ async function updateAvailabilityRecord(db, record, checkedTimeStamp) {
     });
 }
 
-async function getNextAvailabilityDate(db) {
-    const transaction = db.transaction(['Availability'], 'readonly');
-    const availabilityStore = transaction.objectStore('Availability');
-    const index = availabilityStore.index('Checked');
 
-    return new Promise((resolve, reject) => {
-        const request = index.openCursor(null, 'next');
-
-        request.onsuccess = function (event) {
-            const cursor = event.target.result;
-
-            console.log('cursor: ', cursor);
-            if (cursor) {
-                if (!cursor.value.Checked || cursor.value.Checked === '') {
-                    const arrivalDate = cursor.value.ArrivalDate;
-                    const departureDate = cursor.value.DepartureDate;
-                    const nextAvailability = `arrivaldate=${arrivalDate}&departuredate=${departureDate}`;
-                    resolve(nextAvailability);
-                } else {
-                    cursor.continue();
-                }
-            } else {
-                resolve(null);
-            }
-        };
-
-        request.onerror = function (event) {
-            reject(event.target.error);
-        };
-    });
-}
 
 async function processAvailabilityTable(db) {
     const transaction = db.transaction(['Availability'], 'readonly');
