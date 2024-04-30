@@ -63,8 +63,8 @@ async function addOrUpdateSiteConstant(db, name, value) {
 
         if (constant) {
             // Update existing constant
-            const updatedConstant = { ...constant, value: value }; // Clone and update
-            const updateRequest = store.put(updatedConstant);
+            constant.value = value;
+            const updateRequest = store.put(constant, name); // Explicitly set key
             await updateRequest;
             console.log(`Constant "${name}" updated successfully.`);
         } else {
