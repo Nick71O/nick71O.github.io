@@ -135,6 +135,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
                 const record = cursor.value;
                 console.log('If (' + record.ArrivalDate + ' === ' + arrivalDate + ')');
                 if (record.ArrivalDate === arrivalDate) { // Match found
+                    console.log('Record:', record); // Log record
                     resolve(record); // Resolve with the matched record
                     return; // Stop further iteration
                 }
