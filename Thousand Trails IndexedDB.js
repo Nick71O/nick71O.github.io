@@ -14,7 +14,7 @@ function initializeDB() {
             const db = event.target.result;
 
             if (!db.objectStoreNames.contains("SiteConstants")) {
-                const siteConstantsStore = db.createObjectStore("SiteConstants", { autoIncrement: true });
+                const siteConstantsStore = db.createObjectStore("SiteConstants", { keyPath: "id", autoIncrement: true});
                 siteConstantsStore.createIndex("name", "name", { unique: false });
                 siteConstantsStore.createIndex("value", "value", { unique: false });
             }
