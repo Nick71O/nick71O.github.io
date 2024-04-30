@@ -12,32 +12,29 @@ function initializeDB() {
         const request = indexedDB.open(dbName, dbVersion);
 
         request.onupgradeneeded = function (event) {
+            console.log('onupgradeneeded event triggered.');
             db = event.target.result;
-            // Your upgrade logic here
-            //if (!db.objectStoreNames.contains('SiteConstants')) {
-            //    const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
-            //    siteConstantsStore.createIndex('value', 'value');
-            //}
-
+            
             if (!db.objectStoreNames.contains("SiteConstants")) {
+                console.log('Creating SiteConstants object store.');
                 const siteConstantsStore = db.createObjectStore("SiteConstants", { keyPath: "name" });
                 siteConstantsStore.createIndex("value", "value", { unique: false });
-
                 console.log("SiteConstants table created successfully.");
             }
 
             if (!db.objectStoreNames.contains('Availability')) {
+                console.log('Creating Availability object store.');
                 const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
                 availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
                 availabilityStore.createIndex('DepartureDate', 'DepartureDate');
                 availabilityStore.createIndex('Available', 'Available');
                 availabilityStore.createIndex('Checked', 'Checked');
-
                 console.log("Availability table created successfully.");
             }
         };
 
         request.onsuccess = function (event) {
+            console.log('onsuccess event triggered.');
             db = event.target.result;
             console.log('Database opened successfully.');
             resolve(db); // Resolve the promise with the opened db
@@ -49,6 +46,7 @@ function initializeDB() {
         };
     });
 }
+
 
 
 // Helper function for error logging
