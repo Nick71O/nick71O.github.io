@@ -67,38 +67,26 @@ async function addOrUpdateSiteConstant(db, name, value) {
     const store = transaction.objectStore("SiteConstants");
 
     try {
-        const getAllRequest = store.getAll(); // Retrieve all constants
-        const constants = await getAllRequest;
-        
-        console.log("Retrieved constants:", constants);
+        const getRequest = store.get(name); // Retrieve the constant by name directly
+        const constant = await getRequest;
 
-        if (Array.isArray(constants)) {
-            const existingConstant = constants.find(constant => constant.name === name);
-
-            if (existingConstant) {
-                // Update existing constant
-                existingConstant.value = value;
-                const updateRequest = store.put(existingConstant);
-                await updateRequest;
-                console.log(`Constant "${name}" updated successfully.`);
-            } else {
-                // Add new constant with auto-generated ID
-                const newConstant = { name: name, value: value };
-                const addRequest = store.add(newConstant);
-                const addedId = await addRequest;
-                console.log(`Constant "${name}" added successfully with ID: ${addedId}`);
-            }
+        if (constant) {
+            // Update existing constant
+            constant.value = value;
+            const updateRequest = store.put(constant);
+            await updateRequest;
+            console.log(`Constant "${name}" updated successfully.`);
         } else {
-            console.error("Error retrieving constants. Constants array is not valid.");
+            // Add new constant with auto-generated ID
+            const newConstant = { name: name, value: value };
+            const addRequest = store.add(newConstant);
+            const addedId = await addRequest;
+            console.log(`Constant "${name}" added successfully with ID: ${addedId}`);
         }
     } catch (error) {
         console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
-
-
-
-
 
 
 // retrieve an entry from the SiteConstants table based on name
