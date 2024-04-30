@@ -67,18 +67,18 @@ async function addOrUpdateSiteConstant(db, name, value) {
     const store = transaction.objectStore("SiteConstants");
 
     try {
-        const getRequest = store.get(name); // Retrieve the constant by name directly
+        const getRequest = store.index("name").get(name);
         const constant = await getRequest;
 
         if (constant) {
             // Update existing constant
-            constant.value = value;
+            constant.value = JSON.stringify(value); // Serialize the value
             const updateRequest = store.put(constant);
             await updateRequest;
             console.log(`Constant "${name}" updated successfully.`);
         } else {
             // Add new constant with auto-generated ID
-            const newConstant = { name: name, value: value };
+            const newConstant = { name: name, value: JSON.stringify(value) }; // Serialize the value
             const addRequest = store.add(newConstant);
             const addedId = await addRequest;
             console.log(`Constant "${name}" added successfully with ID: ${addedId}`);
@@ -87,6 +87,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
+
 
 
 // retrieve an entry from the SiteConstants table based on name
