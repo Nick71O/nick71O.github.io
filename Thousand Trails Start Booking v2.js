@@ -5,11 +5,6 @@ const selectSiteButtonXPath = "//*[@id='btnSelect0']";
 //const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
 const currentTimeStamp = formatDateTime(Date.now());
 
-const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
-//const arrivalDateElements = getElementsByXPath(arrivalDateXPath);
-//const departureDateElements = getElementsByXPath(departureDateXPath);
-//const numberOfNightsElements = getElementsByXPath(numberOfNightsXPath);
-
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -81,7 +76,15 @@ async function openThousandTrailsDB() {
             if (availabilityRecord) {
                 console.log('availabilityRecord found:', availabilityRecord);
                 console.log('Load updateAvailabilityRecord');
-                await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
+                //check if site is available
+                const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
+                var campsiteAvailable = false;
+                if (selectButtonElements.length > 0) {
+                    console.log('Campsite is Available for ' + availabilityRecord.arrivalDate);
+                    campsiteAvailable = true;
+                }
+
+                await updateAvailabilityRecord(db, availabilityRecord, campsiteAvailable, currentTimeStamp);
             }
             else {
                 console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
@@ -154,7 +157,6 @@ async function getAvailabilityRecord(db, arrivalDate) {
 }
     
 
-
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
 //Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
 //If there are no more rows returned, but the 'Availability' table has more than 0 rows it is time to process the AvailabilityTable.
@@ -202,12 +204,11 @@ async function getNextAvailabilityDate(db) {
 }
 
 
-
-
-async function updateAvailabilityRecord(db, record, checkedTimeStamp) {
+async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTimeStamp) {
     const transaction = db.transaction(['Availability'], 'readwrite');
     const availabilityStore = transaction.objectStore('Availability');
 
+    record.Available = campsiteAvailable;
     record.Checked = checkedTimeStamp;
 
     return new Promise((resolve, reject) => {
@@ -222,7 +223,6 @@ async function updateAvailabilityRecord(db, record, checkedTimeStamp) {
         };
     });
 }
-
 
 
 async function processAvailabilityTable(db) {
