@@ -105,13 +105,16 @@ async function openThousandTrailsDB() {
         }
         else {
             await logAvailabilityRecords(db);
-            
+
             console.log('Load processAvailabilityTable');
             await processAvailabilityTable(db);
         }
 
     } catch (error) {
-        console.error('Error performing operations:', error);
+        console.error('ERROR: In Thousand Trails Start Booking v2 that uses IndexedDB.', error);
+        await sleep(5000);
+        console.log("Reloading Page");
+        window.location.reload();
     }
 }
 
