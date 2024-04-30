@@ -69,6 +69,8 @@ async function addOrUpdateSiteConstant(db, name, value) {
     try {
         const getAllRequest = store.getAll(); // Retrieve all constants
         const constants = await getAllRequest;
+        
+        console.log("Retrieved constants:", constants);
 
         if (Array.isArray(constants)) {
             const existingConstant = constants.find(constant => constant.name === name);
@@ -93,6 +95,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
+
 
 
 
