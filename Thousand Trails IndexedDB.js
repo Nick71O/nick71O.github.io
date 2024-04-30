@@ -13,8 +13,8 @@ function initializeDB() {
         request.onupgradeneeded = function (event) {
             const db = event.target.result;
 
-            if (!db.objectStoreNames.contains("SiteConstants")) {
-                const siteConstantsStore = db.createObjectStore("SiteConstants", { keyPath: "id", autoIncrement: true});
+            if (!db.objectStoreNames.contains("SiteConstant")) {
+                const siteConstantsStore = db.createObjectStore("SiteConstant", { keyPath: "id", autoIncrement: true});
                 siteConstantsStore.createIndex("name", "name", { unique: false });
                 siteConstantsStore.createIndex("value", "value", { unique: false });
             }
@@ -45,10 +45,10 @@ function logError(errorType, errorMessage) {
     console.error(`Error (${errorType}):`, errorMessage);
 }
 
-// Add or update an entry in the SiteConstants table based on name
+// Add or update an entry in the SiteConstant table based on name
 async function addOrUpdateSiteConstant(db, name, value) {
-    const transaction = db.transaction('SiteConstants', 'readwrite');
-    const siteConstantsStore = transaction.objectStore('SiteConstants');
+    const transaction = db.transaction('SiteConstant', 'readwrite');
+    const siteConstantsStore = transaction.objectStore('SiteConstant');
 
 
     try {
@@ -74,10 +74,10 @@ async function addOrUpdateSiteConstant(db, name, value) {
 
 
 
-// retrieve an entry from the SiteConstants table based on name
+// retrieve an entry from the SiteConstant table based on name
 async function getSiteConstant(db, name) {
-    const transaction = db.transaction("SiteConstants", "readonly");
-    const store = transaction.objectStore("SiteConstants");
+    const transaction = db.transaction("SiteConstant", "readonly");
+    const store = transaction.objectStore("SiteConstant");
 
     try {
         const constant = await store.get(name);
@@ -91,7 +91,7 @@ async function getSiteConstant(db, name) {
     }
 }
 
-async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
+async function updateSiteConstantDates(db, newArrivalDate, newDepartureDate) {
     const desiredArrivalDate = new Date(newArrivalDate);
     const desiredDepartureDate = new Date(newDepartureDate);
 
@@ -104,9 +104,9 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
 }
 
 
-// Delete all records from the SiteConstants object store
-async function deleteAllSiteConstants(db) {
-    deleteAllRecords(db, 'SiteConstants');
+// Delete all records from the SiteConstant object store
+async function deleteAllSiteConstant(db) {
+    deleteAllRecords(db, 'SiteConstant');
 }
 
 // Delete all records from the Availability object store
@@ -198,31 +198,31 @@ async function insertAvailabilityRecords(db) {
 }
 
 
-// Retrieve all entries from the SiteConstants table and log them to the console
-async function logSiteConstants(db) {
+// Retrieve all entries from the SiteConstant table and log them to the console
+async function logSiteConstant(db) {
     try {
-        const transaction = db.transaction("SiteConstants", "readonly");
-        const store = transaction.objectStore("SiteConstants");
+        const transaction = db.transaction("SiteConstant", "readonly");
+        const store = transaction.objectStore("SiteConstant");
 
         const getRequest = store.getAll();
 
         getRequest.onsuccess = function (event) {
             const constants = event.target.result;
             if (constants && constants.length > 0) {
-                console.log("SiteConstants records:");
+                console.log("SiteConstant records:");
                 constants.forEach((constant) => {
                     console.log(`Name: "${constant.name}", Value: "${constant.value}"`);
                 });
             } else {
-                console.log("No SiteConstants found.");
+                console.log("No SiteConstant found.");
             }
         };
 
         getRequest.onerror = function (event) {
-            console.error("Error getting all SiteConstants records:", event.target.error);
+            console.error("Error getting all SiteConstant records:", event.target.error);
         };
     } catch (error) {
-        console.error("Error retrieving SiteConstants records:", error);
+        console.error("Error retrieving SiteConstant records:", error);
     }
 }
 
