@@ -53,7 +53,7 @@ async function openThousandTrailsDB() {
         var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
         console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-US') + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-US') + "    Number of Nights: " + bookingNumberOfNights);
 
-        const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+        const availabilityRecord = await getAvailabilityRecord(db);
 
         console.log('If (' + bookingNumberOfNights + ' = 1 && availabilityRecord: ' + availabilityRecord + ')');
         if (bookingNumberOfNights === 1 && availabilityRecord) {
@@ -93,14 +93,20 @@ async function getSiteConstants(db) {
     });
 }
 
-async function getAvailabilityRecord(db, arrivalDate) {
-    arrivalDate = arrivalDate.toLocaleDateString('en-us', formatDateOptions);
-    console.log('Hello from getAvailabilityRecord(' + arrivalDate + ')');
+
+//Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
+//Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
+//If there are no more rows returned, but the 'Availability' table has more than 0 rows it is time to process the AvailabilityTable.
+async function getAvailabilityRecord(db) {
+    console.log('Hello from getAvailabilityRecord()');
 
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['Availability'], 'readonly');
         const availabilityStore = transaction.objectStore('Availability');
-        const request = availabilityStore.openCursor();
+        const request = availabilityStore.index('ArrivalDate').openCursor();
+
+        let lowestArrivalDate = Infinity;
+        let nextAvailability = null;
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
@@ -108,18 +114,23 @@ async function getAvailabilityRecord(db, arrivalDate) {
             if (cursor) {
                 const record = cursor.value;
                 console.log('record.Checked === ' + record.Checked + ')');
-                if (record.Checked === null || record.Checked === '') {
-                    const nextAvailability = {
+                if ((record.Checked === null || record.Checked === '') && new Date(record.ArrivalDate) < lowestArrivalDate) {
+                    console.log("getAvailabilityRecord() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
+                    lowestArrivalDate = new Date(record.ArrivalDate);
+                    nextAvailability = {
                         arrivalDate: record.ArrivalDate,
                         departureDate: record.DepartureDate
                     };
-                    resolve(nextAvailability);
-                } else {
-                    cursor.continue(); // Move to the next record
                 }
+                cursor.continue(); // Move to the next record
             } else {
-                // No more rows, resolve with null
-                resolve(null);
+                // Resolve with the nextAvailability or null if no suitable record found
+                if (nextAvailability !== null) {
+                    console.log("getAvailabilityRecord() FOUND Lowest Arrival Date\n   Arrival: " + nextAvailability.ArrivalDate + "    Departure: " + nextAvailability.DepartureDate);
+                    resolve({ arrivalDate: nextAvailability.arrivalDate, departureDate: nextAvailability.departureDate });
+                } else {
+                    resolve(null);
+                }
             }
         };
 
@@ -128,7 +139,6 @@ async function getAvailabilityRecord(db, arrivalDate) {
         };
     });
 }
-
 
 
 
