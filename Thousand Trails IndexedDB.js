@@ -47,21 +47,22 @@ function logError(errorType, errorMessage) {
 
 // Add or update an entry in the SiteConstants table based on name
 async function addOrUpdateSiteConstant(db, name, value) {
-    const transaction = db.transaction(["SiteConstants"], "readwrite");
-    const store = transaction.objectStore("SiteConstants");
+    const transaction = db.transaction('SiteConstants', 'readwrite');
+    const siteConstantsStore = transaction.objectStore('SiteConstants');
+
 
     try {
         //const existingValue = await store.get(name);
 
         //if (existingValue) {
         //    existingValue.value = JSON.stringify(value); // Serialize the value
-        //    await store.put(existingValue);
+        //    await siteConstantsStore.put(existingValue);
         //    console.log(`SiteConstant '${name}' updated successfully.`);
         //} else {
             
             console.log(`addOrUpdateSiteConstant - name: '${name}' value: '${value}'`);
             const newConstant = { name, value };
-            store.add(newConstant);
+            siteConstantsStore.add(newConstant);
             console.log(`SiteConstant '${name}' added successfully.`);
         //}
     } catch (error) {
