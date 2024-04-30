@@ -25,8 +25,8 @@ function initializeDB() {
             if (!db.objectStoreNames.contains("SiteConstants")) {
                 console.log('Creating SiteConstants object store.');
                 const siteConstantsStore = db.createObjectStore("SiteConstants", { autoIncrement: true });
-                siteConstantsStore.createIndex("name", "name", { unique: true });
-                siteConstantsStore.createIndex("value", "value", { unique: false });
+                siteConstantsStore.createIndex("name", "name");
+                siteConstantsStore.createIndex("value", "value");
                 console.log("SiteConstants table created successfully.");
             }
 
@@ -63,31 +63,26 @@ function logError(errorType, errorMessage) {
 
 // Add or update an entry in the SiteConstants table based on name
 async function addOrUpdateSiteConstant(db, name, value) {
-    const transaction = db.transaction("SiteConstants", "readwrite");
+    const transaction = db.transaction(["SiteConstants"], "readwrite");
     const store = transaction.objectStore("SiteConstants");
 
     try {
-        const getRequest = store.index("name").get(name);
-        const constant = await getRequest;
+        const existingValue = await store.get(name);
 
-        if (constant) {
-            // Update existing constant
-            constant.value = JSON.stringify(value); // Serialize the value
-            const updateRequest = store.put(constant);
-            await updateRequest;
-            console.log(`Constant "${name}" updated successfully.`);
+        if (existingValue) {
+            existingValue.value = value;
+            await store.put(existingValue);
+            console.log(`SiteConstant '${name}' updated successfully.`);
         } else {
-            // Add new constant with auto-generated ID
-            const newConstant = { name: name, value: JSON.stringify(value) }; // Serialize the value
-            const addRequest = store.add(newConstant);
-            const addedId = await addRequest;
-            console.log(`Constant "${name}" added successfully with ID: ${addedId}`);
+            const newConstant = { name, value };
+            await store.add(newConstant);
+            console.log(`SiteConstant '${name}' added successfully.`);
         }
     } catch (error) {
-        console.error(`Error adding or updating constant "${name}":`, error);
+        console.error(`Error adding or updating SiteConstant '${name}':`, error);
+        throw error; // Re-throw the error to be caught by the caller
     }
 }
-
 
 
 // retrieve an entry from the SiteConstants table based on name
