@@ -60,8 +60,10 @@ async function addOrUpdateSiteConstant(db, name, value) {
         //    await store.put(existingValue);
         //    console.log(`SiteConstant '${name}' updated successfully.`);
         //} else {
+            
+            console.log(`addOrUpdateSiteConstant - name: '${name}' value: '${value}'`);
             const newConstant = { name, value: JSON.stringify(value) }; // Serialize the value
-            await store.add(newConstant);
+            store.add(newConstant);
             console.log(`SiteConstant '${name}' added successfully.`);
         //}
     } catch (error) {
