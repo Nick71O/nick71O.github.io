@@ -91,7 +91,7 @@ async function getSiteConstant(db, name) {
     }
 }
 
-async function updateSiteConstantDates(db, newArrivalDate, newDepartureDate) {
+async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     const desiredArrivalDate = new Date(newArrivalDate);
     const desiredDepartureDate = new Date(newDepartureDate);
 
@@ -105,7 +105,7 @@ async function updateSiteConstantDates(db, newArrivalDate, newDepartureDate) {
 
 
 // Delete all records from the SiteConstant object store
-async function deleteAllSiteConstant(db) {
+async function deleteAllSiteConstants(db) {
     deleteAllRecords(db, 'SiteConstant');
 }
 
@@ -199,7 +199,7 @@ async function insertAvailabilityRecords(db) {
 
 
 // Retrieve all entries from the SiteConstant table and log them to the console
-async function logSiteConstant(db) {
+async function logSiteConstants(db) {
     try {
         const transaction = db.transaction("SiteConstant", "readonly");
         const store = transaction.objectStore("SiteConstant");
