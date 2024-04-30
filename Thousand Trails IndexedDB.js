@@ -17,7 +17,7 @@ function initializeDB() {
 
             if (!db.objectStoreNames.contains("SiteConstants")) {
                 const siteConstantsStore = db.createObjectStore("SiteConstants", { autoIncrement: true });
-                siteConstantsStore.createIndex("name", "name", { unique: true });
+                siteConstantsStore.createIndex("name", "name", { unique: false });
                 siteConstantsStore.createIndex("value", "value", { unique: false });
             }
 
