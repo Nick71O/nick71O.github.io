@@ -90,7 +90,7 @@ async function openThousandTrailsDB() {
         var nextAvailabilityDate = await getNextAvailabilityDate(db);
         if (nextAvailabilityDate) {
             console.log('Next Availability Date:', nextAvailabilityDate);
-            openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
+            openTabs(nextAvailabilityDate.arrivalDate.toLocaleDateString('en-us', formatDateOptions), nextAvailabilityDate.departureDate.toLocaleDateString('en-us', formatDateOptions));
         }
         else {
             console.log('Load processAvailabilityTable');
