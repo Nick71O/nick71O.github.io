@@ -47,8 +47,6 @@ async function openTabs(arrivalDate, departureDate) {
     var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
 
     console.log("Redirecting to the Campgrounds Booking Page");
-    //console.log("bookingQueryString: " + bookingQueryString);
-    var bookingURL = baseURL + "/reserve/startbooking?" + sharedBookingURL
     console.log(bookingURL);
     await sleep(500);
     window.location.replace(bookingURL);
