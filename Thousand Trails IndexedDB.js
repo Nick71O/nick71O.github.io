@@ -103,15 +103,29 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
 
 // Function to delete all rows from the SiteConstants object store
 async function deleteAllSiteConstants(db) {
-    const transaction = db.transaction(["SiteConstants"], "readwrite");
-    const store = transaction.objectStore("SiteConstants");
-
     try {
-        await clearStore(store);
-        console.log("All rows deleted from SiteConstants.");
+        const transaction = db.transaction(['SiteConstants'], 'readwrite');
+        const objectStore = transaction.objectStore('SiteConstants');
+
+        const request = objectStore.clear();
+
+        request.onsuccess = function () {
+            console.log('All records deleted from the SiteConstants table.');
+        };
+
+        request.onerror = function (event) {
+            logError('Delete Records', event.target.error);
+        };
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            logError('Transaction', event.target.error);
+        };
     } catch (error) {
-        console.error("Error deleting rows from SiteConstants:", error);
-        throw error; // Re-throw the error to be caught by the caller
+        console.error('Error deleting rows from SiteConstants:', error);
     }
 }
 
