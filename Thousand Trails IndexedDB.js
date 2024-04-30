@@ -13,11 +13,12 @@ function initializeDB() {
         request.onupgradeneeded = function (event) {
             const db = event.target.result;
 
-            if (!db.objectStoreNames.contains("SiteConstant")) {
-                const siteConstantsStore = db.createObjectStore("SiteConstant", { keyPath: "id", autoIncrement: true});
-                siteConstantsStore.createIndex("name", "name", { unique: false });
-                siteConstantsStore.createIndex("value", "value", { unique: false });
+            if (!db.objectStoreNames.contains('SiteConstant')) {
+                const siteConstantsStore = db.createObjectStore('SiteConstant', { keyPath: 'id', autoIncrement: true });
+                siteConstantsStore.createIndex('name', 'name', { unique: false });
+                siteConstantsStore.createIndex('value', 'value', { unique: false });
             }
+        
 
             if (!db.objectStoreNames.contains('Availability')) {
                 const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
@@ -76,8 +77,8 @@ async function addOrUpdateSiteConstant(db, name, value) {
 
 // retrieve an entry from the SiteConstant table based on name
 async function getSiteConstant(db, name) {
-    const transaction = db.transaction("SiteConstant", "readonly");
-    const store = transaction.objectStore("SiteConstant");
+    const transaction = db.transaction('SiteConstant', 'readonly');
+    const store = transaction.objectStore('SiteConstant');
 
     try {
         const constant = await store.get(name);
@@ -206,28 +207,28 @@ async function insertAvailabilityRecords(db) {
 // Retrieve all entries from the SiteConstant table and log them to the console
 async function logSiteConstants(db) {
     try {
-        const transaction = db.transaction("SiteConstant", "readonly");
-        const store = transaction.objectStore("SiteConstant");
+        const transaction = db.transaction('SiteConstant', 'readonly');
+        const store = transaction.objectStore('SiteConstant');
 
         const getRequest = store.getAll();
 
         getRequest.onsuccess = function (event) {
             const constants = event.target.result;
             if (constants && constants.length > 0) {
-                console.log("SiteConstant records:");
+                console.log('SiteConstant records:');
                 constants.forEach((constant) => {
                     console.log(`Name: "${constant.name}", Value: "${constant.value}"`);
                 });
             } else {
-                console.log("No SiteConstant found.");
+                console.log('No SiteConstant found.');
             }
         };
 
         getRequest.onerror = function (event) {
-            console.error("Error getting all SiteConstant records:", event.target.error);
+            console.error('Error getting all SiteConstant records:', event.target.error);
         };
     } catch (error) {
-        console.error("Error retrieving SiteConstant records:", error);
+        console.error('Error retrieving SiteConstant records:', error);
     }
 }
 
