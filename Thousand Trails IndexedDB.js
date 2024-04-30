@@ -62,11 +62,13 @@ async function addOrUpdateSiteConstant(db, name, value) {
         const constant = await getRequest;
 
         if (constant) {
-            constant.value = value;
-            const updateRequest = store.put(constant);
+            // Update existing constant
+            const updatedConstant = { ...constant, value: value }; // Clone and update
+            const updateRequest = store.put(updatedConstant);
             await updateRequest;
             console.log(`Constant "${name}" updated successfully.`);
         } else {
+            // Add new constant
             const newConstant = { name: name, value: value };
             const addRequest = store.add(newConstant);
             await addRequest;
@@ -76,6 +78,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
+
 
 // retrieve an entry from the SiteConstants table based on name
 async function getSiteConstant(db, name) {
