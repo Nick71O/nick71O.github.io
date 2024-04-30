@@ -61,7 +61,7 @@ async function openThousandTrailsDB() {
 
         //get the
         const nextAvailabilityDate = await getNextAvailabilityDate(db);
-        const nextAvailabilityString = `arrivaldate=${nextAvailabilityDate.ArrivalDate}&departuredate=${nextAvailabilityDate.DepartureDate}`;
+        const nextAvailabilityString = `arrivaldate=${nextAvailabilityDate.arrivalDate}&departuredate=${nextAvailabilityDate.departureDate}`;
         console.log('nextAvailabilityString: ' + nextAvailabilityString);
 
         if (!nextAvailabilityDate) {
@@ -126,7 +126,7 @@ async function getNextAvailabilityDate(db) {
             } else {
                 // Resolve with the nextAvailability or null if no suitable record found
                 if (nextAvailability !== null) {
-                    console.log("getNextAvailabilityDate() FOUND Lowest Arrival Date\n   Arrival: " + nextAvailability.ArrivalDate + "    Departure: " + nextAvailability.DepartureDate);
+                    console.log("getNextAvailabilityDate() FOUND Lowest Arrival Date\n   Arrival: " + nextAvailability.arrivalDate + "    Departure: " + nextAvailability.departureDate);
                     resolve({ arrivalDate: nextAvailability.arrivalDate, departureDate: nextAvailability.departureDate });
                 } else {
                     resolve(null);
