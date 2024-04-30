@@ -1,4 +1,5 @@
-﻿const selectSiteButtonXPath = "//*[@id='btnSelect0']";
+﻿const baseURL = "https://members.thousandtrails.com"
+const selectSiteButtonXPath = "//*[@id='btnSelect0']";
 //const arrivalDateXPath = "//*[@id='cartCheckin']";
 //const departureDateXPath = "//*[@id='cartCheckout']";
 //const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
@@ -8,6 +9,10 @@ const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
 //const arrivalDateElements = getElementsByXPath(arrivalDateXPath);
 //const departureDateElements = getElementsByXPath(departureDateXPath);
 //const numberOfNightsElements = getElementsByXPath(numberOfNightsXPath);
+
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // Function to get elements by XPath
 function getElementsByXPath(xpath, parent) {
@@ -34,15 +39,19 @@ function formatDateTime(date) {
     return new Date(date).toLocaleString('en-US', options);
 }
 
-function openTabs(arrivalDate, departureDate) {
+async function openTabs(arrivalDate, departureDate) {
     arrivalDate = arrivalDate.replace(/\//g, "%2F");
     departureDate = departureDate.replace(/\//g, "%2F");
     var loginURL = baseURL + "/login/index"
     var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
     var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
 
-    console.log(bookingURL + bookingQueryString);
-    window.open(bookingURL + bookingQueryString);
+    console.log("Redirecting to the Campgrounds Booking Page");
+    //console.log("bookingQueryString: " + bookingQueryString);
+    var bookingURL = baseURL + "/reserve/startbooking?" + sharedBookingURL
+    console.log(bookingURL);
+    await sleep(500);
+    window.location.replace(bookingURL);
 }
 
 // IndexedDB library functions
