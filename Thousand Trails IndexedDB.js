@@ -116,26 +116,31 @@ async function deleteAllAvailabilityRecords(db) {
 
 async function deleteAllRecords(db, objectStoreName) {
     try {
-        const transaction = db.transaction([objectStoreName], 'readwrite');
-        const objectStore = transaction.objectStore(objectStoreName);
+        const objectStoreNames = db.objectStoreNames;
+        if (objectStoreNames.contains(objectStoreName)) {
+            const transaction = db.transaction([objectStoreName], 'readwrite');
+            const objectStore = transaction.objectStore(objectStoreName);
 
-        const request = objectStore.clear();
+            const request = objectStore.clear();
 
-        request.onsuccess = function () {
-            console.log(`All records deleted from the ${objectStoreName} table.`);
-        };
+            request.onsuccess = function () {
+                console.log(`All records deleted from the ${objectStoreName} table.`);
+            };
 
-        request.onerror = function (event) {
-            logError('Delete Records', event.target.error);
-        };
+            request.onerror = function (event) {
+                logError('Delete Records', event.target.error);
+            };
 
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
+            transaction.oncomplete = function () {
+                console.log('Transaction completed.');
+            };
 
-        transaction.onerror = function (event) {
-            logError('Transaction', event.target.error);
-        };
+            transaction.onerror = function (event) {
+                logError('Transaction', event.target.error);
+            };
+        } else {
+            console.error(`Object store '${objectStoreName}' not found.`);
+        }
     } catch (error) {
         console.error(`Error deleting records from ${objectStoreName}:`, error);
     }
