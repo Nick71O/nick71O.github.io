@@ -1,11 +1,7 @@
 ﻿const baseURL = "https://members.thousandtrails.com"
 //const selectSiteButtonXPath = "//*[@id='btnSelect0']";
-const selectSiteButtonXPath = "//*[@id='btnSelect1']";
+//const selectSiteButtonXPath = "//*[@id='btnSelect1']";
 
-//const arrivalDateXPath = "//*[@id='cartCheckin']";
-//const departureDateXPath = "//*[@id='cartCheckout']";
-//const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
-const currentTimeStamp = formatDateTime(Date.now());
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -50,7 +46,6 @@ async function openTabs(arrivalDate, departureDate) {
 }
 
 // IndexedDB library functions
-
 async function openThousandTrailsDB() {
     try {
         const db = await initializeDB();
@@ -78,7 +73,7 @@ async function openThousandTrailsDB() {
             if (availabilityRecord) {
                 console.log('availabilityRecord found:', availabilityRecord);
                 console.log('Load updateAvailabilityRecord');
-                //check if site is available
+                //check if the book campsite button is available
                 const isCampsiteAvailableResult = isCampsiteAvailable();
                 console.log('Is campsite available:', isCampsiteAvailableResult);
                 if (isCampsiteAvailableResult) {
@@ -86,6 +81,7 @@ async function openThousandTrailsDB() {
                 }
 
                 /*
+                //Can't use the XPath to find the select campsite button as it moves above/below the handicapped site button and the XPath changes
                 const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
                 var campsiteAvailable = false;
                 if (selectButtonElements.length > 0) {
@@ -94,6 +90,7 @@ async function openThousandTrailsDB() {
                 }
                 */
 
+                const currentTimeStamp = formatDateTime(Date.now());
                 await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult, currentTimeStamp);
             }
             else {
@@ -105,9 +102,10 @@ async function openThousandTrailsDB() {
         if (nextAvailabilityDate) {
             console.log('Next Availability Date:', nextAvailabilityDate);
             openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
-            //openTabs(nextAvailabilityDate.arrivalDate.toLocaleDateString('en-us', formatDateOptions), nextAvailabilityDate.departureDate.toLocaleDateString('en-us', formatDateOptions));
         }
         else {
+            await logAvailabilityRecords(db);
+            
             console.log('Load processAvailabilityTable');
             await processAvailabilityTable(db);
         }
@@ -148,12 +146,12 @@ async function getAvailabilityRecord(db, arrivalDate) {
             if (cursor) {
                 const record = cursor.value;
                 //console.log('If (' + new Date(record.ArrivalDate).getTime() + ' === ' + new Date(arrivalDate).getTime() + ')');
-                if (new Date(record.ArrivalDate).getTime() === new Date(arrivalDate).getTime()) { // Match found
-                    console.log('Record:', record); // Log record
+                if (new Date(record.ArrivalDate).getTime() === new Date(arrivalDate).getTime()) { 
+                    console.log('Record:', record);
                     resolve(record); // Resolve with the matched record
-                    return; // Stop further iteration
+                    return;
                 }
-                cursor.continue(); // Continue to the next record
+                cursor.continue();
             } else {
                 resolve(null); // Resolve with null if no match found
             }
