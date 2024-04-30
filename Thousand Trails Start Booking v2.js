@@ -125,24 +125,22 @@ async function getAvailabilityRecord(db, arrivalDate) {
     const transaction = db.transaction(['Availability'], 'readonly');
     const availabilityStore = transaction.objectStore('Availability');
 
-    try {
-        const request = availabilityStore.get(arrivalDate);
-        const event = await new Promise((resolve, reject) => {
-            request.onsuccess = function (event) {
-                const record = event.target.result;
-                console.log('Record found:', record); // Log the record
-                resolve(event);
-            };
-            request.onerror = function (event) {
-                console.error('Error fetching record:', event.target.error); // Log the error
-                reject(event.target.error);
-            };
-        });
-        return event.target.result;
-    } catch (error) {
-        console.error('Error in getAvailabilityRecord:', error); // Log any caught error
-        throw new Error('Error fetching availability record:', error);
-    }
+    const request = availabilityStore.openCursor();
+
+    request.onsuccess = function (event) {
+        const cursor = event.target.result;
+        if (cursor) {
+            const record = cursor.value;
+            console.log('Record:', record); // Log each record
+            cursor.continue();
+        } else {
+            console.log('End of records.');
+        }
+    };
+
+    request.onerror = function (event) {
+        console.error('Error fetching records:', event.target.error); // Log the error
+    };
 }
 
 
