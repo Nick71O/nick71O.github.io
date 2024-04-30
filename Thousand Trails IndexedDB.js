@@ -14,6 +14,13 @@ function initializeDB() {
         request.onupgradeneeded = function (event) {
             console.log('onupgradeneeded event triggered.');
             db = event.target.result;
+
+            // Log object store names and indexes for debugging
+            console.log('Object Store Names:', db.objectStoreNames);
+            db.objectStoreNames.forEach(storeName => {
+                const store = event.target.transaction.objectStore(storeName);
+                console.log(`Indexes for ${storeName}:`, store.indexNames);
+            });
             
             if (!db.objectStoreNames.contains("SiteConstants")) {
                 console.log('Creating SiteConstants object store.');
@@ -48,6 +55,7 @@ function initializeDB() {
     });
 }
 
+
 // Helper function for error logging
 function logError(errorType, errorMessage) {
     console.error(`Error (${errorType}):`, errorMessage);
@@ -59,13 +67,15 @@ async function addOrUpdateSiteConstant(db, name, value) {
     const store = transaction.objectStore("SiteConstants");
 
     try {
-        const getRequest = store.index("name").get(name);
-        const constant = await getRequest;
+        const getAllRequest = store.getAll(); // Retrieve all constants
+        const constants = await getAllRequest;
 
-        if (constant) {
+        const existingConstant = constants.find(constant => constant.name === name);
+
+        if (existingConstant) {
             // Update existing constant
-            constant.value = value;
-            const updateRequest = store.put(constant);
+            existingConstant.value = value;
+            const updateRequest = store.put(existingConstant);
             await updateRequest;
             console.log(`Constant "${name}" updated successfully.`);
         } else {
@@ -79,6 +89,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
+
 
 
 
