@@ -54,23 +54,23 @@ async function addOrUpdateSiteConstant(db, name, value) {
 
     try {
         const existingValue = await store.get(name);
-        console.log('Existing Value:', existingValue);
 
         if (existingValue) {
-            existingValue.value = value;
+            existingValue.value = JSON.stringify(value); // Serialize the value
             await store.put(existingValue);
             console.log(`SiteConstant '${name}' updated successfully.`);
         } else {
-            const newConstant = { name, value };
+            const newConstant = { name, value: JSON.stringify(value) }; // Serialize the value
             await store.add(newConstant);
             console.log(`SiteConstant '${name}' added successfully.`);
         }
     } catch (error) {
         console.error(`Error adding or updating SiteConstant '${name}':`, error);
-        console.error('Error stack trace:', error.stack); // Log error stack trace
-        throw error; // Re-throw the error to be caught by the caller
+        console.error('Error stack trace:', error.stack);
+        throw error;
     }
 }
+
 
 
 // retrieve an entry from the SiteConstants table based on name
