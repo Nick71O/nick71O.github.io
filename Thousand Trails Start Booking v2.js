@@ -119,9 +119,9 @@ async function getSiteConstants(db) {
     });
 }
 
+
 async function getAvailabilityRecord(db, arrivalDate) {
     console.log('Hello from getAvailabilityRecord()');
-
     const transaction = db.transaction(['Availability'], 'readonly');
     const availabilityStore = transaction.objectStore('Availability');
 
@@ -129,9 +129,11 @@ async function getAvailabilityRecord(db, arrivalDate) {
         const request = availabilityStore.get(arrivalDate);
         const event = await new Promise((resolve, reject) => {
             request.onsuccess = function (event) {
+                console.log('Record found:', event.target.result); // Log the result
                 resolve(event);
             };
             request.onerror = function (event) {
+                console.error('Error fetching record:', event.target.error); // Log the error
                 reject(event.target.error);
             };
         });
@@ -140,6 +142,8 @@ async function getAvailabilityRecord(db, arrivalDate) {
         throw new Error('Error fetching availability record:', error);
     }
 }
+    
+
 
 
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
