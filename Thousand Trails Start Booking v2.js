@@ -129,7 +129,8 @@ async function getAvailabilityRecord(db, arrivalDate) {
         const request = availabilityStore.get(arrivalDate);
         const event = await new Promise((resolve, reject) => {
             request.onsuccess = function (event) {
-                console.log('Record found:', event.target.result); // Log the result
+                const record = event.target.result;
+                console.log('Record found:', record); // Log the record
                 resolve(event);
             };
             request.onerror = function (event) {
@@ -139,11 +140,10 @@ async function getAvailabilityRecord(db, arrivalDate) {
         });
         return event.target.result;
     } catch (error) {
+        console.error('Error in getAvailabilityRecord:', error); // Log any caught error
         throw new Error('Error fetching availability record:', error);
     }
 }
-    
-
 
 
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
