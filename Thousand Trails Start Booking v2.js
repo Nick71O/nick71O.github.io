@@ -76,14 +76,15 @@ async function openThousandTrailsDB() {
             //console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
             //var availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
             console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
-            var availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+            const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
 
             if (availabilityRecord) {
+                console.log('availabilityRecord found:', availabilityRecord);
                 console.log('Load updateAvailabilityRecord');
                 await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
             }
             else {
-                console.log('availabilityRecord not found');
+                console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
             }
         }
 
@@ -125,23 +126,30 @@ async function getAvailabilityRecord(db, arrivalDate) {
     const transaction = db.transaction(['Availability'], 'readonly');
     const availabilityStore = transaction.objectStore('Availability');
 
-    const request = availabilityStore.openCursor();
+    return new Promise((resolve, reject) => {
+        const request = availabilityStore.openCursor();
 
-    request.onsuccess = function (event) {
-        const cursor = event.target.result;
-        if (cursor) {
-            const record = cursor.value;
-            console.log('Record:', record); // Log each record
-            cursor.continue();
-        } else {
-            console.log('End of records.');
-        }
-    };
+        request.onsuccess = function (event) {
+            const cursor = event.target.result;
+            if (cursor) {
+                const record = cursor.value;
+                if (record.ArrivalDate === arrivalDate) { // Match found
+                    resolve(record); // Resolve with the matched record
+                    return; // Stop further iteration
+                }
+                cursor.continue(); // Continue to the next record
+            } else {
+                resolve(null); // Resolve with null if no match found
+            }
+        };
 
-    request.onerror = function (event) {
-        console.error('Error fetching records:', event.target.error); // Log the error
-    };
+        request.onerror = function (event) {
+            console.error('Error fetching records:', event.target.error); // Log the error
+            reject(event.target.error);
+        };
+    });
 }
+    
 
 
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
