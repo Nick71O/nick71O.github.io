@@ -80,7 +80,7 @@ async function openThousandTrailsDB() {
                 const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
                 var campsiteAvailable = false;
                 if (selectButtonElements.length > 0) {
-                    console.log('Campsite is Available for ' + availabilityRecord.arrivalDate);
+                    console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
                     campsiteAvailable = true;
                 }
 
