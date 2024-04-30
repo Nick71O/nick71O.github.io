@@ -56,6 +56,8 @@ async function addOrUpdateSiteConstant(db, name, value) {
     try {
         const existingValue = await store.get(name);
 
+        console.log('Existing Value:', existingValue); // Log existing value for debugging
+
         if (existingValue) {
             existingValue.value = value;
             await store.put(existingValue);
@@ -70,6 +72,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         throw error; // Re-throw the error to be caught by the caller
     }
 }
+
 
 
 // retrieve an entry from the SiteConstants table based on name
