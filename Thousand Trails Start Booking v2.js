@@ -4,6 +4,7 @@ const selectSiteButtonXPath = "//*[@id='btnSelect0']";
 //const departureDateXPath = "//*[@id='cartCheckout']";
 //const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
 const currentTimeStamp = formatDateTime(Date.now());
+const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 
 const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
 //const arrivalDateElements = getElementsByXPath(arrivalDateXPath);
@@ -69,12 +70,12 @@ async function openThousandTrailsDB() {
         var bookingArrivalDate = (new Date(document.getElementById('cartCheckin').innerHTML));
         var bookingDepartureDate = (new Date(document.getElementById('cartCheckout').innerHTML));
         var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
-        console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-US') + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-US') + "    Number of Nights: " + bookingNumberOfNights);
+        console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions) + "    Number of Nights: " + bookingNumberOfNights);
 
         console.log('If (' + bookingNumberOfNights + ' === 1)');
         if (bookingNumberOfNights === '1') {
-            console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
-            var availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+            console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
+            var availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
 
             if (availabilityRecord) {
                 console.log('Load updateAvailabilityRecord');
