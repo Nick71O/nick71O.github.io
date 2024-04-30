@@ -6,50 +6,36 @@ const dbVersion = 7;
 let db;
 
 // Function to initialize IndexedDB and return a promise
+// Function to initialize IndexedDB and return a promise
 function initializeDB() {
-    console.log('Hello from initializeDB()');
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open(dbName, dbVersion);
+        const dbName = 'ThousandTrailsDB';
+        const request = window.indexedDB.open(dbName, 7);
 
         request.onupgradeneeded = function (event) {
-            console.log('onupgradeneeded event triggered.');
-            db = event.target.result;
+            const db = event.target.result;
 
-            // Log object store names and indexes for debugging
-            console.log('Object Store Names:', db.objectStoreNames);
-            db.objectStoreNames.forEach(storeName => {
-                const store = event.target.transaction.objectStore(storeName);
-                console.log(`Indexes for ${storeName}:`, store.indexNames);
-            });
-            
             if (!db.objectStoreNames.contains("SiteConstants")) {
-                console.log('Creating SiteConstants object store.');
                 const siteConstantsStore = db.createObjectStore("SiteConstants", { autoIncrement: true });
-                siteConstantsStore.createIndex("name", "name");
-                siteConstantsStore.createIndex("value", "value");
-                console.log("SiteConstants table created successfully.");
+                siteConstantsStore.createIndex("name", "name", { unique: true });
+                siteConstantsStore.createIndex("value", "value", { unique: false });
             }
 
             if (!db.objectStoreNames.contains('Availability')) {
-                console.log('Creating Availability object store.');
                 const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
-                availabilityStore.createIndex('ArrivalDate', 'ArrivalDate');
-                availabilityStore.createIndex('DepartureDate', 'DepartureDate');
-                availabilityStore.createIndex('Available', 'Available');
-                availabilityStore.createIndex('Checked', 'Checked');
-                console.log("Availability table created successfully.");
+                availabilityStore.createIndex('ArrivalDate', 'ArrivalDate', { unique: false });
+                availabilityStore.createIndex('DepartureDate', 'DepartureDate', { unique: false });
+                availabilityStore.createIndex('Available', 'Available', { unique: false });
+                availabilityStore.createIndex('Checked', 'Checked', { unique: false });
             }
         };
 
         request.onsuccess = function (event) {
-            console.log('onsuccess event triggered.');
-            db = event.target.result;
-            console.log('Database opened successfully.');
+            const db = event.target.result;
             resolve(db); // Resolve the promise with the opened db
         };
 
         request.onerror = function (event) {
-            console.error('Error opening database:', event.target.error);
             reject(event.target.error); // Reject the promise on error
         };
     });
@@ -62,6 +48,7 @@ function logError(errorType, errorMessage) {
 }
 
 // Add or update an entry in the SiteConstants table based on name
+// Function to add or update a SiteConstant in the IndexedDB
 async function addOrUpdateSiteConstant(db, name, value) {
     const transaction = db.transaction(["SiteConstants"], "readwrite");
     const store = transaction.objectStore("SiteConstants");
