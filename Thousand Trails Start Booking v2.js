@@ -73,10 +73,10 @@ async function openThousandTrailsDB() {
 
         console.log('If (' + bookingNumberOfNights + ' === 1)');
         if (bookingNumberOfNights === '1') {
-            //console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
-            //var availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-            console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
-            const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+            console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
+            const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
+            //console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
+            //const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
 
             if (availabilityRecord) {
                 console.log('availabilityRecord found:', availabilityRecord);
@@ -91,7 +91,8 @@ async function openThousandTrailsDB() {
         var nextAvailabilityDate = await getNextAvailabilityDate(db);
         if (nextAvailabilityDate) {
             console.log('Next Availability Date:', nextAvailabilityDate);
-            openTabs(nextAvailabilityDate.arrivalDate.toLocaleDateString('en-us', formatDateOptions), nextAvailabilityDate.departureDate.toLocaleDateString('en-us', formatDateOptions));
+            openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
+            //openTabs(nextAvailabilityDate.arrivalDate.toLocaleDateString('en-us', formatDateOptions), nextAvailabilityDate.departureDate.toLocaleDateString('en-us', formatDateOptions));
         }
         else {
             console.log('Load processAvailabilityTable');
@@ -225,21 +226,23 @@ async function updateAvailabilityRecord(db, record, checkedTimeStamp) {
 
 
 async function processAvailabilityTable(db) {
+    console.log('Hello from processAvailabilityTable()');
+
     const transaction = db.transaction(['Availability'], 'readonly');
     const objectStore = transaction.objectStore('Availability');
-
-    const index = objectStore.index('Available');
 
     const availableDates = [];
 
     return new Promise((resolve, reject) => {
-        const request = index.openCursor(IDBKeyRange.only(true));
+        const request = objectStore.openCursor();
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
 
             if (cursor) {
-                availableDates.push(cursor.value.ArrivalDate);
+                if (cursor.value.Available === true) { // Check availability
+                    availableDates.push(cursor.value.ArrivalDate);
+                }
                 cursor.continue();
             } else {
                 console.log('Available Dates:', availableDates);
@@ -252,5 +255,6 @@ async function processAvailabilityTable(db) {
         };
     });
 }
+
 
 openThousandTrailsDB();

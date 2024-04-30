@@ -158,10 +158,10 @@ async function insertAvailabilityRecords(db) {
                 const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
                 const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
-                //console.log('desiredArrivalDate: ' + desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-                //console.log('desiredDepartureDate: ' + desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
-                console.log('desiredArrivalDate: ' + desiredArrivalDate);
-                console.log('desiredDepartureDate: ' + desiredDepartureDate);
+                console.log('desiredArrivalDate: ' + desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
+                console.log('desiredDepartureDate: ' + desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
+                //console.log('desiredArrivalDate: ' + desiredArrivalDate);
+                //console.log('desiredDepartureDate: ' + desiredDepartureDate);
                 //console.log('dateDifference: ' + dateDifference);
                 console.log('daysDifference: ' + daysDifference);
 
@@ -174,10 +174,10 @@ async function insertAvailabilityRecords(db) {
                     nextDay.setDate(nextDay.getDate() + 1);
 
                     const newRecord = {
-                        //ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
-                        //DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
-                        ArrivalDate: currentDate,
-                        DepartureDate: nextDay,
+                        ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
+                        DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
+                        //ArrivalDate: currentDate,
+                        //DepartureDate: nextDay,
                         Available: false,
                         Checked: null // Leave Checked blank (null)
                     };
