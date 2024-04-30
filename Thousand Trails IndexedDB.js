@@ -14,14 +14,14 @@ function initializeDB() {
         request.onupgradeneeded = function (event) {
             console.log('onupgradeneeded event triggered.');
             db = event.target.result;
-            
+            /*
             if (!db.objectStoreNames.contains("SiteConstants")) {
                 console.log('Creating SiteConstants object store.');
                 const siteConstantsStore = db.createObjectStore("SiteConstants", { keyPath: "name" });
                 siteConstantsStore.createIndex("value", "value", { unique: false });
                 console.log("SiteConstants table created successfully.");
             }
-
+*/
             if (!db.objectStoreNames.contains('Availability')) {
                 console.log('Creating Availability object store.');
                 const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
@@ -46,8 +46,6 @@ function initializeDB() {
         };
     });
 }
-
-
 
 // Helper function for error logging
 function logError(errorType, errorMessage) {
