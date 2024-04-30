@@ -17,7 +17,8 @@ function initializeDB() {
             
             if (!db.objectStoreNames.contains("SiteConstants")) {
                 console.log('Creating SiteConstants object store.');
-                const siteConstantsStore = db.createObjectStore("SiteConstants", { keyPath: "name" });
+                const siteConstantsStore = db.createObjectStore("SiteConstants", { autoIncrement: true });
+                siteConstantsStore.createIndex("name", "name", { unique: true });
                 siteConstantsStore.createIndex("value", "value", { unique: false });
                 console.log("SiteConstants table created successfully.");
             }
@@ -58,26 +59,27 @@ async function addOrUpdateSiteConstant(db, name, value) {
     const store = transaction.objectStore("SiteConstants");
 
     try {
-        const getRequest = store.get(name);
+        const getRequest = store.index("name").get(name);
         const constant = await getRequest;
 
         if (constant) {
             // Update existing constant
             constant.value = value;
-            const updateRequest = store.put(constant, name); // Explicitly set key
+            const updateRequest = store.put(constant);
             await updateRequest;
             console.log(`Constant "${name}" updated successfully.`);
         } else {
-            // Add new constant
+            // Add new constant with auto-generated ID
             const newConstant = { name: name, value: value };
             const addRequest = store.add(newConstant);
-            await addRequest;
-            console.log(`Constant "${name}" added successfully.`);
+            const addedId = await addRequest;
+            console.log(`Constant "${name}" added successfully with ID: ${addedId}`);
         }
     } catch (error) {
         console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
+
 
 
 // retrieve an entry from the SiteConstants table based on name
