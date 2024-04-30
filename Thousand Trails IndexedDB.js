@@ -7,6 +7,7 @@ let db;
 
 // Function to initialize IndexedDB and return a promise
 function initializeDB() {
+    console.log('Hello from initializeDB()');
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, dbVersion);
 
