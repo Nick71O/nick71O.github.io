@@ -71,12 +71,15 @@ async function openThousandTrailsDB() {
         var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
         console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-US') + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-US') + "    Number of Nights: " + bookingNumberOfNights);
 
+        console.log('If (' + bookingNumberOfNights + ' === 1)');
         if (bookingNumberOfNights === 1) {
             console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
             var availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
 
-            console.log('Load updateAvailabilityRecord');
-            await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
+            if (availabilityRecord) {
+                console.log('Load updateAvailabilityRecord');
+                await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
+            }
         }
 
         var nextAvailabilityDate = await getNextAvailabilityDate(db);
