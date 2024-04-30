@@ -6,11 +6,9 @@ const dbVersion = 8;
 let db;
 
 // Function to initialize IndexedDB and return a promise
-// Function to initialize IndexedDB and return a promise
 function initializeDB() {
     return new Promise((resolve, reject) => {
-        const dbName = 'ThousandTrailsDB';
-        const request = window.indexedDB.open(dbName, 7);
+        const request = window.indexedDB.open(dbName, dbVersion);
 
         request.onupgradeneeded = function (event) {
             const db = event.target.result;
