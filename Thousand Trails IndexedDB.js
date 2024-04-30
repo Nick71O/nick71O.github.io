@@ -101,43 +101,26 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', formattedDepartureDate);
 }
 
-// Function to delete all rows from the SiteConstants object store
+
+// Delete all records from the SiteConstants object store
 async function deleteAllSiteConstants(db) {
-    try {
-        const transaction = db.transaction(['SiteConstants'], 'readwrite');
-        const objectStore = transaction.objectStore('SiteConstants');
-
-        const request = objectStore.clear();
-
-        request.onsuccess = function () {
-            console.log('All records deleted from the SiteConstants table.');
-        };
-
-        request.onerror = function (event) {
-            logError('Delete Records', event.target.error);
-        };
-
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
-
-        transaction.onerror = function (event) {
-            logError('Transaction', event.target.error);
-        };
-    } catch (error) {
-        console.error('Error deleting rows from SiteConstants:', error);
-    }
+    deleteAllRecords(db, 'SiteConstants');
 }
 
+// Delete all records from the Availability object store
 async function deleteAllAvailabilityRecords(db) {
+    deleteAllRecords(db, 'Availability');
+}
+
+async function deleteAllRecords(db, objectStoreName) {
     try {
-        const transaction = db.transaction(['Availability'], 'readwrite');
-        const objectStore = transaction.objectStore('Availability');
+        const transaction = db.transaction([objectStoreName], 'readwrite');
+        const objectStore = transaction.objectStore(objectStoreName);
 
         const request = objectStore.clear();
 
         request.onsuccess = function () {
-            console.log('All records deleted from the Availability table.');
+            console.log(`All records deleted from the ${objectStoreName} table.`);
         };
 
         request.onerror = function (event) {
@@ -152,9 +135,10 @@ async function deleteAllAvailabilityRecords(db) {
             logError('Transaction', event.target.error);
         };
     } catch (error) {
-        console.error('Error deleting records:', error);
+        console.error(`Error deleting records from ${objectStoreName}:`, error);
     }
 }
+
 
 async function insertAvailabilityRecords(db) {
     try {
