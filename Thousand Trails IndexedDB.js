@@ -74,23 +74,26 @@ async function addOrUpdateSiteConstant(db, name, value) {
 }
 
 
-
 // retrieve an entry from the SiteConstant table based on name
 async function getSiteConstant(db, name) {
     const transaction = db.transaction('SiteConstant', 'readonly');
-    const store = transaction.objectStore('SiteConstant');
+    const siteConstantsStore = transaction.objectStore('SiteConstant');
 
     try {
-        const constant = await store.get(name);
+        const constant = await siteConstantsStore.get(name);
         if (constant) {
             console.log(`Retrieved Constant "${name}":`, constant);
+            return constant; // Return the retrieved constant
         } else {
             console.error(`Constant "${name}" not found.`);
+            return null; // Return null if constant is not found
         }
     } catch (error) {
         console.error(`Error getting constant "${name}":`, error);
+        return null; // Return null in case of error
     }
 }
+
 
 async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     const desiredArrivalDate = new Date(newArrivalDate);
