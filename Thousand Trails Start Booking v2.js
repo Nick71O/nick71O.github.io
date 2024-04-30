@@ -1,5 +1,7 @@
 ﻿const baseURL = "https://members.thousandtrails.com"
-const selectSiteButtonXPath = "//*[@id='btnSelect0']";
+//const selectSiteButtonXPath = "//*[@id='btnSelect0']";
+const selectSiteButtonXPath = "//*[@id='btnSelect1']";
+
 //const arrivalDateXPath = "//*[@id='cartCheckin']";
 //const departureDateXPath = "//*[@id='cartCheckout']";
 //const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
@@ -77,14 +79,22 @@ async function openThousandTrailsDB() {
                 console.log('availabilityRecord found:', availabilityRecord);
                 console.log('Load updateAvailabilityRecord');
                 //check if site is available
+                const isCampsiteAvailableResult = isCampsiteAvailable();
+                console.log('Is campsite available:', isCampsiteAvailableResult);
+                if (isCampsiteAvailableResult) {
+                    console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
+                }
+
+                /*
                 const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
                 var campsiteAvailable = false;
                 if (selectButtonElements.length > 0) {
                     console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
                     campsiteAvailable = true;
                 }
+                */
 
-                await updateAvailabilityRecord(db, availabilityRecord, campsiteAvailable, currentTimeStamp);
+                await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult, currentTimeStamp);
             }
             else {
                 console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
@@ -256,5 +266,30 @@ async function processAvailabilityTable(db) {
     });
 }
 
+function isCampsiteAvailable() {
+    // Find all elements with class "site-title desktop"
+    const siteTitles = document.querySelectorAll('.site-title.desktop');
+  
+    // Flag to track if the button is found
+    let buttonFound = false;
+  
+    // Loop through each element to find the one with exact text "Site: "
+    siteTitles.forEach(title => {
+      if (title.textContent.trim() === 'Site:') {
+        // Find the "Select Site" button within this element's parent
+        const selectButton = title.closest('.site').querySelector('.select-site');
+        if (selectButton) {
+          // Set the flag to true and exit the loop
+          buttonFound = true;
+          return;
+        }
+      }
+    });
+  
+    // Return true if buttonFound is true, false otherwise
+    return buttonFound;
+  }
+  
+  
 
 openThousandTrailsDB();
