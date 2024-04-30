@@ -4,7 +4,6 @@ const selectSiteButtonXPath = "//*[@id='btnSelect0']";
 //const departureDateXPath = "//*[@id='cartCheckout']";
 //const numberOfNightsXPath = "//*[@id='cartNoOfNights']";
 const currentTimeStamp = formatDateTime(Date.now());
-const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 
 const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
 //const arrivalDateElements = getElementsByXPath(arrivalDateXPath);
