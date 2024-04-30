@@ -53,10 +53,23 @@ async function openThousandTrailsDB() {
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
 
-        const siteConstants = await getSiteConstants(db);
-        const scDesiredArrivalDate = siteConstants.DesiredArrivalDate;
-        const scDesiredDepartureDate = siteConstants.DesiredDepartureDate;
-        console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate);
+        const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
+        const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+
+        // Check if constants were retrieved successfully
+        if (scDesiredArrivalConstant && scDesiredDepartureConstant) {
+            const scDesiredArrivalDate = scDesiredArrivalConstant.value;
+            const scDesiredDepartureDate = scDesiredDepartureConstant.value;
+    
+            // Calculate the number of nights
+            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+            const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
+            const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
+    
+            console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
+        } else {
+            console.error('SiteConstant Desired Arrival or Departure constant not found.');
+        }
 
         var bookingArrivalDate = (new Date(document.getElementById('cartCheckin').innerHTML));
         var bookingDepartureDate = (new Date(document.getElementById('cartCheckout').innerHTML));
@@ -107,7 +120,17 @@ async function openThousandTrailsDB() {
             await logAvailabilityRecords(db);
 
             console.log('Load processAvailabilityTable');
-            await processAvailabilityTable(db);
+            const availableDates = await processAvailabilityTable(db);
+            console.log('Available Dates:', availableDates);
+
+            const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+            const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
+    
+            if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
+                AvailabileBooking(availableDates, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value)
+            } else {
+                console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
+            }
         }
 
     } catch (error) {
@@ -291,6 +314,147 @@ function isCampsiteAvailable() {
     return buttonFound;
   }
   
-  
+
+  function AvailabileBooking(availableDates, bookingPreference, minimumConsecutiveDays) {
+    //bookingPreference switch: none | trailing | leading | consecutive
+    switch (bookingPreference.toLowerCase()) {
+        case "trailing":
+            console.log("Found Arrival Date: " + availableDates.contains(arrivalDate.toLocaleDateString('en-US')))
+            if (availableDates.length > 0) {
+                var foundArrivalDate;
+                var foundDepartureDate;
+                var foundNumberOfNights = 0;
+                if (availableDates.contains(arrivalDate.toLocaleDateString('en-US'))) {
+                    foundArrivalDate = arrivalDate;
+                    console.log("foundArrivalDate: " + foundArrivalDate);
+                    var dateArray = getDates(arrivalDate, departureDate);
+                    console.log("dateArray.length: " + dateArray.length);
+                    console.log("dateArray: " + dateArray);
+                    for (i = 0; i < dateArray.length; i++) {
+                        if (availableDates.contains(dateArray[i].toLocaleDateString('en-US'))) {
+                            console.log("dateArray[" + i + "]: " + dateArray[i]);
+                            foundDepartureDate = dateArray[i];
+                            if (foundArrivalDate.toLocaleDateString('en-US') == foundDepartureDate.toLocaleDateString('en-US')) {
+                                foundDepartureDate.setDate(foundDepartureDate.getDate() + 1);
+                            }
+                            foundNumberOfNights = i + 1;
+                            console.log("foundDepartureDate: " + foundDepartureDate);
+                            console.log("foundNumberOfNights: " + foundNumberOfNights);
+                        }
+                        else {
+                            i = dateArray.length;
+                        }
+                    }
+                    if (foundNumberOfNights > 0) {
+                        console.log("Available Dates to Book\n   Arrival: " + foundArrivalDate.toLocaleDateString('en-US', formatDateOptions) + "    Departure: " + foundDepartureDate.toLocaleDateString('en-US', formatDateOptions) + "    Number of Nights: " + foundNumberOfNights);
+                        openTabs(foundArrivalDate, foundDepartureDate);
+                    }
+                }
+            }
+            break;
+
+        case "leading":
+            console.log("Found Departure Date: " + availableDates.contains(departureDate.toLocaleDateString('en-US')))
+            if (availableDates.length > 0) {
+                var foundArrivalDate;
+                var foundDepartureDate;
+                var foundNumberOfNights = 0;
+                if (availableDates.contains(departureDate.toLocaleDateString('en-US'))) {
+                    foundDepartureDate = departureDate;
+                    console.log("foundDepartureDate: " + foundDepartureDate);
+                    var dateArray = getDates(arrivalDate, departureDate);
+                    console.log("dateArray.length: " + dateArray.length);
+                    console.log("dateArray: " + dateArray);
+                    for (i = dateArray.length - 1; i >= 0; i--) {
+                        if (availableDates.contains(dateArray[i].toLocaleDateString('en-US'))) {
+                            console.log("dateArray[" + i + "]: " + dateArray[i]);
+                            foundArrivalDate = dateArray[i];
+                            if (foundArrivalDate.toLocaleDateString('en-US') == foundDepartureDate.toLocaleDateString('en-US')) {
+                                foundArrivalDate.setDate(foundArrivalDate.getDate() - 1);
+                            }
+                            foundNumberOfNights = i + 1;
+                            console.log("foundArrivalDate: " + foundArrivalDate);
+                            console.log("foundNumberOfNights: " + foundNumberOfNights);
+                        }
+                        else {
+                            i = -1;
+                        }
+                    }
+                    if (foundNumberOfNights > 0) {
+                        console.log("Available Dates to Book\n   Arrival: " + foundArrivalDate.toLocaleDateString('en-US', formatDateOptions) + "    Departure: " + foundDepartureDate.toLocaleDateString('en-US', formatDateOptions) + "    Number of Nights: " + foundNumberOfNights);
+                        openTabs(foundArrivalDate, foundDepartureDate);
+                    }
+                }
+            }
+            break;
+
+        case "consecutive":
+            var arr = getDatesInRange(availableDates, arrivalDate, departureDate);
+            var startDate;
+            var endDate;
+            var range = [];
+            var consecutiveDates = [];
+
+            arr.sort((a, b) => a.getTime() - b.getTime());
+            arr.some(function (v, i, arr) {
+                if (i > 0) {
+                    const tmp = new Date(arr[i - 1]);
+
+                    if (this.consecutiveCount == 0) {
+                        startDate = tmp.toLocaleDateString('en-US');
+                    }
+
+                    //console.log("tmp: " + tmp.toLocaleDateString('en-US'));
+                    tmp.setDate(tmp.getDate() + 1);
+                    //console.log("tmp: " + tmp.toLocaleDateString('en-US'));
+                    //console.log(tmp.toLocaleDateString('en-US') + "===" + v.toLocaleDateString('en-US'));
+                    if (tmp.getTime() === v.getTime()) {
+                        endDate = tmp.toLocaleDateString('en-US');
+                        this.consecutiveCount++;
+                        //console.log("consecutiveCount: " + this.consecutiveCount + " -  " + v.toLocaleDateString('en-US'));
+                    } else {
+                        startDate = undefined;
+                        endDate = undefined;
+                        this.consecutiveCount = 0;
+                        //console.log(v.toLocaleDateString('en-US'));
+                    }
+
+                }
+                if (i == arr.length - 1) {
+                    range = [this.consecutiveCount, startDate, endDate];
+                    consecutiveDates.push(range);
+                }
+
+                if (this.consecutiveCount == 0) {
+                    if (range[1] != undefined & range[2] != undefined) {
+                        consecutiveDates.push(range);
+                        //console.log("StartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
+                    }
+                }
+                if (startDate != undefined && endDate != undefined) {
+                    //console.log("StartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
+                }
+                range = [this.consecutiveCount, startDate, endDate];
+            }, {
+                consecutiveCount: 0
+            });
+
+            console.log(consecutiveDates);
+            if (consecutiveDates.length > 0) {
+                consecutiveDates.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
+
+                if (minimumConsecutiveDays <= consecutiveDates[0][0]) {
+                    console.log("Available Dates to Book\n   Arrival: " + consecutiveDates[0][1] + "    Departure: " + consecutiveDates[0][2] + "    Number of Nights: " + consecutiveDates[0][0]);
+                    openTabs(consecutiveDates[0][1], consecutiveDates[0][2]);
+                }
+            }
+            break;
+
+        default:
+        // code block
+    }
+  }
+
+
 
 openThousandTrailsDB();

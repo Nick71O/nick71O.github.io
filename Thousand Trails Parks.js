@@ -8,10 +8,23 @@ async function launch() {
         console.log('IndexedDB initialized successfully.');
         await logSiteConstants(db);
 
-        const siteConstants = await getSiteConstants(db);
-        const scDesiredArrivalDate = siteConstants.DesiredArrivalDate;
-        const scDesiredDepartureDate = siteConstants.DesiredDepartureDate;
-        console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate);
+        const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
+        const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+
+        if (!scDesiredArrivalConstant || !scDesiredDepartureConstant) {
+            console.error('SiteConstant desired arrival or departure constant not found.');
+            return; // Exit the function if constants are not found
+        }
+
+        const scDesiredArrivalDate = scDesiredArrivalConstant.value;
+        const scDesiredDepartureDate = scDesiredDepartureConstant.value;
+
+        // Calculate the number of nights
+        const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+        const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
+        const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
+
+        console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
 
         openTabs(scDesiredArrivalDate, scDesiredDepartureDate);
 
@@ -23,22 +36,6 @@ async function launch() {
     }
 }
 
-async function getSiteConstants(db) {
-    const transaction = db.transaction(['SiteConstants'], 'readonly');
-    const siteConstantsStore = transaction.objectStore('SiteConstants');
-
-    return new Promise((resolve, reject) => {
-        const request = siteConstantsStore.get('SiteConstants');
-
-        request.onsuccess = function (event) {
-            resolve(event.target.result);
-        };
-
-        request.onerror = function (event) {
-            reject(event.target.error);
-        };
-    });
-}
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -53,17 +50,19 @@ function getTimestamp() {
     return timestamp;
   }
   
-  async function openTabs(arrivalDate, departureDate) {
-      arrivalDate = arrivalDate.replace(/\//g, "%2F");
-      departureDate = departureDate.replace(/\//g, "%2F");
-      var loginURL = baseURL + "/login/index"
-      var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
-      var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
-  
-      console.log("Redirecting to the Campgrounds Booking Page");
-      console.log(bookingURL);
-      await sleep(500);
-      window.location.replace(bookingURL);
-  }
+
+async function openTabs(arrivalDate, departureDate) {
+    arrivalDate = arrivalDate.replace(/\//g, "%2F");
+    departureDate = departureDate.replace(/\//g, "%2F");
+    var loginURL = baseURL + "/login/index"
+    var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
+    var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
+    //var bookingURL = baseURL + "/login/index" + bookingQueryString
+
+    console.log("Redirecting to the Campgrounds Booking Page");
+    console.log(bookingURL);
+    await sleep(500);
+    window.location.replace(bookingURL);
+}
 
 launch();

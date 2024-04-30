@@ -13,9 +13,16 @@ function initializeDB() {
         request.onupgradeneeded = function (event) {
             db = event.target.result;
             // Your upgrade logic here
-            if (!db.objectStoreNames.contains('SiteConstants')) {
-                const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
-                siteConstantsStore.createIndex('value', 'value');
+            //if (!db.objectStoreNames.contains('SiteConstants')) {
+            //    const siteConstantsStore = db.createObjectStore('SiteConstants', { keyPath: 'key' });
+            //    siteConstantsStore.createIndex('value', 'value');
+            //}
+
+            if (!db.objectStoreNames.contains("SiteConstants")) {
+                const siteConstantsStore = db.createObjectStore("SiteConstants", { keyPath: "name" });
+                siteConstantsStore.createIndex("value", "value", { unique: false });
+
+                console.log("SiteConstants table created successfully.");
             }
 
             if (!db.objectStoreNames.contains('Availability')) {
@@ -24,6 +31,8 @@ function initializeDB() {
                 availabilityStore.createIndex('DepartureDate', 'DepartureDate');
                 availabilityStore.createIndex('Available', 'Available');
                 availabilityStore.createIndex('Checked', 'Checked');
+
+                console.log("Availability table created successfully.");
             }
         };
 
@@ -46,71 +55,55 @@ function logError(errorType, errorMessage) {
     console.error(`Error (${errorType}):`, errorMessage);
 }
 
-async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
+// Add or update an entry in the SiteConstants table based on name
+async function addOrUpdateSiteConstant(db, name, value) {
+    const transaction = db.transaction("SiteConstants", "readwrite");
+    const store = transaction.objectStore("SiteConstants");
+
     try {
-        const transaction = db.transaction(['SiteConstants'], 'readwrite');
-        const siteConstantsStore = transaction.objectStore('SiteConstants');
+        const getRequest = store.get(name);
+        const constant = await getRequest;
 
-        const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
-
-        siteConstantsRequest.onsuccess = async function (event) {
-            const siteConstantsData = event.target.result;
-
-            if (siteConstantsData) {
-                // Update the DesiredArrivalDate and DesiredDepartureDate
-                siteConstantsData.DesiredArrivalDate = newArrivalDate;
-                siteConstantsData.DesiredDepartureDate = newDepartureDate;
-
-                const updateRequest = siteConstantsStore.put(siteConstantsData); // Remove 'SiteConstants' parameter
-
-                updateRequest.onsuccess = function () {
-                    console.log('SiteConstants updated with new dates.');
-                };
-
-                updateRequest.onerror = function (event) {
-                    logError('Update SiteConstants', event.target.error);
-                };
-            } else {
-                // If SiteConstants record doesn't exist, insert it
-                const newSiteConstantsData = {
-                    key: 'SiteConstants',
-                    value: {
-                        DesiredArrivalDate: newArrivalDate,
-                        DesiredDepartureDate: newDepartureDate,
-                        BookingPreference: 'None',
-                        MinimumConsecutiveDays: '4'
-                    }
-                };
-
-                const addRequest = siteConstantsStore.add(newSiteConstantsData);
-
-                addRequest.onsuccess = function () {
-                    console.log('New SiteConstants record added.');
-                };
-
-                addRequest.onerror = function (event) {
-                    logError('Add SiteConstants', event.target.error);
-                };
-            }
-        };
-
-        siteConstantsRequest.onerror = function (event) {
-            logError('Fetch SiteConstants', event.target.error);
-        };
-
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
-
-        transaction.onerror = function (event) {
-            logError('Transaction', event.target.error);
-        };
-
+        if (constant) {
+            constant.value = value;
+            const updateRequest = store.put(constant);
+            await updateRequest;
+            console.log(`Constant "${name}" updated successfully.`);
+        } else {
+            const newConstant = { name: name, value: value };
+            const addRequest = store.add(newConstant);
+            await addRequest;
+            console.log(`Constant "${name}" added successfully.`);
+        }
     } catch (error) {
-        console.error('Error updating SiteConstants:', error);
+        console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
 
+// retrieve an entry from the SiteConstants table based on name
+async function getSiteConstant(db, name) {
+    const transaction = db.transaction("SiteConstants", "readonly");
+    const store = transaction.objectStore("SiteConstants");
+
+    try {
+        const constant = await store.get(name);
+        if (constant) {
+            console.log(`Retrieved Constant "${name}":`, constant);
+        } else {
+            console.error(`Constant "${name}" not found.`);
+        }
+    } catch (error) {
+        console.error(`Error getting constant "${name}":`, error);
+    }
+}
+
+async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
+    const desiredArrivalDate = new Date(newArrivalDate);
+    const desiredDepartureDate = new Date(newDepartureDate);
+
+    await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
+    await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
+}
 
 async function deleteAllAvailabilityRecords(db) {
     try {
@@ -141,66 +134,53 @@ async function deleteAllAvailabilityRecords(db) {
 
 async function insertAvailabilityRecords(db) {
     try {
-        const transaction = db.transaction(['SiteConstants', 'Availability'], 'readwrite'); // Change transaction mode to 'readwrite'
-        const siteConstantsStore = transaction.objectStore('SiteConstants');
+        const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
 
-        const siteConstantsRequest = siteConstantsStore.get('SiteConstants');
+        const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
+        const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
 
-        siteConstantsRequest.onsuccess = function (event) {
-            const siteConstantsData = event.target.result;
+        // Check if constants were retrieved successfully
+        if (!desiredArrivalConstant || !desiredDepartureConstant) {
+            console.error('Desired arrival or departure constant not found.');
+            return; // Exit the function if constants are not found
+        }
 
-            if (siteConstantsData) {
-                const desiredArrivalDate = new Date(siteConstantsData.DesiredArrivalDate);
-                const desiredDepartureDate = new Date(siteConstantsData.DesiredDepartureDate);
+        const desiredArrivalDate = new Date(desiredArrivalConstant.value);
+        const desiredDepartureDate = new Date(desiredDepartureConstant.value);
 
-                // Calculate days between DesiredArrivalDate and DesiredDepartureDate
-                const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
-                const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
+        const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
+        const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
-                console.log('desiredArrivalDate: ' + desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-                console.log('desiredDepartureDate: ' + desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
-                //console.log('desiredArrivalDate: ' + desiredArrivalDate);
-                //console.log('desiredDepartureDate: ' + desiredDepartureDate);
-                //console.log('dateDifference: ' + dateDifference);
-                console.log('daysDifference: ' + daysDifference);
+        console.log(`Desired Arrival Date: ${desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions)}`);
+        console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
+        console.log(`Days Difference: ${daysDifference}`);
 
-                // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
-                for (let i = 0; i < daysDifference; i++) {
-                    const currentDate = new Date(desiredArrivalDate);
-                    currentDate.setDate(currentDate.getDate() + i);
+        for (let i = 0; i < daysDifference; i++) {
+            const currentDate = new Date(desiredArrivalDate);
+            currentDate.setDate(currentDate.getDate() + i);
 
-                    const nextDay = new Date(currentDate);
-                    nextDay.setDate(nextDay.getDate() + 1);
+            const nextDay = new Date(currentDate);
+            nextDay.setDate(nextDay.getDate() + 1);
 
-                    const newRecord = {
-                        ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
-                        DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
-                        //ArrivalDate: currentDate,
-                        //DepartureDate: nextDay,
-                        Available: false,
-                        Checked: null // Leave Checked blank (null)
-                    };
+            const newRecord = {
+                ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
+                DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
+                Available: false,
+                Checked: null
+            };
 
-                    availabilityStore.add(newRecord);
-                }
+            availabilityStore.add(newRecord);
+        }
 
-                console.log('Availability records inserted successfully.');
-            } else {
-                logError('Fetch SiteConstants', 'SiteConstants not found.');
-            }
-        };
-
-        siteConstantsRequest.onerror = function (event) {
-            logError('Fetch SiteConstants', event.target.error);
-        };
+        console.log('Availability records inserted successfully.');
 
         transaction.oncomplete = function () {
             console.log('Transaction completed.');
         };
 
         transaction.onerror = function (event) {
-            logError('Transaction', event.target.error);
+            console.error('Transaction error:', event.target.error);
         };
     } catch (error) {
         console.error('Error inserting availability records:', error);
@@ -208,34 +188,31 @@ async function insertAvailabilityRecords(db) {
 }
 
 
+// Retrieve all entries from the SiteConstants table and log them to the console
 async function logSiteConstants(db) {
     try {
-        const transaction = db.transaction(['SiteConstants'], 'readonly');
-        const objectStore = transaction.objectStore('SiteConstants');
+        const transaction = db.transaction("SiteConstants", "readonly");
+        const store = transaction.objectStore("SiteConstants");
 
-        const getAllRequest = objectStore.getAll();
+        const getRequest = store.getAll();
 
-        getAllRequest.onsuccess = function (event) {
-            const records = event.target.result;
-            console.log('SiteConstants records:');
-            records.forEach(record => {
-                console.log(record);
-            });
+        getRequest.onsuccess = function (event) {
+            const constants = event.target.result;
+            if (constants && constants.length > 0) {
+                console.log("SiteConstants records:");
+                constants.forEach((constant) => {
+                    console.log(`Name: "${constant.name}", Value: "${constant.value}"`);
+                });
+            } else {
+                console.log("No SiteConstants found.");
+            }
         };
 
-        getAllRequest.onerror = function (event) {
-            logError('Fetch SiteConstants Records', event.target.error);
-        };
-
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
-
-        transaction.onerror = function (event) {
-            logError('Transaction', event.target.error);
+        getRequest.onerror = function (event) {
+            console.error("Error getting all SiteConstants records:", event.target.error);
         };
     } catch (error) {
-        console.error('Error fetching SiteConstants records:', error);
+        console.error("Error retrieving SiteConstants records:", error);
     }
 }
 
