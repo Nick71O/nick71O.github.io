@@ -34,6 +34,17 @@ function formatDateTime(date) {
     return new Date(date).toLocaleString('en-US', options);
 }
 
+function openTabs(arrivalDate, departureDate) {
+    arrivalDate = arrivalDate.replace(/\//g, "%2F");
+    departureDate = departureDate.replace(/\//g, "%2F");
+    var loginURL = baseURL + "/login/index"
+    var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
+    var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
+
+    console.log(bookingURL + bookingQueryString);
+    window.open(bookingURL + bookingQueryString);
+}
+
 // IndexedDB library functions
 
 async function openThousandTrailsDB() {
@@ -58,18 +69,16 @@ async function openThousandTrailsDB() {
             await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
         }
 
-
-        //get the
         const nextAvailabilityDate = await getNextAvailabilityDate(db);
-        const nextAvailabilityString = `arrivaldate=${nextAvailabilityDate.arrivalDate}&departuredate=${nextAvailabilityDate.departureDate}`;
-        console.log('nextAvailabilityString: ' + nextAvailabilityString);
 
-        if (!nextAvailabilityDate) {
-            console.log('Load processAvailabilityTable');
-           // await processAvailabilityTable(db);
+        if (nextAvailabilityDate) {
+            console.log('Next Availability Date:', nextAvailabilityDate);
+            openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
         }
-
-        console.log('Next Availability Date:', nextAvailabilityDate);
+        else {
+            console.log('Load processAvailabilityTable');
+            await processAvailabilityTable(db);
+        }
 
     } catch (error) {
         console.error('Error performing operations:', error);
