@@ -72,12 +72,14 @@ async function openThousandTrailsDB() {
         console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-US') + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-US') + "    Number of Nights: " + bookingNumberOfNights);
 
         if (bookingNumberOfNights === 1) {
+            console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
+            var availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+
             console.log('Load updateAvailabilityRecord');
             await updateAvailabilityRecord(db, availabilityRecord, currentTimeStamp);
         }
 
-        const nextAvailabilityDate = await getNextAvailabilityDate(db);
-
+        var nextAvailabilityDate = await getNextAvailabilityDate(db);
         if (nextAvailabilityDate) {
             console.log('Next Availability Date:', nextAvailabilityDate);
             openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
@@ -107,6 +109,28 @@ async function getSiteConstants(db) {
             reject(event.target.error);
         };
     });
+}
+
+async function getAvailabilityRecord(db, arrivalDate) {
+    console.log('Hello from getAvailabilityRecord()');
+
+    const transaction = db.transaction(['Availability'], 'readonly');
+    const availabilityStore = transaction.objectStore('Availability');
+
+    try {
+        const request = availabilityStore.get(arrivalDate);
+        const event = await new Promise((resolve, reject) => {
+            request.onsuccess = function (event) {
+                resolve(event);
+            };
+            request.onerror = function (event) {
+                reject(event.target.error);
+            };
+        });
+        return event.target.result;
+    } catch (error) {
+        throw new Error('Error fetching availability record:', error);
+    }
 }
 
 
