@@ -2,7 +2,7 @@ console.log('Hello From Thousand Trails IndexedDB.js');
 
 const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 const dbName = 'ThousandTrailsDB';
-const dbVersion = 7;
+const dbVersion = 8;
 let db;
 
 // Function to initialize IndexedDB and return a promise
@@ -62,7 +62,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         //} else {
             
             console.log(`addOrUpdateSiteConstant - name: '${name}' value: '${value}'`);
-            const newConstant = { name, value: JSON.stringify(value) }; // Serialize the value
+            const newConstant = { name, value };
             store.add(newConstant);
             console.log(`SiteConstant '${name}' added successfully.`);
         //}
