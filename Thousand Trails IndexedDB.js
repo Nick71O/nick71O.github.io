@@ -110,9 +110,14 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     const desiredArrivalDate = new Date(newArrivalDate);
     const desiredDepartureDate = new Date(newDepartureDate);
 
-    await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-    await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
+    // Ensure that the values passed are serializable
+    const formattedArrivalDate = desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions);
+    const formattedDepartureDate = desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions);
+
+    await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', formattedArrivalDate);
+    await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', formattedDepartureDate);
 }
+
 
 async function deleteAllAvailabilityRecords(db) {
     try {
