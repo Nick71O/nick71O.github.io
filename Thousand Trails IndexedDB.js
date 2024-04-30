@@ -70,25 +70,30 @@ async function addOrUpdateSiteConstant(db, name, value) {
         const getAllRequest = store.getAll(); // Retrieve all constants
         const constants = await getAllRequest;
 
-        const existingConstant = constants.find(constant => constant.name === name);
+        if (Array.isArray(constants)) {
+            const existingConstant = constants.find(constant => constant.name === name);
 
-        if (existingConstant) {
-            // Update existing constant
-            existingConstant.value = value;
-            const updateRequest = store.put(existingConstant);
-            await updateRequest;
-            console.log(`Constant "${name}" updated successfully.`);
+            if (existingConstant) {
+                // Update existing constant
+                existingConstant.value = value;
+                const updateRequest = store.put(existingConstant);
+                await updateRequest;
+                console.log(`Constant "${name}" updated successfully.`);
+            } else {
+                // Add new constant with auto-generated ID
+                const newConstant = { name: name, value: value };
+                const addRequest = store.add(newConstant);
+                const addedId = await addRequest;
+                console.log(`Constant "${name}" added successfully with ID: ${addedId}`);
+            }
         } else {
-            // Add new constant with auto-generated ID
-            const newConstant = { name: name, value: value };
-            const addRequest = store.add(newConstant);
-            const addedId = await addRequest;
-            console.log(`Constant "${name}" added successfully with ID: ${addedId}`);
+            console.error("Error retrieving constants. Constants array is not valid.");
         }
     } catch (error) {
         console.error(`Error adding or updating constant "${name}":`, error);
     }
 }
+
 
 
 
