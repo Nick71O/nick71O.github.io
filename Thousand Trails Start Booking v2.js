@@ -60,12 +60,12 @@ async function openThousandTrailsDB() {
         if (scDesiredArrivalConstant && scDesiredDepartureConstant) {
             const scDesiredArrivalDate = scDesiredArrivalConstant.value;
             const scDesiredDepartureDate = scDesiredDepartureConstant.value;
-    
+
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
             const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
             const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
-    
+
             console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
         } else {
             console.error('SiteConstant Desired Arrival or Departure constant not found.');
@@ -125,7 +125,7 @@ async function openThousandTrailsDB() {
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
-    
+
             if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
                 AvailabileBooking(availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value)
             } else {
@@ -172,7 +172,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
             if (cursor) {
                 const record = cursor.value;
                 //console.log('If (' + new Date(record.ArrivalDate).getTime() + ' === ' + new Date(arrivalDate).getTime() + ')');
-                if (new Date(record.ArrivalDate).getTime() === new Date(arrivalDate).getTime()) { 
+                if (new Date(record.ArrivalDate).getTime() === new Date(arrivalDate).getTime()) {
                     console.log('Record:', record);
                     resolve(record); // Resolve with the matched record
                     return;
@@ -189,7 +189,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
         };
     });
 }
-    
+
 
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
 //Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
@@ -293,29 +293,29 @@ async function processAvailabilityTable(db) {
 function isCampsiteAvailable() {
     // Find all elements with class "site-title desktop"
     const siteTitles = document.querySelectorAll('.site-title.desktop');
-  
+
     // Flag to track if the button is found
     let buttonFound = false;
-  
+
     // Loop through each element to find the one with exact text "Site: "
     siteTitles.forEach(title => {
-      if (title.textContent.trim() === 'Site:') {
-        // Find the "Select Site" button within this element's parent
-        const selectButton = title.closest('.site').querySelector('.select-site');
-        if (selectButton) {
-          // Set the flag to true and exit the loop
-          buttonFound = true;
-          return;
+        if (title.textContent.trim() === 'Site:') {
+            // Find the "Select Site" button within this element's parent
+            const selectButton = title.closest('.site').querySelector('.select-site');
+            if (selectButton) {
+                // Set the flag to true and exit the loop
+                buttonFound = true;
+                return;
+            }
         }
-      }
     });
-  
+
     // Return true if buttonFound is true, false otherwise
     return buttonFound;
-  }
-  
+}
 
-  function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
+
+function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
     //bookingPreference switch: none | trailing | leading | consecutive
     switch (bookingPreference.toLowerCase()) {
         case "trailing":
@@ -454,25 +454,29 @@ function isCampsiteAvailable() {
             console.log(`Booking preference switch of "${bookingPreference}" does not have a code path`);
 
     }
-  }
+}
 
-  function getDates(start, end) {
-    for (var arr = [], dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+
+function getDates(start, end) {
+    var arr = [];
+    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
         arr.push(new Date(dt));
     }
     return arr;
-};
+}
 
-  function getDatesInRange(array, start, end) {
+
+function getDatesInRange(array, start, end) {
     var inRange = [];
-    for (dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
-        if (array.contains(dt.toLocaleDateString('en-US'))) {
-            //console.log("dt: " + dt);
+    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+        var dateString = dt.toLocaleDateString('en-US');
+        if (array.includes(dateString)) {
             inRange.push(new Date(dt));
         }
     }
     return inRange;
 }
+
 
 
 openThousandTrailsDB();
