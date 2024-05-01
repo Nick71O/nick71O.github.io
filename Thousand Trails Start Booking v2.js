@@ -394,7 +394,8 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             var endDate;
             var range = [];
             var consecutiveDates = [];
-
+            
+            console.log('consecutive: arr', arr);
             arr.sort((a, b) => a.getTime() - b.getTime());
             arr.some(function (v, i, arr) {
                 if (i > 0) {
