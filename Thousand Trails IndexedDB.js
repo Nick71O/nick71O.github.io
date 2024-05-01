@@ -157,7 +157,7 @@ async function insertAvailabilityRecords(db) {
         const availabilityStore = transaction.objectStore('Availability');
 
         const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
-        const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+        const desiredDepartureConstant = getSiteConstant(db, 'DesiredDepartureDate');
 
         // Check if constants were retrieved successfully
         if (!desiredArrivalConstant || !desiredDepartureConstant) {
