@@ -197,60 +197,53 @@ async function insertAvailabilityRecords(db) {
         console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
         console.log(`Days Difference: ${daysDifference}`);
 
-        // Add records within the transaction's context using a loop
-        for (let i = 0; i < daysDifference; i++) {
-            const currentDate = new Date(desiredArrivalDate);
-            currentDate.setDate(currentDate.getDate() + i);
-
-            const nextDay = new Date(currentDate);
-            nextDay.setDate(nextDay.getDate() + 1);
-
-            const newRecord = {
-                ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
-                DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
-                Available: false,
-                Checked: null
-            };
-
-            try {
-                await addRecord(availabilityStore, newRecord);
-                console.log('Record added successfully:', newRecord);
-            } catch (error) {
-                console.error('Error adding record:', error);
-                console.error('Failed record:', newRecord);
-                transaction.abort(); // Abort the transaction if an error occurs
-                return; // Exit the function
+        // Recursive function to add records with a delay
+        async function addRecordsWithDelay(records, index) {
+            if (index < records.length) {
+                try {
+                    const record = records[index];
+                    await addRecordWithDelay(availabilityStore, record);
+                    console.log('Record added successfully:', record);
+                    await delay(100); // Add a delay (e.g., 100ms) before processing the next record
+                    await addRecordsWithDelay(records, index + 1); // Recursive call for the next record
+                } catch (error) {
+                    console.error('Error adding record:', error);
+                    console.error('Failed record:', records[index]);
+                    transaction.abort(); // Abort the transaction if an error occurs
+                }
+            } else {
+                console.log('All records added.');
+                // Commit the transaction after all records are added
+                transaction.commit();
             }
         }
 
-        console.log('Availability records insertion completed.');
+        // Start adding records with a delay
+        await addRecordsWithDelay(yourArrayOfRecords, 0);
 
-        // Commit the transaction explicitly
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
-
-        transaction.onerror = function (event) {
-            console.error('Transaction error:', event.target.error);
-        };
-
-        transaction.commit(); // Commit the transaction
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
 }
 
-// Function to add a record to the object store (wrapped in a promise)
-function addRecord(store, record) {
+// Function to add a record to the object store with a delay (wrapped in a promise)
+function addRecordWithDelay(store, record) {
     return new Promise((resolve, reject) => {
-        const request = store.add(record);
-        request.onsuccess = function (event) {
-            resolve(event.target.result);
-        };
-        request.onerror = function (event) {
-            reject(event.target.error);
-        };
+        setTimeout(() => {
+            const request = store.add(record);
+            request.onsuccess = function (event) {
+                resolve(event.target.result);
+            };
+            request.onerror = function (event) {
+                reject(event.target.error);
+            };
+        }, 0); // Add a minimal delay before the operation
     });
+}
+
+// Function to simulate a delay (wrapper for setTimeout)
+function delay(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 
