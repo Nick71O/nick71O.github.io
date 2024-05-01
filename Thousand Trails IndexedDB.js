@@ -182,7 +182,10 @@ async function insertAvailabilityRecords(db) {
             console.error('Desired arrival or departure constant not found.');
             return; // Exit the function if constants are not found
         }
-        
+
+        console.log('Desired Arrival Date:', desiredArrivalConstant.value);
+        console.log('Desired Departure Date:', desiredDepartureConstant.value);
+
         const desiredArrivalDate = new Date(desiredArrivalConstant.value);
         const desiredDepartureDate = new Date(desiredDepartureConstant.value);
 
@@ -208,7 +211,7 @@ async function insertAvailabilityRecords(db) {
             };
 
             try {
-                await availabilityStore.add(newRecord);
+                availabilityStore.add(newRecord);
                 console.log('Record added successfully:', newRecord);
             } catch (error) {
                 console.error('Error adding record:', error);
@@ -216,9 +219,7 @@ async function insertAvailabilityRecords(db) {
             }
         }
 
-        console.log('Availability records inserted successfully.');
-
-        // Commit the transaction explicitly
+        // Ensure the transaction remains open until all records are added
         transaction.oncomplete = function () {
             console.log('Transaction completed.');
         };
@@ -226,12 +227,11 @@ async function insertAvailabilityRecords(db) {
         transaction.onerror = function (event) {
             console.error('Transaction error:', event.target.error);
         };
-
-        transaction.commit(); // Commit the transaction
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
 }
+
 
 
 
