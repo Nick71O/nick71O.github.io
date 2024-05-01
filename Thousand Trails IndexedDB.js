@@ -171,21 +171,18 @@ async function deleteAllRecords(db, objectStoreName) {
 
 async function insertAvailabilityRecords(db) {
     try {
-        const transaction = db.transaction('Availability', 'readwrite');
+        const transaction = db.transaction(['Availability'], 'readwrite'); // Change transaction mode to 'readwrite'
         const availabilityStore = transaction.objectStore('Availability');
 
+        // Fetch desired arrival and departure dates from SiteConstant
         const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
 
-        // Check if constants were retrieved successfully
         if (!desiredArrivalConstant || !desiredDepartureConstant) {
             console.error('Desired arrival or departure constant not found.');
             transaction.abort(); // Abort the transaction if constants are not found
             return; // Exit the function
         }
-
-        console.log('Desired Arrival Date:', desiredArrivalConstant.value);
-        console.log('Desired Departure Date:', desiredDepartureConstant.value);
 
         const desiredArrivalDate = new Date(desiredArrivalConstant.value);
         const desiredDepartureDate = new Date(desiredDepartureConstant.value);
@@ -193,58 +190,44 @@ async function insertAvailabilityRecords(db) {
         const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
         const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
-        console.log(`Desired Arrival Date: ${desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions)}`);
-        console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
-        console.log(`Days Difference: ${daysDifference}`);
+        console.log('Desired Arrival Date:', desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
+        console.log('Desired Departure Date:', desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
+        console.log('Days Difference:', daysDifference);
 
-        // Recursive function to add records with a delay
-        async function addRecordsWithDelay(records, index) {
-            if (index < records.length) {
-                try {
-                    const record = records[index];
-                    await addRecordWithDelay(availabilityStore, record);
-                    console.log('Record added successfully:', record);
-                    await delay(100); // Add a delay (e.g., 100ms) before processing the next record
-                    await addRecordsWithDelay(records, index + 1); // Recursive call for the next record
-                } catch (error) {
-                    console.error('Error adding record:', error);
-                    console.error('Failed record:', records[index]);
-                    transaction.abort(); // Abort the transaction if an error occurs
-                }
-            } else {
-                console.log('All records added.');
-                // Commit the transaction after all records are added
-                transaction.commit();
-            }
+        // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
+        for (let i = 0; i < daysDifference; i++) {
+            const currentDate = new Date(desiredArrivalDate);
+            currentDate.setDate(currentDate.getDate() + i);
+
+            const nextDay = new Date(currentDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+
+            const newRecord = {
+                ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
+                DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
+                Available: false,
+                Checked: null // Leave Checked blank (null)
+            };
+
+            availabilityStore.add(newRecord);
         }
 
-        // Start adding records with a delay
-        await addRecordsWithDelay(yourArrayOfRecords, 0);
+        console.log('Availability records inserted successfully.');
 
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            console.error('Transaction error:', event.target.error);
+        };
+
+        transaction.commit(); // Commit the transaction
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
 }
 
-// Function to add a record to the object store with a delay (wrapped in a promise)
-function addRecordWithDelay(store, record) {
-    return new Promise((resolve, reject) => {
-        setTimeout(() => {
-            const request = store.add(record);
-            request.onsuccess = function (event) {
-                resolve(event.target.result);
-            };
-            request.onerror = function (event) {
-                reject(event.target.error);
-            };
-        }, 0); // Add a minimal delay before the operation
-    });
-}
-
-// Function to simulate a delay (wrapper for setTimeout)
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 
 
