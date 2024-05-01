@@ -180,7 +180,8 @@ async function insertAvailabilityRecords(db) {
         // Check if constants were retrieved successfully
         if (!desiredArrivalConstant || !desiredDepartureConstant) {
             console.error('Desired arrival or departure constant not found.');
-            return; // Exit the function if constants are not found
+            transaction.abort(); // Abort the transaction if constants are not found
+            return; // Exit the function
         }
 
         console.log('Desired Arrival Date:', desiredArrivalConstant.value);
@@ -196,6 +197,7 @@ async function insertAvailabilityRecords(db) {
         console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
         console.log(`Days Difference: ${daysDifference}`);
 
+        // Add records within the transaction's context
         for (let i = 0; i < daysDifference; i++) {
             const currentDate = new Date(desiredArrivalDate);
             currentDate.setDate(currentDate.getDate() + i);
@@ -216,10 +218,14 @@ async function insertAvailabilityRecords(db) {
             } catch (error) {
                 console.error('Error adding record:', error);
                 console.error('Failed record:', newRecord);
+                transaction.abort(); // Abort the transaction if an error occurs
+                return; // Exit the function
             }
         }
 
-        // Ensure the transaction remains open until all records are added
+        console.log('Availability records inserted successfully.');
+
+        // Commit the transaction explicitly
         transaction.oncomplete = function () {
             console.log('Transaction completed.');
         };
@@ -227,6 +233,8 @@ async function insertAvailabilityRecords(db) {
         transaction.onerror = function (event) {
             console.error('Transaction error:', event.target.error);
         };
+
+        transaction.commit(); // Commit the transaction
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
