@@ -82,7 +82,7 @@ async function getSiteConstant(db, name) {
     try {
         const constant = await siteConstantsStore.get(name);
         if (constant) {
-            console.log(`Retrieved Constant "${name}":`, constant);
+            console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
             return constant; // Return the retrieved constant
         } else {
             console.error(`Constant "${name}" not found.`);
