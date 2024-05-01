@@ -171,17 +171,17 @@ async function deleteAllRecords(db, objectStoreName) {
 
 async function insertAvailabilityRecords(db) {
     try {
-        const transaction = db.transaction(['Availability'], 'readwrite'); // Change transaction mode to 'readwrite'
+        const transaction = db.transaction(['SiteConstant', 'Availability'], 'readwrite');
+        const siteConstantsStore = transaction.objectStore('SiteConstant');
         const availabilityStore = transaction.objectStore('Availability');
 
-        // Fetch desired arrival and departure dates from SiteConstant
         const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
 
         if (!desiredArrivalConstant || !desiredDepartureConstant) {
             console.error('Desired arrival or departure constant not found.');
-            transaction.abort(); // Abort the transaction if constants are not found
-            return; // Exit the function
+            transaction.abort();
+            return;
         }
 
         const desiredArrivalDate = new Date(desiredArrivalConstant.value);
@@ -190,11 +190,6 @@ async function insertAvailabilityRecords(db) {
         const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
         const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
-        console.log('Desired Arrival Date:', desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-        console.log('Desired Departure Date:', desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions));
-        console.log('Days Difference:', daysDifference);
-
-        // Insert a new row for each day between DesiredArrivalDate and DesiredDepartureDate
         for (let i = 0; i < daysDifference; i++) {
             const currentDate = new Date(desiredArrivalDate);
             currentDate.setDate(currentDate.getDate() + i);
@@ -206,7 +201,7 @@ async function insertAvailabilityRecords(db) {
                 ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
                 DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
                 Available: false,
-                Checked: null // Leave Checked blank (null)
+                Checked: null
             };
 
             availabilityStore.add(newRecord);
@@ -222,7 +217,7 @@ async function insertAvailabilityRecords(db) {
             console.error('Transaction error:', event.target.error);
         };
 
-        transaction.commit(); // Commit the transaction
+        transaction.commit(); // Commit the transaction after adding records
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
