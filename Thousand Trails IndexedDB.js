@@ -168,7 +168,7 @@ async function deleteAllRecords(db, objectStoreName) {
     }
 }
 
-async function insertAvailabilityRecords(db) {
+async function insertAvailabilityRecords2(db) {
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
@@ -213,35 +213,24 @@ async function insertAvailabilityRecords(db) {
 }
 
 
-async function insertAvailabilityRecords2(db) {
+async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate) {
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
 
-        const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
-        const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+        // Convert arrival and departure dates to Date objects
+        const desiredArrivalDateObj = new Date(desiredArrivalDate);
+        const desiredDepartureDateObj = new Date(desiredDepartureDate);
 
-        // Check if constants were retrieved successfully
-        if (!desiredArrivalConstant || !desiredDepartureConstant) {
-            console.error('Desired arrival or departure constant not found.');
-            return; // Exit the function if constants are not found
-        }
-
-        console.log('Desired Arrival Date:', desiredArrivalConstant.value);
-        console.log('Desired Departure Date:', desiredDepartureConstant.value)
-
-        const desiredArrivalDate = new Date(desiredArrivalConstant.value);
-        const desiredDepartureDate = new Date(desiredDepartureConstant.value);
-
-        const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
+        const dateDifference = Math.abs(desiredDepartureDateObj - desiredArrivalDateObj);
         const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
 
-        console.log(`Desired Arrival Date: ${desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions)}`);
-        console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
+        console.log(`Desired Arrival Date: ${desiredArrivalDateObj.toLocaleDateString('en-us', formatDateOptions)}`);
+        console.log(`Desired Departure Date: ${desiredDepartureDateObj.toLocaleDateString('en-us', formatDateOptions)}`);
         console.log(`Days Difference: ${daysDifference}`);
 
         for (let i = 0; i < daysDifference; i++) {
-            const currentDate = new Date(desiredArrivalDate);
+            const currentDate = new Date(desiredArrivalDateObj);
             currentDate.setDate(currentDate.getDate() + i);
 
             const nextDay = new Date(currentDate);
@@ -270,7 +259,6 @@ async function insertAvailabilityRecords2(db) {
         console.error('Error inserting availability records:', error);
     }
 }
-
 
 
 // Retrieve all entries from the SiteConstant table and log them to the console
