@@ -182,10 +182,7 @@ async function insertAvailabilityRecords(db) {
             console.error('Desired arrival or departure constant not found.');
             return; // Exit the function if constants are not found
         }
-
-        console.log('Desired Arrival Date:', desiredArrivalConstant.value);
-        console.log('Desired Departure Date:', desiredDepartureConstant.value)
-
+        
         const desiredArrivalDate = new Date(desiredArrivalConstant.value);
         const desiredDepartureDate = new Date(desiredDepartureConstant.value);
 
@@ -210,11 +207,18 @@ async function insertAvailabilityRecords(db) {
                 Checked: null
             };
 
-            availabilityStore.add(newRecord);
+            try {
+                await availabilityStore.add(newRecord);
+                console.log('Record added successfully:', newRecord);
+            } catch (error) {
+                console.error('Error adding record:', error);
+                console.error('Failed record:', newRecord);
+            }
         }
 
         console.log('Availability records inserted successfully.');
 
+        // Commit the transaction explicitly
         transaction.oncomplete = function () {
             console.log('Transaction completed.');
         };
@@ -222,10 +226,13 @@ async function insertAvailabilityRecords(db) {
         transaction.onerror = function (event) {
             console.error('Transaction error:', event.target.error);
         };
+
+        transaction.commit(); // Commit the transaction
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
 }
+
 
 
 // Retrieve all entries from the SiteConstant table and log them to the console
