@@ -477,7 +477,7 @@ function getDatesInRange(array, start, end) {
     console.log('Start Date:', start);
     console.log('End Date:', end);
     for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
-        var dateString = dt.toLocaleDateString('en-US');
+        var dateString = dt.toLocaleDateString('en-us', formatDateOptions);
         console.log('Processing Date:', dateString);
         if (array.includes(dateString)) {
             inRange.push(new Date(dt));
