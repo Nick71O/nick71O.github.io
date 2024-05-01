@@ -175,7 +175,7 @@ async function insertAvailabilityRecords(db) {
         const availabilityStore = transaction.objectStore('Availability');
 
         const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
-        const desiredDepartureConstant = getSiteConstant(db, 'DesiredDepartureDate');
+        const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
 
         // Check if constants were retrieved successfully
         if (!desiredArrivalConstant || !desiredDepartureConstant) {
@@ -186,12 +186,8 @@ async function insertAvailabilityRecords(db) {
         console.log('Desired Arrival Date:', desiredArrivalConstant.value);
         console.log('Desired Departure Date:', desiredDepartureConstant.value)
 
-
-            const strDesiredArrivalDate = desiredArrivalConstant.value;
-            const strDesiredDepartureDate = desiredDepartureConstant.value;
-
-            const desiredArrivalDate = new Date(strDesiredArrivalDate);
-            const desiredDepartureDate = new Date(strDesiredDepartureDate);
+        const desiredArrivalDate = new Date(desiredArrivalConstant.value);
+        const desiredDepartureDate = new Date(desiredDepartureConstant.value);
 
         const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
         const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
