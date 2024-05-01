@@ -168,10 +168,22 @@ async function deleteAllRecords(db, objectStoreName) {
     }
 }
 
-async function insertStaticAvailabilityRecords(db) {
+async function insertAvailabilityRecords(db) {
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
+
+        const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
+        const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+
+        // Check if constants were retrieved successfully
+        if (!desiredArrivalConstant || !desiredDepartureConstant) {
+            console.error('Desired arrival or departure constant not found.');
+            return; // Exit the function if constants are not found
+        }
+
+        console.log('Desired Arrival Date:', desiredArrivalConstant.value);
+        console.log('Desired Departure Date:', desiredDepartureConstant.value)
 
         // Static test data
         const testRecords = [
@@ -201,7 +213,7 @@ async function insertStaticAvailabilityRecords(db) {
 }
 
 
-async function insertAvailabilityRecords(db) {
+async function insertAvailabilityRecords2(db) {
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
@@ -228,8 +240,6 @@ async function insertAvailabilityRecords(db) {
         console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
         console.log(`Days Difference: ${daysDifference}`);
 
-        const recordsArray = [];
-
         for (let i = 0; i < daysDifference; i++) {
             const currentDate = new Date(desiredArrivalDate);
             currentDate.setDate(currentDate.getDate() + i);
@@ -244,11 +254,7 @@ async function insertAvailabilityRecords(db) {
                 Checked: null
             };
 
-            recordsArray.push(newRecord);
-        }
-
-        for (const record of recordsArray) {
-            availabilityStore.add(record);
+            availabilityStore.add(newRecord);
         }
 
         console.log('Availability records inserted successfully.');
