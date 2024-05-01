@@ -79,20 +79,27 @@ async function getSiteConstant(db, name) {
     const transaction = db.transaction('SiteConstant', 'readonly');
     const siteConstantsStore = transaction.objectStore('SiteConstant');
 
-    try {
-        const constant = await siteConstantsStore.get(name);
-        if (constant) {
-            console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
-            return constant; //Return the retrieved constant
-        } else {
-            console.error(`Constant "${name}" not found.`);
-            return null; // Return null if constant is not found
-        }
-    } catch (error) {
-        console.error(`Error getting constant "${name}":`, error);
-        return null; // Return null in case of error
-    }
+    return new Promise((resolve, reject) => {
+        const getRequest = siteConstantsStore.get(name);
+
+        getRequest.onsuccess = function (event) {
+            const constant = event.target.result;
+            if (constant) {
+                console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
+                resolve(constant); // Resolve the promise with the retrieved constant
+            } else {
+                console.error(`Constant "${name}" not found.`);
+                resolve(null); // Resolve with null if constant is not found
+            }
+        };
+
+        getRequest.onerror = function (event) {
+            console.error(`Error getting constant "${name}":`, event.target.error);
+            reject(event.target.error); // Reject the promise on error
+        };
+    });
 }
+
 
 
 async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
