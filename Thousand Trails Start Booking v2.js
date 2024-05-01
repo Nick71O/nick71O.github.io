@@ -279,7 +279,7 @@ async function processAvailabilityTable(db) {
                 }
                 cursor.continue();
             } else {
-                console.log('Available Dates:', availableDates);
+                //console.log('Available Dates:', availableDates);
                 resolve(availableDates);
             }
         };
@@ -456,6 +456,23 @@ function isCampsiteAvailable() {
     }
   }
 
+  function getDates(start, end) {
+    for (var arr = [], dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+        arr.push(new Date(dt));
+    }
+    return arr;
+};
+
+  function getDatesInRange(array, start, end) {
+    var inRange = [];
+    for (dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+        if (array.contains(dt.toLocaleDateString('en-US'))) {
+            //console.log("dt: " + dt);
+            inRange.push(new Date(dt));
+        }
+    }
+    return inRange;
+}
 
 
 openThousandTrailsDB();
