@@ -451,7 +451,8 @@ function isCampsiteAvailable() {
             break;
 
         default:
-        // code block
+            console.log(`Booking preference switch of ${daysDifference} does not have a code path`);
+
     }
   }
 
