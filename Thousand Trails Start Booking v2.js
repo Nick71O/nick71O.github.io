@@ -389,6 +389,11 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             break;
 
         case "consecutive":
+            console.log('AvailabileBooking - Consecutive');
+            console.log('Available Dates:', availableDates);
+            console.log('Arrival Date:', arrivalDate);
+            console.log('Departure Date:', departureDate);
+
             var arr = getDatesInRange(availableDates, arrivalDate, departureDate);
             var startDate;
             var endDate;
