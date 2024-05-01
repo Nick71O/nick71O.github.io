@@ -197,7 +197,7 @@ async function insertAvailabilityRecords(db) {
         console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
         console.log(`Days Difference: ${daysDifference}`);
 
-        // Add records within the transaction's context
+        // Add records within the transaction's context using a loop
         for (let i = 0; i < daysDifference; i++) {
             const currentDate = new Date(desiredArrivalDate);
             currentDate.setDate(currentDate.getDate() + i);
@@ -213,7 +213,7 @@ async function insertAvailabilityRecords(db) {
             };
 
             try {
-                availabilityStore.add(newRecord);
+                await addRecord(availabilityStore, newRecord);
                 console.log('Record added successfully:', newRecord);
             } catch (error) {
                 console.error('Error adding record:', error);
@@ -223,7 +223,7 @@ async function insertAvailabilityRecords(db) {
             }
         }
 
-        console.log('Availability records inserted successfully.');
+        console.log('Availability records insertion completed.');
 
         // Commit the transaction explicitly
         transaction.oncomplete = function () {
@@ -238,6 +238,19 @@ async function insertAvailabilityRecords(db) {
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
+}
+
+// Function to add a record to the object store (wrapped in a promise)
+function addRecord(store, record) {
+    return new Promise((resolve, reject) => {
+        const request = store.add(record);
+        request.onsuccess = function (event) {
+            resolve(event.target.result);
+        };
+        request.onerror = function (event) {
+            reject(event.target.error);
+        };
+    });
 }
 
 
