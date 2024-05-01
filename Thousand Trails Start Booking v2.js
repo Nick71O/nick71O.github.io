@@ -428,17 +428,17 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
                 }
                 if (i == arr.length - 1) {
                     range = [this.consecutiveCount, startDate, endDate];
-                    consecutiveDates.push(range);
+                    //consecutiveDates.push(range);
                 }
 
                 if (this.consecutiveCount == 0) {
                     if (range[1] != undefined & range[2] != undefined) {
                         consecutiveDates.push(range);
-                        console.log("StartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
+                        console.log("aStartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
                     }
                 }
                 if (startDate != undefined && endDate != undefined) {
-                    console.log("StartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
+                    console.log("bStartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
                 }
                 range = [this.consecutiveCount, startDate, endDate];
             }, {
