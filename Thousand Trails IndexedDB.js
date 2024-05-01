@@ -168,7 +168,7 @@ async function deleteAllRecords(db, objectStoreName) {
     }
 }
 
-async function insertAvailabilityRecords(db) {
+async function insertStaticAvailabilityRecords(db) {
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
@@ -201,26 +201,34 @@ async function insertAvailabilityRecords(db) {
 }
 
 
-
-async function insertAvailabilityRecords2(db) {
+async function insertAvailabilityRecords(db) {
     try {
-        const transaction = db.transaction(['Availability'], 'readwrite');
+        const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
 
         const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
 
+        // Check if constants were retrieved successfully
         if (!desiredArrivalConstant || !desiredDepartureConstant) {
             console.error('Desired arrival or departure constant not found.');
-            transaction.abort();
-            return;
+            return; // Exit the function if constants are not found
         }
+
+        console.log('Desired Arrival Date:', desiredArrivalConstant.value);
+        console.log('Desired Departure Date:', desiredDepartureConstant.value)
 
         const desiredArrivalDate = new Date(desiredArrivalConstant.value);
         const desiredDepartureDate = new Date(desiredDepartureConstant.value);
 
         const dateDifference = Math.abs(desiredDepartureDate - desiredArrivalDate);
         const daysDifference = Math.ceil(dateDifference / (1000 * 60 * 60 * 24));
+
+        console.log(`Desired Arrival Date: ${desiredArrivalDate.toLocaleDateString('en-us', formatDateOptions)}`);
+        console.log(`Desired Departure Date: ${desiredDepartureDate.toLocaleDateString('en-us', formatDateOptions)}`);
+        console.log(`Days Difference: ${daysDifference}`);
+
+        const recordsArray = [];
 
         for (let i = 0; i < daysDifference; i++) {
             const currentDate = new Date(desiredArrivalDate);
@@ -236,7 +244,11 @@ async function insertAvailabilityRecords2(db) {
                 Checked: null
             };
 
-            availabilityStore.add(newRecord);
+            recordsArray.push(newRecord);
+        }
+
+        for (const record of recordsArray) {
+            availabilityStore.add(record);
         }
 
         console.log('Availability records inserted successfully.');
@@ -248,14 +260,10 @@ async function insertAvailabilityRecords2(db) {
         transaction.onerror = function (event) {
             console.error('Transaction error:', event.target.error);
         };
-
-        transaction.commit(); // Commit the transaction after adding records
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
 }
-
-
 
 
 
