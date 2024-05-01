@@ -445,15 +445,20 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
                 consecutiveCount: 0
             });
 
-            console.log(consecutiveDates);
+            console.log('consecutiveDates: ', consecutiveDates);
             if (consecutiveDates.length > 0) {
                 consecutiveDates.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
-
+            
                 if (minimumConsecutiveDays <= consecutiveDates[0][0]) {
                     console.log("Available Dates to Book\n   Arrival: " + consecutiveDates[0][1] + "    Departure: " + consecutiveDates[0][2] + "    Number of Nights: " + consecutiveDates[0][0]);
                     openTabs(consecutiveDates[0][1], consecutiveDates[0][2]);
+                } else {
+                    console.log("Minimum consecutive days requirement not met.");
                 }
+            } else {
+                console.log("No consecutive dates found.");
             }
+            
             break;
 
         default:
