@@ -226,9 +226,12 @@ async function logSiteConstants(db) {
             const constants = event.target.result;
             if (constants && constants.length > 0) {
                 console.log('SiteConstant records:');
-                constants.forEach((constant) => {
-                    console.log(`Name: "${constant.name}", Value: "${constant.value}"`);
+                constants.forEach(constant => {
+                    console.log(constant);
                 });
+                //constants.forEach((constant) => {
+                //    console.log(`Name: "${constant.name}", Value: "${constant.value}"`);
+                //});
             } else {
                 console.log('No SiteConstant found.');
             }
