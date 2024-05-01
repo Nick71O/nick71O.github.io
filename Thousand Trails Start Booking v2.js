@@ -404,19 +404,19 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
                         startDate = tmp.toLocaleDateString('en-US');
                     }
 
-                    //console.log("tmp: " + tmp.toLocaleDateString('en-US'));
+                    console.log("tmp: " + tmp.toLocaleDateString('en-US'));
                     tmp.setDate(tmp.getDate() + 1);
-                    //console.log("tmp: " + tmp.toLocaleDateString('en-US'));
-                    //console.log(tmp.toLocaleDateString('en-US') + "===" + v.toLocaleDateString('en-US'));
+                    console.log("tmp: " + tmp.toLocaleDateString('en-US'));
+                    console.log(tmp.toLocaleDateString('en-US') + "===" + v.toLocaleDateString('en-US'));
                     if (tmp.getTime() === v.getTime()) {
                         endDate = tmp.toLocaleDateString('en-US');
                         this.consecutiveCount++;
-                        //console.log("consecutiveCount: " + this.consecutiveCount + " -  " + v.toLocaleDateString('en-US'));
+                        console.log("consecutiveCount: " + this.consecutiveCount + " -  " + v.toLocaleDateString('en-US'));
                     } else {
                         startDate = undefined;
                         endDate = undefined;
                         this.consecutiveCount = 0;
-                        //console.log(v.toLocaleDateString('en-US'));
+                        console.log(v.toLocaleDateString('en-US'));
                     }
 
                 }
@@ -428,11 +428,11 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
                 if (this.consecutiveCount == 0) {
                     if (range[1] != undefined & range[2] != undefined) {
                         consecutiveDates.push(range);
-                        //console.log("StartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
+                        console.log("StartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
                     }
                 }
                 if (startDate != undefined && endDate != undefined) {
-                    //console.log("StartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
+                    console.log("StartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
                 }
                 range = [this.consecutiveCount, startDate, endDate];
             }, {
