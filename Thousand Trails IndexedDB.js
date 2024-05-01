@@ -168,11 +168,43 @@ async function deleteAllRecords(db, objectStoreName) {
     }
 }
 
-
 async function insertAvailabilityRecords(db) {
     try {
-        const transaction = db.transaction(['SiteConstant', 'Availability'], 'readwrite');
-        const siteConstantsStore = transaction.objectStore('SiteConstant');
+        const transaction = db.transaction('Availability', 'readwrite');
+        const availabilityStore = transaction.objectStore('Availability');
+
+        // Static test data
+        const testRecords = [
+            { ArrivalDate: '05/01/2024', DepartureDate: '05/02/2024', Available: true, Checked: null },
+            { ArrivalDate: '05/02/2024', DepartureDate: '05/03/2024', Available: false, Checked: null },
+            { ArrivalDate: '05/03/2024', DepartureDate: '05/04/2024', Available: true, Checked: null }
+        ];
+
+        for (const record of testRecords) {
+            availabilityStore.add(record);
+        }
+
+        console.log('Static test records inserted successfully.');
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            console.error('Transaction error:', event.target.error);
+        };
+
+        transaction.commit(); // Commit the transaction after adding records
+    } catch (error) {
+        console.error('Error inserting static availability records:', error);
+    }
+}
+
+
+
+async function insertAvailabilityRecords2(db) {
+    try {
+        const transaction = db.transaction(['Availability'], 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
 
         const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
