@@ -394,6 +394,22 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
 
+            availableDates = [
+                '05/01/2024', '05/02/2024', '05/03/2024', '05/04/2024', '05/05/2024', '05/06/2024',
+                '05/07/2024', '05/08/2024', '05/09/2024', '05/12/2024', '05/13/2024', '05/14/2024',
+                '05/15/2024', '05/16/2024', '05/17/2024', '05/18/2024', '05/19/2024', '05/20/2024',
+                '05/21/2024', '05/22/2024', '05/23/2024', '05/27/2024', '05/28/2024', '05/29/2024',
+                '05/30/2024', '06/02/2024', '06/03/2024', '06/04/2024', '06/05/2024', '06/10/2024',
+                '06/11/2024', '06/17/2024', '06/20/2024', '06/25/2024', '06/26/2024', '07/02/2024',
+                '07/09/2024'
+            ];
+            arrivalDate = '05/01/2024';
+            departureDate = '07/10/2024';
+
+            console.log('Available Dates:', availableDates);
+            console.log('Arrival Date:', arrivalDate);
+            console.log('Departure Date:', departureDate);
+
             var arr = getDatesInRange(availableDates, arrivalDate, departureDate);
             var startDate = undefined;
             var endDate = undefined;
