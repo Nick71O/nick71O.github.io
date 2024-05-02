@@ -443,13 +443,15 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             });
 
             if (allRanges.length > 0) {
-                const longestRange = allRanges.reduce((a, b) => a.length >= minimumConsecutiveDays ? a : b, []);
+                const longestRange = allRanges.filter(range => range.length >= minimumConsecutiveDays)
+                    .reduce((a, b) => a.length > b.length ? a : b, []);
+            
                 if (longestRange.length >= minimumConsecutiveDays) {
                     const arrivalDate = longestRange[0].toLocaleDateString('en-US');
                     const departureDate = new Date(longestRange[longestRange.length - 1].getTime() + 86400000).toLocaleDateString('en-US'); // Add 1 day to get the next day
                     const numberOfNights = longestRange.length; // Number of nights is the length of the range
             
-                    console.log("\nLongest Consecutive Date Range:");
+                    console.log("\nLongest Consecutive Date Range with Minimum of", minimumConsecutiveDays, "Nights:");
                     console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
                 } else {
                     console.log("No consecutive dates found with a minimum of", minimumConsecutiveDays, "nights.");
@@ -457,6 +459,7 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             } else {
                 console.log("No consecutive dates found.");
             }
+            
             
             break;
 
