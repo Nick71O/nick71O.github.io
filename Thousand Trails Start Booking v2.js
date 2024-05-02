@@ -409,20 +409,20 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
-
-            var arr = getDatesInRange(availableDates, arrivalDate, departureDate);
-            var startDate = undefined;
-            var endDate = undefined;
-            var range = [];
-            var consecutiveDates = [];
-
+            
+            const arr = availableDates.map(dateStr => new Date(dateStr));
             arr.sort((a, b) => a.getTime() - b.getTime());
-
+            
+            let startDate = undefined;
+            let endDate = undefined;
+            let range = [];
+            const consecutiveDates = [];
+            
             arr.forEach((v, i, arr) => {
                 if (i > 0) {
                     const tmp = new Date(arr[i - 1]);
                     tmp.setDate(tmp.getDate() + 1);
-
+                    
                     if (tmp.getTime() === v.getTime()) {
                         if (startDate === undefined) {
                             startDate = tmp.toLocaleDateString('en-US');
@@ -438,28 +438,24 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
                     }
                 }
             });
-
+            
             console.log('Consecutive Dates (unsorted):', consecutiveDates);
-
+            
             if (consecutiveDates.length > 0) {
                 consecutiveDates.sort((a, b) => {
                     const dateA = new Date(a[2]);
                     const dateB = new Date(b[2]);
-                    return dateB.getTime() - dateA.getTime(); // Sort by end date in descending order
+                    return dateA.getTime() - dateB.getTime(); // Sort by end date in ascending order
                 });
-
+            
                 console.log('Consecutive Dates (sorted):', consecutiveDates);
-
-                const longestRange = consecutiveDates[0];
-                if (minimumConsecutiveDays <= longestRange[0]) {
-                    console.log("Available Dates to Book\n   Arrival:", longestRange[1], "Departure:", longestRange[2], "Number of Nights:", longestRange[0]);
-                    openTabs(longestRange[1], longestRange[2]);
-                } else {
-                    console.log("Minimum consecutive days requirement not met.");
-                }
+            
+                const longestRange = consecutiveDates[consecutiveDates.length - 1]; // Last item is longest
+                console.log("Available Dates to Book\n   Arrival:", longestRange[1], "Departure:", longestRange[2], "Number of Nights:", longestRange[0]);
             } else {
                 console.log("No consecutive dates found.");
             }
+            
             break;
 
         default:
