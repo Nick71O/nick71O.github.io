@@ -426,21 +426,30 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
                     }
 
                 }
+
+                console.log('this.consecutiveCount:', this.consecutiveCount);
+                console.log('startDate:', startDate);
+                console.log('endDate:', endDate);
+
                 if (i == arr.length - 1) {
                     range = [this.consecutiveCount, startDate, endDate];
-                    //consecutiveDates.push(range);
+                    console.log('0-consecutiveDates.push(range)', range);
+                    consecutiveDates.push(range);
                 }
+
 
                 if (this.consecutiveCount == 0) {
                     if (range[1] != undefined & range[2] != undefined) {
+                        console.log('1-consecutiveDates.push(range)', range);
                         consecutiveDates.push(range);
-                        console.log("aStartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
+                        console.log("1-StartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
                     }
                 }
                 if (startDate != undefined && endDate != undefined) {
-                    console.log("bStartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
+                    console.log("2-StartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
                 }
                 range = [this.consecutiveCount, startDate, endDate];
+                console.log('3-(range)', range);
             }, {
                 consecutiveCount: 0
             });
