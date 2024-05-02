@@ -403,14 +403,17 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
                 '06/11/2024', '06/17/2024', '06/20/2024', '06/25/2024', '06/26/2024', '07/02/2024',
                 '07/09/2024'
             ];
-            arrivalDate = '05/01/2024';
-            departureDate = '07/10/2024';
+            arrivalDate = '05/04/2024';
+            departureDate = '06/18/2024';
 
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
 
-            const dates = availableDates.map(dateStr => new Date(dateStr));
+            const availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
+            console.log('Available Dates In Range:', availableDatesInRange);
+
+            const dates = availableDatesInRange.map(dateStr => new Date(dateStr));
 
             let currentRange = [];
             let allRanges = [];
@@ -440,18 +443,21 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             });
 
             if (allRanges.length > 0) {
-                const longestRange = allRanges.reduce((a, b) => a.length > b.length ? a : b);
-                const arrivalDate = longestRange[0].toLocaleDateString('en-US');
-                const departureDate = new Date(longestRange[longestRange.length - 1].getTime() + 86400000).toLocaleDateString('en-US'); // Add 1 day to get the next day
-                const numberOfNights = longestRange.length; // Number of nights is the length of the range
-
-                console.log("\nLongest Consecutive Date Range:");
-                console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
+                const longestRange = allRanges.reduce((a, b) => a.length >= minimumConsecutiveDays ? a : b, []);
+                if (longestRange.length >= minimumConsecutiveDays) {
+                    const arrivalDate = longestRange[0].toLocaleDateString('en-US');
+                    const departureDate = new Date(longestRange[longestRange.length - 1].getTime() + 86400000).toLocaleDateString('en-US'); // Add 1 day to get the next day
+                    const numberOfNights = longestRange.length; // Number of nights is the length of the range
+            
+                    console.log("\nLongest Consecutive Date Range:");
+                    console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
+                } else {
+                    console.log("No consecutive dates found with a minimum of", minimumConsecutiveDays, "nights.");
+                }
             } else {
                 console.log("No consecutive dates found.");
             }
-
-
+            
             break;
 
         default:
