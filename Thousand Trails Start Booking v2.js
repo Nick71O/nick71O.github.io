@@ -409,53 +409,49 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
-            
-            const arr = availableDates.map(dateStr => new Date(dateStr));
-            arr.sort((a, b) => a.getTime() - b.getTime());
-            
-            let startDate = undefined;
-            let endDate = undefined;
-            let range = [];
-            const consecutiveDates = [];
-            
-            arr.forEach((v, i, arr) => {
-                if (i > 0) {
-                    const tmp = new Date(arr[i - 1]);
-                    tmp.setDate(tmp.getDate() + 1);
-                    
-                    if (tmp.getTime() === v.getTime()) {
-                        if (startDate === undefined) {
-                            startDate = tmp.toLocaleDateString('en-US');
-                        }
-                        endDate = v.toLocaleDateString('en-US');
-                    } else {
-                        if (startDate !== undefined && endDate !== undefined) {
-                            const count = consecutiveDates.length;
-                            consecutiveDates.push([count, startDate, endDate]);
-                        }
-                        startDate = undefined;
-                        endDate = undefined;
+
+            const dates = availableDates.map(dateStr => new Date(dateStr));
+
+            let currentRange = [];
+            let allRanges = [];
+
+            for (let i = 0; i < dates.length; i++) {
+                if (i === 0 || dates[i].getTime() !== dates[i - 1].getTime() + 86400000) {
+                    if (currentRange.length > 0) {
+                        allRanges.push(currentRange);
                     }
+                    currentRange = [dates[i]];
+                } else {
+                    currentRange.push(dates[i]);
                 }
+            }
+
+            if (currentRange.length > 0) {
+                allRanges.push(currentRange);
+            }
+
+            console.log("All Consecutive Date Ranges:");
+            allRanges.forEach(range => {
+                const arrivalDate = range[0].toLocaleDateString('en-US');
+                const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US'); // Add 1 day to get the next day
+                const numberOfNights = range.length; // Number of nights is the length of the range
+
+                console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
             });
-            
-            console.log('Consecutive Dates (unsorted):', consecutiveDates);
-            
-            if (consecutiveDates.length > 0) {
-                consecutiveDates.sort((a, b) => {
-                    const dateA = new Date(a[2]);
-                    const dateB = new Date(b[2]);
-                    return dateA.getTime() - dateB.getTime(); // Sort by end date in ascending order
-                });
-            
-                console.log('Consecutive Dates (sorted):', consecutiveDates);
-            
-                const longestRange = consecutiveDates[consecutiveDates.length - 1]; // Last item is longest
-                console.log("Available Dates to Book\n   Arrival:", longestRange[1], "Departure:", longestRange[2], "Number of Nights:", longestRange[0]);
+
+            if (allRanges.length > 0) {
+                const longestRange = allRanges.reduce((a, b) => a.length > b.length ? a : b);
+                const arrivalDate = longestRange[0].toLocaleDateString('en-US');
+                const departureDate = new Date(longestRange[longestRange.length - 1].getTime() + 86400000).toLocaleDateString('en-US'); // Add 1 day to get the next day
+                const numberOfNights = longestRange.length; // Number of nights is the length of the range
+
+                console.log("\nLongest Consecutive Date Range:");
+                console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
             } else {
                 console.log("No consecutive dates found.");
             }
-            
+
+
             break;
 
         default:
