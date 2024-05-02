@@ -389,85 +389,57 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             break;
 
         case "consecutive":
-            console.log('AvailabileBooking - Consecutive');
+            console.log('AvailableBooking - Consecutive');
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
 
+            // Ensure variables are properly initialized
             var arr = getDatesInRange(availableDates, arrivalDate, departureDate);
-            var startDate;
-            var endDate;
+            var startDate = undefined;
+            var endDate = undefined;
             var range = [];
             var consecutiveDates = [];
-            
-            console.log('consecutive: arr', arr);
+
+            // Sort dates
             arr.sort((a, b) => a.getTime() - b.getTime());
-            arr.some(function (v, i, arr) {
+
+            arr.forEach((v, i, arr) => {
                 if (i > 0) {
                     const tmp = new Date(arr[i - 1]);
-
-                    if (this.consecutiveCount == 0) {
-                        startDate = tmp.toLocaleDateString('en-US');
-                    }
-
-                    console.log("tmp: " + tmp.toLocaleDateString('en-US'));
                     tmp.setDate(tmp.getDate() + 1);
-                    console.log("tmp: " + tmp.toLocaleDateString('en-US'));
-                    console.log(tmp.toLocaleDateString('en-US') + "===" + v.toLocaleDateString('en-US'));
+
                     if (tmp.getTime() === v.getTime()) {
-                        endDate = tmp.toLocaleDateString('en-US');
-                        this.consecutiveCount++;
-                        console.log("consecutiveCount: " + this.consecutiveCount + " -  " + v.toLocaleDateString('en-US'));
+                        if (startDate === undefined) {
+                            startDate = tmp.toLocaleDateString('en-US');
+                        }
+                        endDate = v.toLocaleDateString('en-US');
                     } else {
+                        if (startDate !== undefined && endDate !== undefined) {
+                            const count = consecutiveDates.length;
+                            consecutiveDates.push([count, startDate, endDate]);
+                        }
                         startDate = undefined;
                         endDate = undefined;
-                        this.consecutiveCount = 0;
-                        console.log(v.toLocaleDateString('en-US'));
-                    }
-
-                }
-
-                console.log('this.consecutiveCount:', this.consecutiveCount);
-                console.log('startDate:', startDate);
-                console.log('endDate:', endDate);
-
-                if (i == arr.length - 1) {
-                    range = [this.consecutiveCount, startDate, endDate];
-                    console.log('0-consecutiveDates.push(range)', range);
-                    consecutiveDates.push(range);
-                }
-
-
-                if (this.consecutiveCount == 0) {
-                    if (range[1] != undefined & range[2] != undefined) {
-                        console.log('1-consecutiveDates.push(range)', range);
-                        consecutiveDates.push(range);
-                        console.log("1-StartDate: " + range[1] + "    EndDate: " + range[2] + "    ConsecutiveCount: " + range[0]);
                     }
                 }
-                if (startDate != undefined && endDate != undefined) {
-                    console.log("2-StartDate: " + startDate + "    EndDate: " + endDate + "    ConsecutiveCount: " + this.consecutiveCount);
-                }
-                range = [this.consecutiveCount, startDate, endDate];
-                console.log('3-(range)', range);
-            }, {
-                consecutiveCount: 0
             });
 
-            console.log('consecutiveDates: ', consecutiveDates);
+            console.log('Consecutive Dates:', consecutiveDates);
+
             if (consecutiveDates.length > 0) {
-                consecutiveDates.sort((a, b) => parseFloat(b[0]) - parseFloat(a[0]));
-            
-                if (minimumConsecutiveDays <= consecutiveDates[0][0]) {
-                    console.log("Available Dates to Book\n   Arrival: " + consecutiveDates[0][1] + "    Departure: " + consecutiveDates[0][2] + "    Number of Nights: " + consecutiveDates[0][0]);
-                    openTabs(consecutiveDates[0][1], consecutiveDates[0][2]);
+                consecutiveDates.sort((a, b) => b[0] - a[0]);
+                const longestRange = consecutiveDates[0];
+                if (minimumConsecutiveDays <= longestRange[0]) {
+                    console.log("Available Dates to Book\n   Arrival:", longestRange[1], "Departure:", longestRange[2], "Number of Nights:", longestRange[0]);
+                    openTabs(longestRange[1], longestRange[2]);
                 } else {
                     console.log("Minimum consecutive days requirement not met.");
                 }
             } else {
                 console.log("No consecutive dates found.");
             }
-            
+
             break;
 
         default:
