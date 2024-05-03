@@ -5,6 +5,7 @@ var clickCount = 0;
 // IndexedDB library functions
 async function openThousandTrailsDB() {
     try {
+        console.log('Hello from Thousand Trails Booking Reservation Details');
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
@@ -76,9 +77,9 @@ async function openThousandTrailsDB() {
         }
 
 
-        if (scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null) {
+        //if (scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null) {
         
-        } else {
+        //} else {
             var nextAvailabilityDate = await getNextAvailabilityDate(db);
             if (nextAvailabilityDate) {
                 console.log('Next Availability Date:', nextAvailabilityDate);
@@ -113,7 +114,7 @@ async function openThousandTrailsDB() {
                 console.log('Goto Step 2');
 
             }
-        }
+        //}
 
     } catch (error) {
         console.error('ERROR: In Thousand Trails Booking Reservation Details', error);
