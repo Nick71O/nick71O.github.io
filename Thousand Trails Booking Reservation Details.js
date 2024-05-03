@@ -93,9 +93,10 @@ async function openThousandTrailsDB() {
                     checkinInput.value = nextAvailabilityDate.arrivalDate;
                     checkoutInput.value = nextAvailabilityDate.departureDate;
 
-                    btnStep2.addEventListener("click", function() {
-                        console.log("You clicked the Choose Campsite button!");
-                    });
+                    btnStep2.click();
+                    //btnStep2.addEventListener("click", function() {
+                    //    console.log("You clicked the Choose Campsite button!");
+                    //});
                 } else {
                     console.error("Booking input elements not found!");
                 }
@@ -176,6 +177,25 @@ async function getNextAvailabilityDate(db) {
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
+// Define a function to set up the event listener for the "Choose Campsite" button
+function setupEventListener() {
+    var btnStep2 = document.getElementById("btnStep2");
+
+    if (btnStep2) {
+        btnStep2.addEventListener("click", function() {
+            console.log("You clicked the Choose Campsite button!");
+        });
+    } else {
+        console.error("Button not found!");
+    }
+}
+
+// Call the function when the DOM content is fully loaded
+document.addEventListener("DOMContentLoaded", function() {
+    setupEventListener();
+});
+
 
 async function redirectBookingPage() {
     var bookingQueryString = "?robot=78"
