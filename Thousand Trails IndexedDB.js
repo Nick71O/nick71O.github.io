@@ -51,19 +51,17 @@ async function addOrUpdateSiteConstant(db, name, value) {
     const transaction = db.transaction('SiteConstant', 'readwrite');
     const siteConstantsStore = transaction.objectStore('SiteConstant');
 
-
     try {
-        const existingValue = await store.get(name);
+        const existingValue = await siteConstantsStore.get(name);
 
         if (existingValue) {
             existingValue.value = JSON.stringify(value); // Serialize the value
             await siteConstantsStore.put(existingValue);
             console.log(`SiteConstant '${name}' updated successfully.`);
         } else {
-            
             console.log(`addOrUpdateSiteConstant - name: '${name}' value: '${value}'`);
             const newConstant = { name, value };
-            siteConstantsStore.add(newConstant);
+            await siteConstantsStore.add(newConstant); // Await the add operation
             console.log(`SiteConstant '${name}' added successfully.`);
         }
     } catch (error) {
