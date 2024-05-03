@@ -168,6 +168,48 @@ async function deleteAllRecords(db, objectStoreName) {
     }
 }
 
+async function resetAvailabilityTable(db) {
+    try {
+        const transaction = db.transaction('Availability', 'readwrite');
+        const availabilityStore = transaction.objectStore('Availability');
+
+        const cursorRequest = availabilityStore.openCursor();
+
+        cursorRequest.onsuccess = function (event) {
+            const cursor = event.target.result;
+            if (cursor) {
+                const record = cursor.value;
+                record.Available = false;
+                record.Checked = null;
+
+                const updateRequest = cursor.update(record);
+                updateRequest.onsuccess = function () {
+                    cursor.continue(); // Move to the next record
+                };
+                updateRequest.onerror = function (event) {
+                    console.error('Error updating record:', event.target.error);
+                };
+            } else {
+                console.log('Availability table reset completed.');
+            }
+        };
+
+        cursorRequest.onerror = function (event) {
+            console.error('Error opening cursor:', event.target.error);
+        };
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            console.error('Transaction error:', event.target.error);
+        };
+    } catch (error) {
+        console.error('Error resetting Availability table:', error);
+    }
+}
+
 
 async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate) {
     try {

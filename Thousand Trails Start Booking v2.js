@@ -1,49 +1,10 @@
 ﻿const baseURL = "https://members.thousandtrails.com"
+
+// XPath of button to click
 //const selectSiteButtonXPath = "//*[@id='btnSelect0']";
 //const selectSiteButtonXPath = "//*[@id='btnSelect1']";
 
-
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Function to get elements by XPath
-function getElementsByXPath(xpath, parent) {
-    let results = [];
-    let query = document.evaluate(xpath, parent || document,
-        null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-    for (let i = 0, length = query.snapshotLength; i < length; ++i) {
-        results.push(query.snapshotItem(i));
-    }
-    return results;
-}
-
-// Function to format date and time
-function formatDateTime(date) {
-    const options = {
-        month: '2-digit',
-        day: '2-digit',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
-    };
-    return new Date(date).toLocaleString('en-US', options);
-}
-
-async function openTabs(arrivalDate, departureDate) {
-    arrivalDate = arrivalDate.replace(/\//g, "%2F");
-    departureDate = departureDate.replace(/\//g, "%2F");
-    var loginURL = baseURL + "/login/index"
-    var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
-    var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
-
-    console.log("Redirecting to the Campgrounds Booking Page");
-    console.log(bookingURL);
-    await sleep(500);
-    window.location.replace(bookingURL);
-}
+var clickCount = 0;
 
 // IndexedDB library functions
 async function openThousandTrailsDB() {
@@ -55,11 +16,20 @@ async function openThousandTrailsDB() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailabileArrivalDate');
+        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailabileDepartureDate');
+        const scDesiredArrivalDate = null;
+        const scDesiredDepartureDate = null;
+        const scAvailabileArrivalDate = null;
+        const scAvailabileDepartureDate = null;
 
-        // Check if constants were retrieved successfully
-        if (scDesiredArrivalConstant && scDesiredDepartureConstant) {
-            const scDesiredArrivalDate = scDesiredArrivalConstant.value;
-            const scDesiredDepartureDate = scDesiredDepartureConstant.value;
+        // Check if constants were retrieved successfully and if their values are not null or empty
+        if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
+            scDesiredArrivalConstant.value !== null && scDesiredDepartureConstant.value !== null &&
+            scDesiredArrivalConstant.value.trim() !== '' && scDesiredDepartureConstant.value.trim() !== '') {
+
+            scDesiredArrivalDate = scDesiredArrivalConstant.value;
+            scDesiredDepartureDate = scDesiredDepartureConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
@@ -68,68 +38,133 @@ async function openThousandTrailsDB() {
 
             console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
         } else {
-            console.error('SiteConstant Desired Arrival or Departure constant not found.');
+            console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
         }
 
-        var bookingArrivalDate = (new Date(document.getElementById('cartCheckin').innerHTML));
-        var bookingDepartureDate = (new Date(document.getElementById('cartCheckout').innerHTML));
-        var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
-        console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions) + "    Number of Nights: " + bookingNumberOfNights);
+        if (scAvailabileArrivalConstant && scAvailabileDepartureConstant &&
+            scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null &&
+            scAvailabileArrivalConstant.value.trim() !== '' && scAvailabileDepartureConstant.value.trim() !== '') {
 
-        console.log('If (' + bookingNumberOfNights + ' === 1)');
-        if (bookingNumberOfNights === '1') {
-            console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
-            const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-            //console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
-            //const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+            scAvailabileArrivalDate = scAvailabileArrivalConstant.value;
+            scAvailabileDepartureDate = scAvailabileDepartureConstant.value;
 
-            if (availabilityRecord) {
-                console.log('availabilityRecord found:', availabilityRecord);
-                console.log('Load updateAvailabilityRecord');
-                //check if the book campsite button is available
-                const isCampsiteAvailableResult = isCampsiteAvailable();
-                console.log('Is campsite available:', isCampsiteAvailableResult);
-                if (isCampsiteAvailableResult) {
-                    console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
+            // Calculate the number of nights
+            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+            const dateDifference = Math.abs(new Date(scAvailabileDepartureDate).getTime() - new Date(scAvailabileArrivalDate).getTime());
+            const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
+
+            console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailabileArrivalDate + "    Departure: " + scAvailabileDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
+        } else {
+            console.error('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
+        }
+
+
+        if (scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null) {
+            //check if the book campsite button is available and click it
+            window.console.log('searching page for the "Select Site" button');
+            const isCampsiteAvailableResult = isCampsiteAvailable(true);
+            if (isCampsiteAvailableResult) {
+                clickCount = clickCount + 1;
+                console.log('clicked the "Select Site" button ' + clickCount + ' times');
+
+                PlayAlert();
+                await sleep(3000);
+                var reservationError = document.getElementById('reservationError').innerText;
+                if (reservationError != undefined) {
+                    console.log('ERROR:\n' + reservationError);
+                }
+                if (reservationError == "Unable to process your request.") {
+                    console.log("Sleeping...1 minute");
+                    await sleep(59000);
+                    console.log("Reloading Page");
+                    window.location.reload();
                 }
 
-                /*
-                //Can't use the XPath to find the select campsite button as it moves above/below the handicapped site button and the XPath changes
-                const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
-                var campsiteAvailable = false;
-                if (selectButtonElements.length > 0) {
-                    console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
-                    campsiteAvailable = true;
+                console.log("Sleeping...3 minutes");
+                await sleep(177000);
+                if (clickCount <= 49) {
+                    getTimestamp();
+                    openThousandTrailsDB();
                 }
-                */
+                else {
+                    console.log("Reloading Page");
+                    window.location.reload();
+                }
+            } else {
 
-                const currentTimeStamp = formatDateTime(Date.now());
-                await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult, currentTimeStamp);
+                console.log('"Select Site" button was not found on the page; reset and try again.');
+                //sleep, clear database and try again
+                console.log("\nSleeping...2 minutes");
+                resetBookingAvailabilityProcess(db, 117000)
+            }
+
+
+        } else {
+            //Gather Available Dates
+            var bookingArrivalDate = (new Date(document.getElementById('cartCheckin').innerHTML));
+            var bookingDepartureDate = (new Date(document.getElementById('cartCheckout').innerHTML));
+            var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
+            console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions) + "    Number of Nights: " + bookingNumberOfNights);
+
+            console.log('If (' + bookingNumberOfNights + ' === 1)');
+            if (bookingNumberOfNights === '1') {
+                console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
+                const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
+                //console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
+                //const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+
+                if (availabilityRecord) {
+                    console.log('availabilityRecord found:', availabilityRecord);
+                    console.log('Load updateAvailabilityRecord');
+                    //check if the book campsite button is available
+                    const isCampsiteAvailableResult = isCampsiteAvailable();
+                    console.log('Is campsite available:', isCampsiteAvailableResult);
+                    if (isCampsiteAvailableResult) {
+                        console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
+                    }
+
+                    /*
+                    //Can't use the XPath to find the select campsite button as it moves above/below the handicapped site button and the XPath changes
+                    const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
+                    var campsiteAvailable = false;
+                    if (selectButtonElements.length > 0) {
+                        console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
+                        campsiteAvailable = true;
+                    }
+                    */
+
+                    const currentTimeStamp = formatDateTime(Date.now());
+                    await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult, currentTimeStamp);
+                }
+                else {
+                    console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
+                }
+            }
+
+            var nextAvailabilityDate = await getNextAvailabilityDate(db);
+            if (nextAvailabilityDate) {
+                console.log('Next Availability Date:', nextAvailabilityDate);
+                openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
             }
             else {
-                console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
-            }
-        }
+                await logAvailabilityRecords(db);
 
-        var nextAvailabilityDate = await getNextAvailabilityDate(db);
-        if (nextAvailabilityDate) {
-            console.log('Next Availability Date:', nextAvailabilityDate);
-            openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
-        }
-        else {
-            await logAvailabilityRecords(db);
+                console.log('Load processAvailabilityTable');
+                const availableDates = await processAvailabilityTable(db);
+                console.log('Available Dates:', availableDates);
 
-            console.log('Load processAvailabilityTable');
-            const availableDates = await processAvailabilityTable(db);
-            console.log('Available Dates:', availableDates);
+                const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+                const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
 
-            const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
-            const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
+                if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
+                    await AvailableBooking(availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value)
+                } else {
+                    console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
 
-            if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
-                AvailabileBooking(availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value)
-            } else {
-                console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
+                    //sleep, clear database and try again
+                    console.log("\nSleeping...4 minutes");
+                    resetBookingAvailabilityProcess(db, 237000)
+                }
             }
         }
 
@@ -140,6 +175,8 @@ async function openThousandTrailsDB() {
         window.location.reload();
     }
 }
+
+
 
 async function getSiteConstants(db) {
     const transaction = db.transaction(['SiteConstants'], 'readonly');
@@ -290,7 +327,20 @@ async function processAvailabilityTable(db) {
     });
 }
 
-function isCampsiteAvailable() {
+
+async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
+    // Clear database and reset availability
+    await sleep(sleepMilliseconds);
+
+    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', null);
+    await resetAvailabilityTable(db);
+
+    openThousandTrailsDB();
+}
+
+
+function isCampsiteAvailable(clickButton = false) {
     // Find all elements with class "site-title desktop"
     const siteTitles = document.querySelectorAll('.site-title.desktop');
 
@@ -303,9 +353,12 @@ function isCampsiteAvailable() {
             // Find the "Select Site" button within this element's parent
             const selectButton = title.closest('.site').querySelector('.select-site');
             if (selectButton) {
-                // Set the flag to true and exit the loop
+                // Set the flag to true and optionally click the button
                 buttonFound = true;
-                return;
+                if (clickButton) {
+                    selectButton.click(); // Click the button
+                }
+                return; // Exit the loop and the enclosing function
             }
         }
     });
@@ -315,7 +368,7 @@ function isCampsiteAvailable() {
 }
 
 
-function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
+async function AvailableBooking(availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
     //bookingPreference switch: none | trailing | leading | consecutive
     switch (bookingPreference.toLowerCase()) {
         case "trailing":
@@ -394,6 +447,7 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
 
+            /*
             availableDates = [
                 '05/01/2024', '05/02/2024', '05/03/2024', '05/04/2024', '05/05/2024', '05/06/2024',
                 '05/07/2024', '05/08/2024', '05/09/2024', '05/12/2024', '05/13/2024', '05/14/2024',
@@ -409,6 +463,7 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
+            */
 
             const availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
             console.log('Available Dates In Range:', availableDatesInRange);
@@ -435,8 +490,8 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
 
             console.log("All Consecutive Date Ranges:");
             allRanges.forEach(range => {
-                const arrivalDate = range[0].toLocaleDateString('en-US');
-                const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US'); // Add 1 day to get the next day
+                const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
+                const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
                 const numberOfNights = range.length; // Number of nights is the length of the range
 
                 console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
@@ -445,22 +500,24 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
             if (allRanges.length > 0) {
                 const longestRange = allRanges.filter(range => range.length >= minimumConsecutiveDays)
                     .reduce((a, b) => a.length > b.length ? a : b, []);
-            
+
                 if (longestRange.length >= minimumConsecutiveDays) {
-                    const arrivalDate = longestRange[0].toLocaleDateString('en-US');
-                    const departureDate = new Date(longestRange[longestRange.length - 1].getTime() + 86400000).toLocaleDateString('en-US'); // Add 1 day to get the next day
+                    const arrivalDate = longestRange[0].toLocaleDateString('en-US', formatDateOptions);
+                    const departureDate = new Date(longestRange[longestRange.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
                     const numberOfNights = longestRange.length; // Number of nights is the length of the range
-            
+
                     console.log("\nLongest Consecutive Date Range with Minimum of", minimumConsecutiveDays, "Nights:");
                     console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
+                    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', arrivalDate);
+                    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', departureDate);
+                    openTabs(arrivalDate, departureDate);
                 } else {
                     console.log("No consecutive dates found with a minimum of", minimumConsecutiveDays, "nights.");
                 }
             } else {
                 console.log("No consecutive dates found.");
             }
-            
-            
+
             break;
 
         default:
@@ -470,6 +527,30 @@ function AvailabileBooking(availableDates, arrivalDate, departureDate, bookingPr
 }
 
 
+async function openTabs(arrivalDate, departureDate) {
+    arrivalDate = arrivalDate.replace(/\//g, "%2F");
+    departureDate = departureDate.replace(/\//g, "%2F");
+    var loginURL = baseURL + "/login/index"
+    var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
+    var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
+
+    console.log("Redirecting to the Campgrounds Booking Page");
+    console.log(bookingURL);
+    await sleep(500);
+    window.location.replace(bookingURL);
+}
+
+// Function to get elements by XPath
+function getElementsByXPath(xpath, parent) {
+    let results = [];
+    let query = document.evaluate(xpath, parent || document,
+        null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    for (let i = 0, length = query.snapshotLength; i < length; ++i) {
+        results.push(query.snapshotItem(i));
+    }
+    return results;
+}
+
 function getDates(start, end) {
     var arr = [];
     for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
@@ -477,7 +558,6 @@ function getDates(start, end) {
     }
     return arr;
 }
-
 
 function getDatesInRange(array, start, end) {
     var inRange = [];
@@ -494,6 +574,27 @@ function getDatesInRange(array, start, end) {
     return inRange;
 }
 
+function PlayAlert() {
+    var alertsound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
+    alertsound.play();
+}
 
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Function to format date and time
+function formatDateTime(date) {
+    const options = {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    };
+    return new Date(date).toLocaleString('en-US', options);
+}
 
 openThousandTrailsDB();
