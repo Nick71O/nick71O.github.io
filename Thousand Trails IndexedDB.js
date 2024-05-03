@@ -93,13 +93,17 @@ async function addOrUpdateSiteConstant(db, name, value) {
         const serializedValue = JSON.stringify(value);
 
         if (existingConstant) {
-            existingConstant.value = serializedValue;
-            await new Promise((resolve, reject) => {
-                const updateRequest = siteConstantsStore.put(existingConstant);
-                updateRequest.onsuccess = () => resolve();
-                updateRequest.onerror = () => reject(updateRequest.error);
-            });
-            console.log(`SiteConstant '${name}' updated successfully.`);
+            if (existingConstant.value !== serializedValue) {
+                existingConstant.value = serializedValue;
+                await new Promise((resolve, reject) => {
+                    const updateRequest = siteConstantsStore.put(existingConstant);
+                    updateRequest.onsuccess = () => resolve();
+                    updateRequest.onerror = () => reject(updateRequest.error);
+                });
+                console.log(`SiteConstant '${name}' updated successfully.`);
+            } else {
+                console.log(`SiteConstant '${name}' already contains the same value. No update needed.`);
+            }
         } else {
             const newConstant = { name, value: serializedValue };
             await new Promise((resolve, reject) => {
