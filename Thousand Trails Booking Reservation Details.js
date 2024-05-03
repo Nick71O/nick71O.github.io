@@ -172,7 +172,9 @@ async function getNextAvailabilityDate(db) {
 }
 
 
-
+async function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 async function redirectBookingPage() {
     var bookingQueryString = "?robot=78"
