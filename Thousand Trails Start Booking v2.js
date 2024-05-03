@@ -18,10 +18,10 @@ async function openThousandTrailsDB() {
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailabileArrivalDate');
         const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailabileDepartureDate');
-        const scDesiredArrivalDate = null;
-        const scDesiredDepartureDate = null;
-        const scAvailabileArrivalDate = null;
-        const scAvailabileDepartureDate = null;
+        let scDesiredArrivalDate = null;
+        let scDesiredDepartureDate = null;
+        let scAvailabileArrivalDate = null;
+        let scAvailabileDepartureDate = null;
 
         // Check if constants were retrieved successfully and if their values are not null or empty
         if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
