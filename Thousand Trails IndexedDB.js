@@ -46,46 +46,6 @@ function logError(errorType, errorMessage) {
     console.error(`Error (${errorType}):`, errorMessage);
 }
 
-// Add or update an entry in the SiteConstant table based on name
-async function addOrUpdateSiteConstant(db, name, value) {
-    try {
-        const transaction = db.transaction(['SiteConstant'], 'readwrite');
-        const siteConstantsStore = transaction.objectStore('SiteConstant');
-
-        const existingValue = await new Promise((resolve, reject) => {
-            const request = siteConstantsStore.get(name);
-            request.onsuccess = () => resolve(request.result);
-            request.onerror = () => reject(request.error);
-        });
-
-        const serializedValue = JSON.stringify(value);
-
-        if (existingValue) {
-            existingValue.value = serializedValue;
-            await new Promise((resolve, reject) => {
-                const updateRequest = siteConstantsStore.put(existingValue);
-                updateRequest.onsuccess = () => resolve();
-                updateRequest.onerror = () => reject(updateRequest.error);
-            });
-            console.log(`SiteConstant '${name}' updated successfully.`);
-        } else {
-            const newConstant = { name, value: serializedValue };
-            await new Promise((resolve, reject) => {
-                const addRequest = siteConstantsStore.add(newConstant);
-                addRequest.onsuccess = () => resolve();
-                addRequest.onerror = () => reject(addRequest.error);
-            });
-            console.log(`SiteConstant '${name}' added successfully.`);
-        }
-    } catch (error) {
-        console.error(`Error adding or updating SiteConstant '${name}':`, error);
-        console.error('Error stack trace:', error.stack);
-        throw error;
-    }
-}
-
-
-
 
 // retrieve an entry from the SiteConstant table based on name
 async function getSiteConstant(db, name) {
@@ -123,8 +83,38 @@ async function getSiteConstant(db, name) {
     }
 }
 
+// Add or update an entry in the SiteConstant table based on name
+async function addOrUpdateSiteConstant(db, name, value) {
+    try {
+        const existingConstant = await getSiteConstant(db, name);
+        const transaction = db.transaction('SiteConstant', 'readwrite');
+        const siteConstantsStore = transaction.objectStore('SiteConstant');
 
+        const serializedValue = JSON.stringify(value);
 
+        if (existingConstant) {
+            existingConstant.value = serializedValue;
+            await new Promise((resolve, reject) => {
+                const updateRequest = siteConstantsStore.put(existingConstant);
+                updateRequest.onsuccess = () => resolve();
+                updateRequest.onerror = () => reject(updateRequest.error);
+            });
+            console.log(`SiteConstant '${name}' updated successfully.`);
+        } else {
+            const newConstant = { name, value: serializedValue };
+            await new Promise((resolve, reject) => {
+                const addRequest = siteConstantsStore.add(newConstant);
+                addRequest.onsuccess = () => resolve();
+                addRequest.onerror = () => reject(addRequest.error);
+            });
+            console.log(`SiteConstant '${name}' added successfully.`);
+        }
+    } catch (error) {
+        console.error(`Error adding or updating SiteConstant '${name}':`, error);
+        console.error('Error stack trace:', error.stack);
+        throw error;
+    }
+}
 
 async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     const desiredArrivalDate = new Date(newArrivalDate);
