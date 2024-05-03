@@ -48,31 +48,32 @@ function logError(errorType, errorMessage) {
 
 // Add or update an entry in the SiteConstant table based on name
 async function addOrUpdateSiteConstant(db, name, value) {
-    const transaction = db.transaction(['SiteConstant'], 'readwrite');
-    const siteConstantsStore = transaction.objectStore('SiteConstant');
-
     try {
+        const transaction = db.transaction(['SiteConstant'], 'readwrite');
+        const siteConstantsStore = transaction.objectStore('SiteConstant');
+
         const existingValue = await new Promise((resolve, reject) => {
             const request = siteConstantsStore.get(name);
             request.onsuccess = () => resolve(request.result);
             request.onerror = () => reject(request.error);
         });
 
+        const serializedValue = JSON.stringify(value);
+
         if (existingValue) {
-            existingValue.value = JSON.stringify(value); // Serialize the value
+            existingValue.value = serializedValue;
             await new Promise((resolve, reject) => {
-                const request = siteConstantsStore.put(existingValue);
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
+                const updateRequest = siteConstantsStore.put(existingValue);
+                updateRequest.onsuccess = () => resolve();
+                updateRequest.onerror = () => reject(updateRequest.error);
             });
             console.log(`SiteConstant '${name}' updated successfully.`);
         } else {
-            console.log(`addOrUpdateSiteConstant - name: '${name}' value: '${value}'`);
-            const newConstant = { name, value };
+            const newConstant = { name, value: serializedValue };
             await new Promise((resolve, reject) => {
-                const request = siteConstantsStore.add(newConstant);
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
+                const addRequest = siteConstantsStore.add(newConstant);
+                addRequest.onsuccess = () => resolve();
+                addRequest.onerror = () => reject(addRequest.error);
             });
             console.log(`SiteConstant '${name}' added successfully.`);
         }
@@ -82,6 +83,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         throw error;
     }
 }
+
 
 
 
