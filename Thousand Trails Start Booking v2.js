@@ -55,7 +55,7 @@ async function openThousandTrailsDB() {
 
             console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailabileArrivalDate + "    Departure: " + scAvailabileDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
         } else {
-            console.error('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
+            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
         }
 
 
