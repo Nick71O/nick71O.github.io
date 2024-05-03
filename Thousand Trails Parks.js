@@ -26,8 +26,9 @@ async function launch() {
 
         console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
 
-        openTabs(scDesiredArrivalDate, scDesiredDepartureDate);
+        //openTabs(scDesiredArrivalDate, scDesiredDepartureDate);
 
+        redirectBookingPage();
     } catch (error) {
         console.error('FAILED to redirect to the Campgrounds Booking Page. siteConstants in the IndexedDB was not loaded or blank', error);
         await sleep(5000);
@@ -58,6 +59,16 @@ async function openTabs(arrivalDate, departureDate) {
     var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
     var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
     //var bookingURL = baseURL + "/login/index" + bookingQueryString
+
+    console.log("Redirecting to the Campgrounds Booking Page");
+    console.log(bookingURL);
+    await sleep(500);
+    window.location.replace(bookingURL);
+}
+
+async function redirectBookingPage() {
+    var bookingQueryString = "?robot=78"
+    var bookingURL = baseURL + "/reserve/index" + bookingQueryString
 
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
