@@ -62,10 +62,12 @@ async function openThousandTrailsDB() {
             console.log('SiteConstant Process Arrival or Departure constant is null, empty, or not found.');
         }
 
+        // Check if Availabile Arrival and Departure constants are not null and their values are valid dates
         if (scAvailabileArrivalConstant && scAvailabileDepartureConstant &&
             scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null &&
-            scAvailabileArrivalConstant.value.trim() !== '' && scAvailabileDepartureConstant.value.trim() !== '') {
+            isValidDate(scAvailabileArrivalConstant.value) && isValidDate(scAvailabileDepartureConstant.value)) {
 
+            // Proceed with operations only if the constants are valid
             scAvailabileArrivalDate = scAvailabileArrivalConstant.value;
             scAvailabileDepartureDate = scAvailabileDepartureConstant.value;
 
@@ -76,11 +78,12 @@ async function openThousandTrailsDB() {
 
             console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailabileArrivalDate + "    Departure: " + scAvailabileDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
         } else {
-            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
+            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not a valid date.');
         }
 
 
-        if (scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null) {
+
+        if (scAvailabileArrivalDate !== null && scAvailabileDepartureDate !== null) {
             //check if the book campsite button is available and click it
             window.console.log('searching page for the "Select Site" button');
             const isCampsiteAvailableResult = isCampsiteAvailable(true);
@@ -614,6 +617,12 @@ function getDatesInRange(array, start, end) {
     //console.log('Dates in Range:', inRange);
     return inRange;
 }
+
+function isValidDate(dateString) {
+    // Check if the input is a valid date
+    return dateString && !isNaN(Date.parse(dateString));
+}
+
 
 function PlayAlert() {
     var alertsound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
