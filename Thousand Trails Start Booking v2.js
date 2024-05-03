@@ -157,7 +157,7 @@ async function openThousandTrailsDB() {
                 const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
 
                 if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
-                    await AvailableBooking(availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value)
+                    await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value)
                 
                     //sleep, clear database and try again
                     console.log("\nSleeping...4 minutes");
@@ -368,7 +368,7 @@ function isCampsiteAvailable(clickButton = false) {
 }
 
 
-async function AvailableBooking(availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
+async function AvailableBooking(db, availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
     //bookingPreference switch: none | trailing | leading | consecutive
     switch (bookingPreference.toLowerCase()) {
         case "trailing":
