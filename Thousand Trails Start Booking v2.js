@@ -158,12 +158,12 @@ async function openThousandTrailsDB() {
 
                 if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
                     await AvailableBooking(availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value)
-                } else {
-                    console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
-
+                
                     //sleep, clear database and try again
                     console.log("\nSleeping...4 minutes");
                     resetBookingAvailabilityProcess(db, 237000)
+                } else {
+                    console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
                 }
             }
         }
