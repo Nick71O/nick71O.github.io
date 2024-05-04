@@ -166,18 +166,7 @@ async function openThousandTrailsDB() {
                 }
             }
 
-            var nextAvailabilityDate = await getNextAvailabilityDate(db);
-            if (nextAvailabilityDate) {
-                console.log('Next Availability Date:', nextAvailabilityDate);
-                //openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
-
-                //await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', nextAvailabilityDate.arrivalDate);
-                //await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', nextAvailabilityDate.departureDate);
-                redirectBookingPage();
-            }
-            else {
-
-            }
+            redirectBookingPage();
         }
 
     } catch (error) {
