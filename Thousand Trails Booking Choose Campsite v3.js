@@ -382,6 +382,7 @@ function getElementsByXPath(xpath, parent) {
     return results;
 }
 
+
 function isValidDate(dateString) {
     // Check if the input is a valid date
     return dateString && !isNaN(Date.parse(dateString));
