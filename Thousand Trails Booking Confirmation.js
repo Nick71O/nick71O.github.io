@@ -1,3 +1,5 @@
+const baseURL = "https://members.thousandtrails.com"
+
 async function launch() {
     try {
         console.log('Hello from Thousand Trails Booking Confirmation');
