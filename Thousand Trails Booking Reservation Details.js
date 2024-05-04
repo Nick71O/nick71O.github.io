@@ -184,6 +184,39 @@ async function getNextAvailabilityDate(db) {
     });
 }
 
+
+async function processAvailabilityTable(db) {
+    console.log('Hello from processAvailabilityTable()');
+
+    const transaction = db.transaction(['Availability'], 'readonly');
+    const objectStore = transaction.objectStore('Availability');
+
+    const availableDates = [];
+
+    return new Promise((resolve, reject) => {
+        const request = objectStore.openCursor();
+
+        request.onsuccess = function (event) {
+            const cursor = event.target.result;
+
+            if (cursor) {
+                if (cursor.value.Available === true) { // Check availability
+                    availableDates.push(cursor.value.ArrivalDate);
+                }
+                cursor.continue();
+            } else {
+                //console.log('Available Dates:', availableDates);
+                resolve(availableDates);
+            }
+        };
+
+        request.onerror = function (event) {
+            reject(event.target.error);
+        };
+    });
+}
+
+
 async function AvailableBooking(db, availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
     let availableArrivalDate = null;
     let availableDepartureDate = null;
@@ -349,8 +382,32 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
     return { availableArrivalDate, availableDepartureDate };
 }
 
+
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getDates(start, end) {
+    var arr = [];
+    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+        arr.push(new Date(dt));
+    }
+    return arr;
+}
+
+function getDatesInRange(array, start, end) {
+    var inRange = [];
+    //console.log('Start Date:', start);
+    //console.log('End Date:', end);
+    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+        var dateString = dt.toLocaleDateString('en-us', formatDateOptions);
+        //console.log('Processing Date:', dateString);
+        if (array.includes(dateString)) {
+            inRange.push(new Date(dt));
+        }
+    }
+    //console.log('Dates in Range:', inRange);
+    return inRange;
 }
 
 // Define a function to set up the event listener for the "Choose Campsite" button

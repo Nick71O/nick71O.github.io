@@ -307,38 +307,6 @@ async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTi
 }
 
 
-async function processAvailabilityTable(db) {
-    console.log('Hello from processAvailabilityTable()');
-
-    const transaction = db.transaction(['Availability'], 'readonly');
-    const objectStore = transaction.objectStore('Availability');
-
-    const availableDates = [];
-
-    return new Promise((resolve, reject) => {
-        const request = objectStore.openCursor();
-
-        request.onsuccess = function (event) {
-            const cursor = event.target.result;
-
-            if (cursor) {
-                if (cursor.value.Available === true) { // Check availability
-                    availableDates.push(cursor.value.ArrivalDate);
-                }
-                cursor.continue();
-            } else {
-                //console.log('Available Dates:', availableDates);
-                resolve(availableDates);
-            }
-        };
-
-        request.onerror = function (event) {
-            reject(event.target.error);
-        };
-    });
-}
-
-
 async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     // Clear database and reset availability
     await sleep(sleepMilliseconds);
@@ -380,10 +348,6 @@ function isCampsiteAvailable(clickButton = false) {
     return buttonFound;
 }
 
-
-
-
-
 async function redirectBookingPage() {
     var bookingQueryString = "?robot=78"
     var bookingURL = baseURL + "/reserve/index" + bookingQueryString
@@ -418,34 +382,10 @@ function getElementsByXPath(xpath, parent) {
     return results;
 }
 
-function getDates(start, end) {
-    var arr = [];
-    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
-        arr.push(new Date(dt));
-    }
-    return arr;
-}
-
-function getDatesInRange(array, start, end) {
-    var inRange = [];
-    //console.log('Start Date:', start);
-    //console.log('End Date:', end);
-    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
-        var dateString = dt.toLocaleDateString('en-us', formatDateOptions);
-        //console.log('Processing Date:', dateString);
-        if (array.includes(dateString)) {
-            inRange.push(new Date(dt));
-        }
-    }
-    //console.log('Dates in Range:', inRange);
-    return inRange;
-}
-
 function isValidDate(dateString) {
     // Check if the input is a valid date
     return dateString && !isNaN(Date.parse(dateString));
 }
-
 
 function PlayAlert() {
     var alertsound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
