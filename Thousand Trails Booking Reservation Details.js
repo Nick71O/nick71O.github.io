@@ -117,8 +117,8 @@ async function openThousandTrailsDB() {
                     }
 
                     //sleep, clear database and try again
-                    console.log("\nSleeping...4 minutes");
-                    resetBookingAvailabilityProcess(db, 237000)
+                    console.log("\nSleeping...5 minutes");
+                    resetBookingAvailabilityProcess(db, 297000)
                 } else {
                     console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
                 }
