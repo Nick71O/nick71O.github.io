@@ -433,10 +433,46 @@ function inputBookingReservationDetails(arrivalDate, departureDate) {
     var checkinInput = document.getElementById("checkin");
     var checkoutInput = document.getElementById("checkout");
     var btnStep2 = document.getElementById("btnStep2");
+    var campingTypeSelect = document.getElementById("campingType");
+    var equipmentTypeSelect = document.getElementById("equipmentType");
+    var adultsSelect = document.getElementById("adults");
+    var kidsSelect = document.getElementById("kids");
 
-    if (checkinInput && checkoutInput && btnStep2) {
+    if (checkinInput && checkoutInput && btnStep2 && campingTypeSelect && equipmentTypeSelect && adultsSelect && kidsSelect) {
         checkinInput.value = arrivalDate;
         checkoutInput.value = departureDate;
+
+        // Select RV from the campingType dropdown
+        for (var i = 0; i < campingTypeSelect.options.length; i++) {
+            if (campingTypeSelect.options[i].text === "RV Site") {
+                campingTypeSelect.selectedIndex = i;
+                break;
+            }
+        }
+
+        // Select Travel Trailer from the equipmentType dropdown
+        for (var j = 0; j < equipmentTypeSelect.options.length; j++) {
+            if (equipmentTypeSelect.options[j].text === "Travel Trailer") {
+                equipmentTypeSelect.selectedIndex = j;
+                break;
+            }
+        }
+
+        // Select 2 from the adults dropdown
+        for (var k = 0; k < adultsSelect.options.length; k++) {
+            if (adultsSelect.options[k].text === "2") {
+                adultsSelect.selectedIndex = k;
+                break;
+            }
+        }
+
+        // Select 3 from the kids dropdown
+        for (var l = 0; l < kidsSelect.options.length; l++) {
+            if (kidsSelect.options[l].text === "3") {
+                kidsSelect.selectedIndex = l;
+                break;
+            }
+        }
 
         btnStep2.click();
         // btnStep2.addEventListener("click", function() {
@@ -446,6 +482,7 @@ function inputBookingReservationDetails(arrivalDate, departureDate) {
         console.error("Booking input elements not found!");
     }
 }
+
 
 async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     // Clear database and reset availability
