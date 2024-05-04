@@ -437,8 +437,10 @@ function inputBookingReservationDetails(arrivalDate, departureDate) {
     var equipmentTypeSelect = document.getElementById("equipmentType");
     var adultsSelect = document.getElementById("adults");
     var kidsSelect = document.getElementById("kids");
+    var lengthInput = document.getElementById("length");
+    var slideoutsNoRadio = document.getElementById("slideoutsNo");
 
-    if (checkinInput && checkoutInput && btnStep2 && campingTypeSelect && equipmentTypeSelect && adultsSelect && kidsSelect) {
+    if (checkinInput && checkoutInput && btnStep2 && campingTypeSelect && equipmentTypeSelect && adultsSelect && kidsSelect && lengthInput && slideoutsNoRadio) {
         checkinInput.value = arrivalDate;
         checkoutInput.value = departureDate;
 
@@ -474,6 +476,12 @@ function inputBookingReservationDetails(arrivalDate, departureDate) {
             }
         }
 
+        // Set the length to 27
+        lengthInput.value = "27";
+
+        // Select "No" for With Slideouts
+        slideoutsNoRadio.checked = true;
+
         btnStep2.click();
         // btnStep2.addEventListener("click", function() {
         //     console.log("You clicked the Choose Campsite button!");
@@ -482,6 +490,7 @@ function inputBookingReservationDetails(arrivalDate, departureDate) {
         console.error("Booking input elements not found!");
     }
 }
+
 
 
 async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
