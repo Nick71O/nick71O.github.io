@@ -9,6 +9,7 @@ var clickCount = 0;
 // IndexedDB library functions
 async function openThousandTrailsDB() {
     try {
+        console.log('Hello from Thousand Trails Booking Choose Campsite');
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         await logSiteConstants(db);

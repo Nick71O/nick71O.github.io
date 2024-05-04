@@ -1,11 +1,12 @@
 
 async function launch() {
     try {
+        console.log('Hello from Thousand Trails Booking Enter Payments');
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
-        
+
         var errorMessage = await inputEnterPaymentFormAndSubmit();
 
         if (errorMessage) {

@@ -4,6 +4,7 @@ const baseURL = "https://members.thousandtrails.com"
 async function launch() { 
     getTimestamp();
     try {
+        console.log('Hello from Thousand Trails Parks');
         const db = await initializeDB();
         console.log('IndexedDB initialized successfully.');
         await logSiteConstants(db);
