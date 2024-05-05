@@ -5,7 +5,6 @@ var clickCount = 0;
 // IndexedDB library functions
 async function openThousandTrailsDB() {
     console.log('Hello from Thousand Trails Booking Reservation Details');
-    getTimestamp();
 
     try {
         const db = await initializeDB();
