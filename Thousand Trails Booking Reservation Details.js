@@ -5,7 +5,7 @@ var clickCount = 0;
 // IndexedDB library functions
 async function openThousandTrailsDB() {
     console.log('Hello from Thousand Trails Booking Reservation Details');
-    logTimestamp();
+    getTimestamp();
 
     //check for fatal site error
     //502 Bad Gateway, 504 Gateway Time-out
@@ -496,6 +496,15 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function getTimestamp() {
+    var nowDate = new Date();
+    var date = nowDate.toDateString();
+    var time = nowDate.toLocaleTimeString();
+    var timestamp = '--' + date + ', ' + time + '--';
+    console.log(timestamp);
+    return timestamp;
 }
 
 function getDates(start, end) {
