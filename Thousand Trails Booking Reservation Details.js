@@ -373,7 +373,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             });
 
             if (allRanges.length > 0) {
-                console.log("\n\n")
+                console.log("\n")
                 getTimestamp();
 
                 const longestRange = allRanges.filter(range => range.length >= minimumConsecutiveDays)
