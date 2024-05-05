@@ -11,6 +11,7 @@ async function openThousandTrailsDB() {
     //502 Bad Gateway, 504 Gateway Time-out
     if (document.title.substring(0, 3) == "502" || document.title.substring(0, 3) == "504") {
         console.log("ERROR: " + document.title);
+        getTimestamp();
         console.log("Sleeping...3 minute");
         await sleep(180000);
         console.log("Reloading Page");
@@ -136,10 +137,11 @@ async function openThousandTrailsDB() {
 
                     inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
                 } else {
-                    console.log("No available dates found.");
+                    //console.log("No available dates found.");
                 }
 
                 //sleep, clear database and try again
+                getTimestamp();
                 console.log("\nSleeping...5 minutes");
                 resetBookingAvailabilityProcess(db, 297000)
             } else {
