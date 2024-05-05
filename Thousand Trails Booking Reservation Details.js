@@ -5,7 +5,6 @@ var clickCount = 0;
 // IndexedDB library functions
 async function openThousandTrailsDB() {
     console.log('Hello from Thousand Trails Booking Reservation Details');
-    
     getTimestamp();
 
     try {
@@ -519,7 +518,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupEventListener();
 });
 
-async function inputBookingReservationDetails(arrivalDate, departureDate) {
+function inputBookingReservationDetails(arrivalDate, departureDate) {
     // Check if the elements exist before performing actions
     var checkinInput = document.getElementById("checkin");
     var checkoutInput = document.getElementById("checkout");
@@ -581,8 +580,8 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         console.error("Booking input elements not found!");
 
         console.log("Sleeping...30 seconds");
-        await sleep(30000);
-        redirectLoginPage2();
+        //await sleep(30000);
+        redirectLoginPage();
     }
 }
 
@@ -601,8 +600,8 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     openThousandTrailsDB();
 }
 
-async function redirectLoginPage2() {
-    var loginURL = baseURL + "/login/index";
+async function redirectLoginPage() {
+    const loginURL = baseURL + "/login/index";
 
     console.log("Redirecting to the Login Page");
     console.log(loginURL);
@@ -611,8 +610,8 @@ async function redirectLoginPage2() {
 }
 
 async function redirectBookingPage() {
-    var bookingQueryString = "?robot=78"
-    var bookingURL = baseURL + "/reserve/index" + bookingQueryString
+    const bookingQueryString = "?robot=78"
+    const bookingURL = baseURL + "/reserve/index" + bookingQueryString
 
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
@@ -623,9 +622,9 @@ async function redirectBookingPage() {
 async function openTabs(arrivalDate, departureDate) {
     arrivalDate = arrivalDate.replace(/\//g, "%2F");
     departureDate = departureDate.replace(/\//g, "%2F");
-    var loginURL = baseURL + "/login/index"
-    var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
-    var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
+    const loginURL = baseURL + "/login/index"
+    const bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
+    const bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
 
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
