@@ -578,10 +578,6 @@ function inputBookingReservationDetails(arrivalDate, departureDate) {
         // });
     } else {
         console.error("Booking input elements not found!");
-
-        console.log("Sleeping...30 seconds");
-        //await sleep(30000);
-        redirectLoginPage();
     }
 }
 
@@ -598,15 +594,6 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     await resetAvailabilityTable(db);
 
     openThousandTrailsDB();
-}
-
-async function redirectLoginPage() {
-    const loginURL = baseURL + "/login/index";
-
-    console.log("Redirecting to the Login Page");
-    console.log(loginURL);
-    await sleep(500);
-    window.location.replace(loginURL);
 }
 
 async function redirectBookingPage() {
