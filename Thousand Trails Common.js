@@ -1,6 +1,4 @@
-
-
-function getTimestamp() {
+function logTimestamp() {
     var nowDate = new Date();
     var date = nowDate.toDateString();
     var time = nowDate.toLocaleTimeString();
