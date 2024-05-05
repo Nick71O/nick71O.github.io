@@ -8,27 +8,6 @@ async function openThousandTrailsDB() {
     
     getTimestamp();
 
-    //check for fatal site error
-    //502 Bad Gateway, 504 Gateway Time-out
-    if (document.title.substring(0, 3) == "502" || document.title.substring(0, 3) == "504") {
-        console.log("ERROR: " + document.title);
-        console.log("Sleeping...3 minute");
-        await sleep(180000);
-        console.log("Reloading Page");
-        window.location.reload();
-    }
-
-    //if the page loses its login credentials it loads a login screen at the same url
-    const invalidLoginDiv = document.getElementById('invalidLogin');
-    if (invalidLoginDiv && invalidLoginDiv.textContent.trim() === 'Invalid Login Parameters Entered.') {
-        // Perform your action here, such as showing a modal, redirecting, or displaying an alert
-        alert('Invalid login parameters. Please try again.');
-
-        console.log("Sleeping...30 seconds");
-        await sleep(30000);
-        redirectLoginPage2();
-    }
-
     try {
         const db = await initializeDB();
         console.log('DB initialized successfully.');
