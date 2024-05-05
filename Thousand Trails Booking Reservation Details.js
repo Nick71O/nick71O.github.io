@@ -4,9 +4,8 @@ var clickCount = 0;
 
 // IndexedDB library functions
 async function openThousandTrailsDB() {
-    console.log('Hello from Thousand Trails Booking Reservation Details');
-
     try {
+        console.log('Hello from Thousand Trails Booking Reservation Details');
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
@@ -596,8 +595,8 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
 }
 
 async function redirectBookingPage() {
-    const bookingQueryString = "?robot=78"
-    const bookingURL = baseURL + "/reserve/index" + bookingQueryString
+    var bookingQueryString = "?robot=78"
+    var bookingURL = baseURL + "/reserve/index" + bookingQueryString
 
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
@@ -608,9 +607,9 @@ async function redirectBookingPage() {
 async function openTabs(arrivalDate, departureDate) {
     arrivalDate = arrivalDate.replace(/\//g, "%2F");
     departureDate = departureDate.replace(/\//g, "%2F");
-    const loginURL = baseURL + "/login/index"
-    const bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
-    const bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
+    var loginURL = baseURL + "/login/index"
+    var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
+    var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
 
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
