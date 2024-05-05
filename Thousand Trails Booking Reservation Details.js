@@ -11,7 +11,6 @@ async function openThousandTrailsDB() {
     //502 Bad Gateway, 504 Gateway Time-out
     if (document.title.substring(0, 3) == "502" || document.title.substring(0, 3) == "504") {
         console.log("ERROR: " + document.title);
-        getTimestamp();
         console.log("Sleeping...3 minute");
         await sleep(180000);
         console.log("Reloading Page");
@@ -141,7 +140,6 @@ async function openThousandTrailsDB() {
                 }
 
                 //sleep, clear database and try again
-                getTimestamp();
                 console.log("\nSleeping...5 minutes");
                 resetBookingAvailabilityProcess(db, 297000)
             } else {
@@ -365,7 +363,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 allRanges.push(currentRange);
             }
 
-            console.log("All Consecutive Date Ranges:");
+            console.log("\nAll Consecutive Date Ranges:");
             allRanges.forEach(range => {
                 const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
                 const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
@@ -375,6 +373,9 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             });
 
             if (allRanges.length > 0) {
+                console.log("\n\n")
+                getTimestamp();
+
                 const longestRange = allRanges.filter(range => range.length >= minimumConsecutiveDays)
                     .reduce((a, b) => a.length > b.length ? a : b, []);
 
@@ -390,10 +391,10 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                     //openTabs(availableArrivalDate, availableDepartureDate);
                     //redirectBookingPage();
                 } else {
-                    console.log("No consecutive dates found with a minimum of", minimumConsecutiveDays, "nights.");
+                    console.log("\nNo consecutive dates found with a minimum of", minimumConsecutiveDays, "nights.");
                 }
             } else {
-                console.log("No consecutive dates found.");
+                console.log("\nNo consecutive dates found.");
             }
 
             break;
