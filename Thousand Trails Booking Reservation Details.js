@@ -78,54 +78,54 @@ async function openThousandTrailsDB() {
 
 
         //if (scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null) {
-        
+
         //} else {
-            var nextAvailabilityDate = await getNextAvailabilityDate(db);
-            if (nextAvailabilityDate) {
-                console.log('Next Availability Date:', nextAvailabilityDate);
+        var nextAvailabilityDate = await getNextAvailabilityDate(db);
+        if (nextAvailabilityDate) {
+            console.log('Next Availability Date:', nextAvailabilityDate);
 
-                //openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
+            //openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
 
-                //await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', nextAvailabilityDate.arrivalDate);
-                //await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', nextAvailabilityDate.departureDate);
-                inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
-            }
-            else {
-                //await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', null);
-                //await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', null);
-                await logSiteConstants(db);
-                await logAvailabilityRecords(db);
+            //await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', nextAvailabilityDate.arrivalDate);
+            //await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', nextAvailabilityDate.departureDate);
+            inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
+        }
+        else {
+            //await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', null);
+            //await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', null);
+            await logSiteConstants(db);
+            await logAvailabilityRecords(db);
 
-                console.log('Goto Step 2');
+            console.log('Goto Step 2');
 
-                console.log('Load processAvailabilityTable');
-                const availableDates = await processAvailabilityTable(db);
-                console.log('Available Dates:', availableDates);
+            console.log('Load processAvailabilityTable');
+            const availableDates = await processAvailabilityTable(db);
+            console.log('Available Dates:', availableDates);
 
-                const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
-                const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
+            const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+            const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
 
-                if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {                                               
-                    const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value);
-                    if (availableArrivalDate && availableDepartureDate) {
-                        console.log("Available Arrival Date:", availableArrivalDate);
-                        console.log("Available Departure Date:", availableDepartureDate);
-                        
-                        inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
-                    } else {
-                        console.log("No available dates found.");
-                    }
+            if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
+                const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value);
+                if (availableArrivalDate && availableDepartureDate) {
+                    console.log("Available Arrival Date:", availableArrivalDate);
+                    console.log("Available Departure Date:", availableDepartureDate);
 
-                    //sleep, clear database and try again
-                    console.log("\nSleeping...5 minutes");
-                    resetBookingAvailabilityProcess(db, 297000)
+                    inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
                 } else {
-                    console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
+                    console.log("No available dates found.");
                 }
 
-
-
+                //sleep, clear database and try again
+                console.log("\nSleeping...5 minutes");
+                resetBookingAvailabilityProcess(db, 297000)
+            } else {
+                console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
             }
+
+
+
+        }
         //}
 
     } catch (error) {
@@ -373,6 +373,94 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
             break;
 
+        case "leadingtrailing":
+            console.log('AvailableBooking - Leading\Trailing');
+            console.log('Available Dates:', availableDates);
+            console.log('Arrival Date:', arrivalDate);
+            console.log('Departure Date:', departureDate);
+
+            const bookedArrivalDate = '05/04/2024';
+            const bookedDepartureDate = '05/16/2024';
+
+            const availableDates = [
+                '05/01/2024', '05/02/2024', '05/03/2024', '05/04/2024', '05/05/2024', '05/06/2024',
+                '05/07/2024', '05/08/2024', '05/09/2024', '05/12/2024', '05/13/2024', '05/14/2024',
+                '05/15/2024', '05/16/2024', '05/17/2024', '05/18/2024', '05/19/2024', '05/20/2024',
+                '05/21/2024', '05/22/2024', '05/23/2024', '05/27/2024', '05/28/2024', '05/29/2024',
+                '05/30/2024', '06/02/2024', '06/03/2024', '06/04/2024', '06/05/2024', '06/10/2024',
+                '06/11/2024', '06/17/2024', '06/20/2024', '06/25/2024', '06/26/2024', '07/02/2024',
+                '07/09/2024'
+            ];
+
+            arrivalDate = '05/01/2024';
+            departureDate = '07/04/2024';
+
+            console.log('Available Dates:', availableDates);
+            console.log('Arrival Date:', arrivalDate);
+            console.log('Departure Date:', departureDate);
+            console.log('Booked Arrival Date:', bookedArrivalDate);
+            console.log('Booked Departure Date:', bookedDepartureDate);
+
+            // Filter out dates based on booked arrival and departure
+            const filteredDates = availableDates.filter(date => date < bookedArrivalDate || date > bookedDepartureDate);
+
+            console.log("Filtered Dates:");
+            console.log(filteredDates);
+
+            // Function to calculate consecutive date ranges
+            const getConsecutiveDateRanges = dates => {
+                let ranges = [];
+                let currentRange = [];
+
+                dates.forEach((date, index) => {
+                    const prevDate = dates[index - 1];
+                    const currentDate = new Date(date);
+                    const nextDate = dates[index + 1];
+
+                    if (!prevDate || (currentDate.getTime() - new Date(prevDate).getTime()) / (1000 * 3600 * 24) !== 1) {
+                        // Start a new range
+                        currentRange = [date];
+                    } else if ((nextDate && (new Date(nextDate).getTime() - currentDate.getTime()) / (1000 * 3600 * 24) !== 1) || !nextDate) {
+                        // End the current range and push to ranges
+                        currentRange.push(date);
+                        ranges.push(currentRange);
+                    } else {
+                        // Continue the current range
+                        currentRange.push(date);
+                    }
+                });
+
+                return ranges;
+            };
+
+            const consecutiveRanges = getConsecutiveDateRanges(filteredDates);
+
+            console.log("\nAll Leading/Trailing Date Ranges:");
+            consecutiveRanges.forEach(range => {
+                const arrivalDate = range[0];
+                const departureDate = range[range.length - 1];
+                const numberOfNights = range.length - 1; // Subtract 1 for the arrival date
+
+                console.log(`Arrival: ${arrivalDate} Departure: ${departureDate} Number of Nights: ${numberOfNights}`);
+            });
+
+            // Find the longest range
+            const longestRange = consecutiveRanges.reduce((prev, current) => (current.length > prev.length ? current : prev));
+
+            console.log("\nLongest Leading/Trailing Date Range:");
+            console.log(`Arrival: ${longestRange[0]} Departure: ${longestRange[longestRange.length - 1]} Number of Nights: ${longestRange.length - 1}`);
+
+            return {
+                arrivalDate: longestRange[0],
+                departureDate: longestRange[longestRange.length - 1],
+                numberOfNights: longestRange.length - 1
+            };
+
+            //const result = findLeadingTrailingDates(bookedArrivalDate, bookedDepartureDate, availableDates);
+            //console.log("\nResult:", result);
+
+            break;
+
         default:
             console.log(`Booking preference switch of "${bookingPreference}" does not have a code path`);
 
@@ -415,7 +503,7 @@ function setupEventListener() {
     var btnStep2 = document.getElementById("btnStep2");
 
     if (btnStep2) {
-        btnStep2.addEventListener("click", function() {
+        btnStep2.addEventListener("click", function () {
             console.log("You clicked the Choose Campsite button!");
         });
     } else {
@@ -424,7 +512,7 @@ function setupEventListener() {
 }
 
 // Call the function when the DOM content is fully loaded
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     setupEventListener();
 });
 
