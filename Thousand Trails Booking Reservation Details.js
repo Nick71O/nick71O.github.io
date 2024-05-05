@@ -4,8 +4,31 @@ var clickCount = 0;
 
 // IndexedDB library functions
 async function openThousandTrailsDB() {
+    console.log('Hello from Thousand Trails Booking Reservation Details');
+    //getTimestamp();
+
+    //check for fatal site error
+    //502 Bad Gateway, 504 Gateway Time-out
+    if (document.title.substring(0, 3) == "502" || document.title.substring(0, 3) == "504") {
+        console.log("ERROR: " + document.title);
+        console.log("Sleeping...3 minute");
+        await sleep(180000);
+        console.log("Reloading Page");
+        window.location.reload();
+    }
+
+    //if the page loses its login credentials it loads a login screen at the same url
+    const invalidLoginDiv = document.getElementById('invalidLogin');
+    if (invalidLoginDiv && invalidLoginDiv.textContent.trim() === 'Invalid Login Parameters Entered.') {
+        // Perform your action here, such as showing a modal, redirecting, or displaying an alert
+        alert('Invalid login parameters. Please try again.');
+
+        console.log("Sleeping...30 seconds");
+        await sleep(30000);
+        redirectLoginPage();
+    }
+
     try {
-        console.log('Hello from Thousand Trails Booking Reservation Details');
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
@@ -516,7 +539,7 @@ document.addEventListener("DOMContentLoaded", function () {
     setupEventListener();
 });
 
-function inputBookingReservationDetails(arrivalDate, departureDate) {
+async function inputBookingReservationDetails(arrivalDate, departureDate) {
     // Check if the elements exist before performing actions
     var checkinInput = document.getElementById("checkin");
     var checkoutInput = document.getElementById("checkout");
@@ -576,6 +599,10 @@ function inputBookingReservationDetails(arrivalDate, departureDate) {
         // });
     } else {
         console.error("Booking input elements not found!");
+
+        console.log("Sleeping...30 seconds");
+        await sleep(30000);
+        redirectLoginPage();
     }
 }
 
@@ -592,6 +619,15 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     await resetAvailabilityTable(db);
 
     openThousandTrailsDB();
+}
+
+async function redirectLoginPage() {
+    var loginURL = baseURL + "/login/index";
+
+    console.log("Redirecting to the Login Page");
+    console.log(loginURL);
+    await sleep(500);
+    window.location.replace(loginURL);
 }
 
 async function redirectBookingPage() {
