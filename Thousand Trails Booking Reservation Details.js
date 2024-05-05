@@ -26,7 +26,7 @@ async function openThousandTrailsDB() {
 
         console.log("Sleeping...30 seconds");
         await sleep(30000);
-        redirectLoginPage();
+        redirectLoginPage2();
     }
 
     try {
@@ -603,7 +603,7 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
 
         console.log("Sleeping...30 seconds");
         await sleep(30000);
-        redirectLoginPage();
+        redirectLoginPage2();
     }
 }
 
@@ -622,7 +622,7 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     openThousandTrailsDB();
 }
 
-async function redirectLoginPage() {
+async function redirectLoginPage2() {
     var loginURL = baseURL + "/login/index";
 
     console.log("Redirecting to the Login Page");
