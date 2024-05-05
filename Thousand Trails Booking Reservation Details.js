@@ -382,7 +382,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             const bookedArrivalDate = '05/04/2024';
             const bookedDepartureDate = '05/16/2024';
 
-            const availableDates = [
+            availableDates = [
                 '05/01/2024', '05/02/2024', '05/03/2024', '05/04/2024', '05/05/2024', '05/06/2024',
                 '05/07/2024', '05/08/2024', '05/09/2024', '05/12/2024', '05/13/2024', '05/14/2024',
                 '05/15/2024', '05/16/2024', '05/17/2024', '05/18/2024', '05/19/2024', '05/20/2024',
