@@ -61,7 +61,7 @@ async function getSiteConstant(db, name) {
                 if (cursor) {
                     const constant = cursor.value;
                     if (constant.name === name) {
-                        //console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
+                        console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
                         resolve(constant); // Resolve the promise with the retrieved constant
                     } else {
                         cursor.continue(); // Continue to the next entry

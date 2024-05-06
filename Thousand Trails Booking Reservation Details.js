@@ -435,7 +435,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentIndex = availableDates.indexOf(bookedArrivalDate);
             let currentLeadingArrival = bookedArrivalDate;
             let currentLeadingDeparture = bookedArrivalDate;
-            let currentLeadingCount = 1;
+            let currentLeadingCount = 0;
 
             while (currentIndex > 0 && availableDates[currentIndex - 1] === addDays(currentLeadingArrival, -1)) {
                 currentLeadingArrival = availableDates[currentIndex - 1];
@@ -451,7 +451,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             currentIndex = availableDates.indexOf(bookedDepartureDate);
             let currentTrailingArrival = bookedDepartureDate;
             let currentTrailingDeparture = bookedDepartureDate;
-            let currentTrailingCount = 1;
+            let currentTrailingCount = 0;
 
             while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === addDays(currentTrailingDeparture, 1)) {
                 currentTrailingDeparture = availableDates[currentIndex + 1];
