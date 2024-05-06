@@ -438,30 +438,28 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentLeadingCount = 0;
 
             while (currentIndex > 0 && addDays(availableDates[currentIndex - 1], 1) === currentLeadingDeparture) {
-                currentLeadingDeparture = availableDates[currentIndex - 1];
+                currentLeadingArrival = availableDates[currentIndex - 1];
                 currentLeadingCount++;
                 currentIndex--;
             }
 
             leadingArrivalDate = currentLeadingArrival;
-            leadingDepartureDate = currentLeadingDeparture;
-            leadingNumberOfNights = currentLeadingCount;
+            leadingDepartureDate = addDays(leadingArrivalDate, leadingNumberOfNights);
 
             // Finding trailing dates
             currentIndex = availableDates.indexOf(bookedDepartureDate);
             let currentTrailingArrival = bookedDepartureDate;
-            let currentTrailingDeparture = bookedDepartureDate;
-            let currentTrailingCount = 0;
+            let currentTrailingDeparture = addDays(bookedDepartureDate, 1); // The next day morning is the departure
+            let currentTrailingCount = 1; // Departure doesn't count as a night
 
-            while (currentIndex < availableDates.length - 1 && addDays(availableDates[currentIndex + 1], -1) === currentTrailingArrival) {
-                currentTrailingArrival = availableDates[currentIndex + 1];
+            while (currentIndex < availableDates.length - 1 && addDays(availableDates[currentIndex + 1], 1) === currentTrailingDeparture) {
+                currentTrailingDeparture = addDays(availableDates[currentIndex + 1], 1);
                 currentTrailingCount++;
                 currentIndex++;
             }
 
             trailingArrivalDate = currentTrailingArrival;
             trailingDepartureDate = currentTrailingDeparture;
-            trailingNumberOfNights = currentTrailingCount;
 
             // Determine which date range is longer
             availableArrivalDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingArrivalDate : trailingArrivalDate;
