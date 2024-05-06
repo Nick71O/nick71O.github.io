@@ -86,11 +86,13 @@ async function openThousandTrailsDB() {
 
         if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
             //check if the book campsite button is available and click it
-            window.console.log('searching page for the "Select Site" button');
+            console.log('\n');
+            getTimestamp();
+            window.console.log('\nsearching page for the "Select Site" button');
             const isCampsiteAvailableResult = isCampsiteAvailable(true);
             if (isCampsiteAvailableResult) {
                 clickCount = clickCount + 1;
-                console.log('clicked the "Select Site" button ' + clickCount + ' times');
+                console.log('\nclicked the "Select Site" button ' + clickCount + ' times');
 
                 PlayAlert();
                 await sleep(3000);
@@ -116,8 +118,7 @@ async function openThousandTrailsDB() {
                     window.location.reload();
                 }
             } else {
-
-                console.log('"Select Site" button was not found on the page; reset and try again.');
+                console.log('\n"Select Site" button was not found on the page; reset and try again.');
                 //sleep, clear database and try again
                 console.log("\nSleeping...5 minutes");
                 resetBookingAvailabilityProcess(db, 300000)
