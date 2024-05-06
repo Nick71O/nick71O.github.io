@@ -452,7 +452,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentTrailingDate = bookedDepartureDate;
             let currentTrailingCount = 0;
 
-            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === currentTrailingDate) {
+            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex] === currentTrailingDate) {
                 console.log("Current Index:", currentIndex, "Next Date:", availableDates[currentIndex + 1], "Current Trailing Date:", currentTrailingDate);
                 currentTrailingDate = addDays(currentTrailingDate, 1);
                 currentTrailingCount++;
@@ -460,7 +460,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             }
             if (currentTrailingCount > 0) {
                 trailingArrivalDate = bookedDepartureDate;
-                trailingDepartureDate = addDays(trailingArrivalDate, currentTrailingCount);
+                //trailingDepartureDate = addDays(trailingArrivalDate, currentTrailingCount);
+                trailingDepartureDate = currentTrailingDate;
                 trailingNumberOfNights = currentTrailingCount;
             }
 
