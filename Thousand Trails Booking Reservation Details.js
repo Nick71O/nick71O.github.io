@@ -427,73 +427,55 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log('Booked Arrival Date:', bookedArrivalDate);
             console.log('Booked Departure Date:', bookedDepartureDate);
 
+            let leadingArrivalDate = '';
+            let leadingDepartureDate = bookedArrivalDate;
+            let leadingNumberOfNights = 0;
 
-            let longestLeadingArrival = '';
-            let longestLeadingDeparture = '';
-            let longestLeadingCount = 0;
+            let trailingDepartureDate = '';
+            let trailingArrivalDate = bookedDepartureDate;
+            let trailingNumberOfNights = 0;
 
-            let longestTrailingArrival = '';
-            let longestTrailingDeparture = '';
-            let longestTrailingCount = 0;
+            // Finding leading dates
+            let currentIndex = availableDates.indexOf(bookedArrivalDate);
+            let currentLeadingArrival = bookedArrivalDate;
+            let currentLeadingDeparture = bookedArrivalDate;
+            let currentLeadingCount = 1;
 
-            let currentLeadingArrival = '';
-            let currentLeadingDeparture = '';
-            let currentLeadingCount = 0;
-
-            let currentTrailingArrival = '';
-            let currentTrailingDeparture = '';
-            let currentTrailingCount = 0;
-
-            for (let i = 0; i < availableDates.length; i++) {
-                if (availableDates[i] === bookedArrivalDate) {
-                    currentLeadingArrival = availableDates[i];
-                    currentLeadingDeparture = availableDates[i];
-                    currentLeadingCount = 1;
-                } else if (currentLeadingCount > 0) {
-                    currentLeadingDeparture = addDays(currentLeadingDeparture, 1);
-                    if (!availableDates.includes(currentLeadingDeparture)) {
-                        if (currentLeadingCount > longestLeadingCount) {
-                            longestLeadingCount = currentLeadingCount;
-                            longestLeadingArrival = currentLeadingArrival;
-                            longestLeadingDeparture = currentLeadingDeparture;
-                        }
-                        currentLeadingArrival = '';
-                        currentLeadingDeparture = '';
-                        currentLeadingCount = 0;
-                    } else {
-                        currentLeadingCount++;
-                    }
-                }
-
-                if (availableDates[i] === bookedDepartureDate) {
-                    currentTrailingArrival = availableDates[i];
-                    currentTrailingDeparture = availableDates[i];
-                    currentTrailingCount = 1;
-                } else if (currentTrailingCount > 0) {
-                    currentTrailingArrival = addDays(currentTrailingArrival, -1);
-                    if (!availableDates.includes(currentTrailingArrival)) {
-                        if (currentTrailingCount > longestTrailingCount) {
-                            longestTrailingCount = currentTrailingCount;
-                            longestTrailingArrival = addDays(currentTrailingArrival, 1);
-                            longestTrailingDeparture = currentTrailingDeparture;
-                        }
-                        currentTrailingArrival = '';
-                        currentTrailingDeparture = '';
-                        currentTrailingCount = 0;
-                    } else {
-                        currentTrailingCount++;
-                    }
-                }
+            while (currentIndex > 0 && availableDates[currentIndex - 1] === addDays(currentLeadingDeparture, -1)) {
+                currentLeadingDeparture = availableDates[currentIndex - 1];
+                currentLeadingCount++;
+                currentIndex--;
             }
 
-            let availableArrivalDate = longestLeadingCount >= longestTrailingCount ? longestLeadingArrival : longestTrailingArrival;
-            let availableDepartureDate = longestLeadingCount >= longestTrailingCount ? longestLeadingDeparture : longestTrailingDeparture;
+            leadingArrivalDate = currentLeadingArrival;
+            leadingDepartureDate = currentLeadingDeparture;
+            leadingNumberOfNights = currentLeadingCount;
+
+            // Finding trailing dates
+            currentIndex = availableDates.indexOf(bookedDepartureDate);
+            let currentTrailingArrival = bookedDepartureDate;
+            let currentTrailingDeparture = bookedDepartureDate;
+            let currentTrailingCount = 1;
+
+            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === addDays(currentTrailingArrival, 1)) {
+                currentTrailingArrival = availableDates[currentIndex + 1];
+                currentTrailingCount++;
+                currentIndex++;
+            }
+
+            trailingArrivalDate = currentTrailingArrival;
+            trailingDepartureDate = currentTrailingDeparture;
+            trailingNumberOfNights = currentTrailingCount;
+
+            // Determine which date range is longer
+            let availableArrivalDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingArrivalDate : trailingArrivalDate;
+            let availableDepartureDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingDepartureDate : trailingDepartureDate;
 
             console.log("Leading Date Range:");
-            console.log("   Arrival:", longestLeadingArrival, "Departure:", longestLeadingDeparture, "Number of Nights:", longestLeadingCount);
+            console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
 
             console.log("Trailing Date Range:");
-            console.log("   Arrival:", longestTrailingArrival, "Departure:", longestTrailingDeparture, "Number of Nights:", longestTrailingCount);
+            console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
 
             if (Object.keys({ arrivalDate: longestLeadingArrival, departureDate: longestLeadingDeparture, numberOfNights: longestLeadingCount }).length === 0) {
                 console.log("No suitable leading date range found.");
