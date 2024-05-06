@@ -437,7 +437,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentLeadingCount = 0;
             
             while (currentIndex >= 0 && availableDates[currentIndex] === currentLeadingDate) {
-                console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Leading Date:", currentLeadingDate);
+                //console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Leading Date:", currentLeadingDate);
                 currentLeadingDate = addDays(currentLeadingDate, -1);
                 currentLeadingCount++;
                 currentIndex--;
@@ -447,6 +447,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 leadingDepartureDate = bookedArrivalDate;
                 leadingNumberOfNights = currentLeadingCount;
             }
+            console.log("\nLeading Date Range:");
+            console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
 
             // Finding trailing dates
             currentIndex = availableDates.indexOf(bookedDepartureDate);
@@ -454,7 +456,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentTrailingCount = 0;
 
             while (currentIndex < availableDates.length - 1 && availableDates[currentIndex] === currentTrailingDate) {
-                console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Trailing Date:", currentTrailingDate);
+                //console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Trailing Date:", currentTrailingDate);
                 currentTrailingDate = addDays(currentTrailingDate, 1);
                 currentTrailingCount++;
                 currentIndex++;
@@ -464,28 +466,30 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 trailingDepartureDate = currentTrailingDate;
                 trailingNumberOfNights = currentTrailingCount;
             }
-
-            // Determine which date range is longer
-            availableArrivalDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingArrivalDate : trailingArrivalDate;
-            availableDepartureDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingDepartureDate : trailingDepartureDate;
-            const availableNumberOfNights = leadingNumberOfNights >= trailingNumberOfNights ? leadingNumberOfNights : trailingNumberOfNights;
-
-            console.log("\nLeading Date Range:");
-            console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
-
             console.log("\nTrailing Date Range:");
             console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
 
-            if (!leadingArrivalDate || !trailingArrivalDate) {
+            // Determine which date range is longer
+            if (leadingNumberOfNights > 0 && trailingNumberOfNights > 0 && leadingNumberOfNights >= trailingNumberOfNights) {
+                availableArrivalDate = leadingArrivalDate;
+                availableDepartureDate = leadingDepartureDate;
+                availableNumberOfNights = leadingNumberOfNights;
+            } else if (trailingNumberOfNights > 0) {
+                availableArrivalDate = trailingArrivalDate;
+                availableDepartureDate = trailingDepartureDate;
+                availableNumberOfNights = trailingNumberOfNights;
+            } else {
                 console.log("\nNo consecutive leading or trailing date range found.");
             }
 
-            console.log("\nAvailable Date Range:");
-            console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
+            if (leadingNumberOfNights > 0 || trailingNumberOfNights > 0) {
+                console.log("\nAvailable Date Range:");
+                console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
 
-            await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
-            await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
-
+                await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
+                await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
+            }
+            
             break;
 
         default:
