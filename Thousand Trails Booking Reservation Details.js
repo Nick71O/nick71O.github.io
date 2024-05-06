@@ -423,12 +423,12 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log('Booked Arrival Date:', bookedArrivalDate);
             console.log('Booked Departure Date:', bookedDepartureDate);
 
-            let leadingArrivalDate = '';
-            let leadingDepartureDate = bookedArrivalDate;
+            let leadingArrivalDate = null;
+            let leadingDepartureDate = null;
             let leadingNumberOfNights = 0;
 
-            let trailingDepartureDate = '';
-            let trailingArrivalDate = bookedDepartureDate;
+            let trailingDepartureDate = null;
+            let trailingArrivalDate = null;
             let trailingNumberOfNights = 0;
 
             // Finding leading dates
@@ -464,9 +464,9 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             trailingNumberOfNights = currentTrailingCount;
 
             // Determine which date range is longer
-            let availableArrivalDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingArrivalDate : trailingArrivalDate;
-            let availableDepartureDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingDepartureDate : trailingDepartureDate;
-            let availableNumberOfNights = leadingNumberOfNights >= trailingNumberOfNights ? leadingNumberOfNights : trailingNumberOfNights;
+            availableArrivalDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingArrivalDate : trailingArrivalDate;
+            availableDepartureDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingDepartureDate : trailingDepartureDate;
+            const availableNumberOfNights = leadingNumberOfNights >= trailingNumberOfNights ? leadingNumberOfNights : trailingNumberOfNights;
 
             console.log("\nLeading Date Range:");
             console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
