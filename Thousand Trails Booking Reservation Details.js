@@ -449,19 +449,20 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
             // Finding trailing dates
             currentIndex = availableDates.indexOf(bookedDepartureDate);
-            let currentTrailingArrival = bookedDepartureDate;
-            let currentTrailingDeparture = bookedDepartureDate;
+            let currentTrailingDate = bookedDepartureDate;
             let currentTrailingCount = 0;
 
-            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === addDays(currentTrailingDeparture, 1)) {
-                currentTrailingDeparture = availableDates[currentIndex + 1];
+            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === currentTrailingDate) {
+                console.log("Current Index:", currentIndex, "Next Date:", availableDates[currentIndex + 1], "Current Trailing Date:", currentTrailingDate);
+                currentTrailingDate = addDays(currentTrailingDate, 1);
                 currentTrailingCount++;
                 currentIndex++;
             }
-
-            trailingArrivalDate = currentTrailingArrival;
-            trailingDepartureDate = currentTrailingDeparture;
-            trailingNumberOfNights = currentTrailingCount;
+            if (currentTrailingCount > 0) {
+                trailingArrivalDate = bookedDepartureDate;
+                trailingDepartureDate = addDays(trailingArrivalDate, currentTrailingCount);
+                trailingNumberOfNights = currentTrailingCount;
+            }
 
             // Determine which date range is longer
             availableArrivalDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingArrivalDate : trailingArrivalDate;
