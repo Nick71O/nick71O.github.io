@@ -445,7 +445,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             if (currentLeadingCount > 0) {
                 leadingArrivalDate = addDays(currentLeadingDate, 1);
                 leadingDepartureDate = bookedArrivalDate;
-                leadingNumberOfNights = currentLeadingCount - 1;
+                leadingNumberOfNights = currentLeadingCount;
             }
 
             // Finding trailing dates
