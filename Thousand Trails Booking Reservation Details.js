@@ -470,6 +470,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             // Determine which date range is longer
             let availableArrivalDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingArrivalDate : trailingArrivalDate;
             let availableDepartureDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingDepartureDate : trailingDepartureDate;
+            let availableNumberOfNights = leadingNumberOfNights >= trailingNumberOfNights ? leadingNumberOfNights : trailingNumberOfNights;
 
             console.log("Leading Date Range:");
             console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
@@ -477,11 +478,11 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log("Trailing Date Range:");
             console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
 
-            if (Object.keys({ arrivalDate: longestLeadingArrival, departureDate: longestLeadingDeparture, numberOfNights: longestLeadingCount }).length === 0) {
+            if (Object.keys({ arrivalDate: longestLeadingArrival, departureDate: longestLeadingDeparture }).length === 0) {
                 console.log("No suitable leading date range found.");
             }
 
-            if (Object.keys({ arrivalDate: longestTrailingArrival, departureDate: longestTrailingDeparture, numberOfNights: longestTrailingCount }).length === 0) {
+            if (Object.keys({ arrivalDate: longestTrailingArrival, departureDate: longestTrailingDeparture }).length === 0) {
                 console.log("No suitable trailing date range found.");
             }
 
