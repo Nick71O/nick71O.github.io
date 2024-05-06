@@ -10,6 +10,8 @@ var clickCount = 0;
 async function openThousandTrailsDB() {
     try {
         console.log('Hello from Thousand Trails Booking Choose Campsite');
+        getTimestamp();
+        
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
@@ -400,6 +402,15 @@ function formatDateTime(date) {
         hour12: true
     };
     return new Date(date).toLocaleString('en-US', options);
+}
+
+function getTimestamp() {
+    var nowDate = new Date();
+    var date = nowDate.toDateString();
+    var time = nowDate.toLocaleTimeString();
+    var timestamp = '--' + date + ', ' + time + '--';
+    console.log(timestamp);
+    return timestamp;
 }
 
 openThousandTrailsDB();
