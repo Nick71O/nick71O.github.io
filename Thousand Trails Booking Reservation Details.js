@@ -404,6 +404,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             //bookedArrivalDate = '05/04/2024';
             //bookedDepartureDate = '05/16/2024';
 
+            /*
             availableDates = [
                 '05/01/2024', '05/02/2024', '05/03/2024', '05/04/2024', '05/05/2024', '05/06/2024',
                 '05/07/2024', '05/08/2024', '05/09/2024', '05/12/2024', '05/13/2024', '05/14/2024',
@@ -420,6 +421,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
+            */
+           
             console.log('Booked Arrival Date:', bookedArrivalDate);
             console.log('Booked Departure Date:', bookedDepartureDate);
 
@@ -489,7 +492,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
                 await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
             }
-            
+
             break;
 
         default:
