@@ -119,8 +119,8 @@ async function openThousandTrailsDB() {
 
                 console.log('"Select Site" button was not found on the page; reset and try again.');
                 //sleep, clear database and try again
-                console.log("\nSleeping...2 minutes");
-                resetBookingAvailabilityProcess(db, 117000)
+                console.log("\nSleeping...5 minutes");
+                resetBookingAvailabilityProcess(db, 300000)
             }
 
 
