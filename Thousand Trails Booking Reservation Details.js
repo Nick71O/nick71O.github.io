@@ -21,7 +21,7 @@ async function openThousandTrailsDB() {
     const invalidLoginDiv = document.getElementById('invalidLogin');
     if (invalidLoginDiv && invalidLoginDiv.textContent.trim() === 'Invalid Login Parameters Entered.') {
         // Perform your action here, such as showing a modal, redirecting, or displaying an alert
-        alert('Invalid login parameters. Please try again.');
+        console.log('Invalid login parameters. Please try again.');
 
         console.log("Sleeping...30 seconds");
         await sleep(30000);
