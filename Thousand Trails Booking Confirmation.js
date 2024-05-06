@@ -8,9 +8,37 @@ async function launch() {
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
         
-        //sleep, clear database and start looking for the next booking
-        console.log("\nSleeping...2 minutes");
+        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
+        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
+        let scAvailableArrivalDate = null;
+        let scAvailableDepartureDate = null;
+
+        if (scAvailabileArrivalConstant && scAvailabileDepartureConstant &&
+            scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null &&
+            scAvailabileArrivalConstant.value.trim() !== '' && scAvailabileDepartureConstant.value.trim() !== '') {
+
+            scAvailableArrivalDate = scAvailabileArrivalConstant.value;
+            scAvailableDepartureDate = scAvailabileDepartureConstant.value;
+
+            // Calculate the number of nights
+            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+            const dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
+            const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
+
+            console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailableArrivalDate + "    Departure: " + scAvailableDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
+        } else {
+            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
+        }
+
+        //set the SiteConstant with the newly booked dates
+        await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scAvailableArrivalDate);
+        await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scAvailableDepartureDate);
+          //bookingPreference switch: none | trailing | leading | consecutive | leadingtrailing
+        await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
+
+        //clear database, sleep and start looking for the next booking
         resetBookingAvailabilityProcess(db, 117000);
+        console.log("\nSleeping...2 minutes");
 
         //you do need to change the type of searching...
         redirectBookingPage();
@@ -24,8 +52,6 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     // Clear database and reset availability
     await sleep(sleepMilliseconds);
 
-    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);

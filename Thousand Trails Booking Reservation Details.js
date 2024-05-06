@@ -36,8 +36,8 @@ async function openThousandTrailsDB() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-        const scProcessArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
-        const scProcessDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
+        const scBookedArrivalDateConstant = await getSiteConstant(db, 'BookedArrivalDate');
+        const scBookedDepartureDateConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
         let scDesiredArrivalDate = null;
@@ -65,21 +65,21 @@ async function openThousandTrailsDB() {
             console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
         }
 
-        if (scProcessArrivalConstant && scProcessDepartureConstant &&
-            scProcessArrivalConstant.value !== null && scProcessDepartureConstant.value !== null &&
-            scProcessArrivalConstant.value.trim() !== '' && scProcessDepartureConstant.value.trim() !== '') {
+        if (scBookedArrivalDateConstant && scBookedDepartureDateConstant &&
+            scBookedArrivalDateConstant.value !== null && scBookedDepartureDateConstant.value !== null &&
+            scBookedArrivalDateConstant.value.trim() !== '' && scBookedDepartureDateConstant.value.trim() !== '') {
 
-            scBookedArrivalDate = scProcessArrivalConstant.value;
-            scBookedDepartureDate = scProcessDepartureConstant.value;
+            scBookedArrivalDate = scBookedArrivalDateConstant.value;
+            scBookedDepartureDate = scBookedDepartureDateConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
             const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
             const scProcessNumberOfNights = Math.round(dateDifference / oneDay);
 
-            console.log("SiteConstants Process Dates to Book\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scProcessNumberOfNights);
+            console.log("SiteConstants Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scProcessNumberOfNights);
         } else {
-            console.log('SiteConstant Process Arrival or Departure constant is null, empty, or not found.');
+            console.log('SiteConstant Booked Arrival or Departure constant is null, empty, or not found.');
         }
 
         if (scAvailabileArrivalConstant && scAvailabileDepartureConstant &&
@@ -109,13 +109,9 @@ async function openThousandTrailsDB() {
 
             //openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
 
-            //await addOrUpdateSiteConstant(db, 'BookedArrivalDate', nextAvailabilityDate.arrivalDate);
-            //await addOrUpdateSiteConstant(db, 'BookedDepartureDate', nextAvailabilityDate.departureDate);
             inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
         }
         else {
-            //await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
-            //await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
             await logSiteConstants(db);
             await logAvailabilityRecords(db);
 
@@ -129,14 +125,16 @@ async function openThousandTrailsDB() {
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
 
             if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
-                const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value);
+                const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookedArrivalDateConstant.value, scBookedDepartureDateConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value);
                 if (availableArrivalDate && availableDepartureDate) {
                     console.log("Available Arrival Date:", availableArrivalDate);
                     console.log("Available Departure Date:", availableDepartureDate);
 
                     inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
                 } else {
-                    //console.log("No available dates found.");
+                    console.log("No available dates found.");
+                    console.log("Available Arrival Date:", availableArrivalDate);
+                    console.log("Available Departure Date:", availableDepartureDate);
                 }
 
                 //sleep, clear database and try again
@@ -145,8 +143,6 @@ async function openThousandTrailsDB() {
             } else {
                 console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
             }
-
-
 
         }
         //}
@@ -240,7 +236,7 @@ async function processAvailabilityTable(db) {
 }
 
 
-async function AvailableBooking(db, availableDates, arrivalDate, departureDate, bookingPreference, minimumConsecutiveDays) {
+async function AvailableBooking(db, availableDates, arrivalDate, departureDate, bookedArrivalDate, bookedDepartureDate, bookingPreference, minimumConsecutiveDays) {
     let availableArrivalDate = null;
     let availableDepartureDate = null;
 
@@ -386,10 +382,10 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
                     console.log("\nLongest Consecutive Date Range with Minimum of", minimumConsecutiveDays, "Nights:");
                     console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
+                    
                     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
                     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
-                    //openTabs(availableArrivalDate, availableDepartureDate);
-                    //redirectBookingPage();
+
                 } else {
                     console.log("\nNo consecutive dates found with a minimum of", minimumConsecutiveDays, "nights.");
                 }
@@ -405,8 +401,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
 
-            const bookedArrivalDate = '05/04/2024';
-            const bookedDepartureDate = '05/16/2024';
+            //bookedArrivalDate = '05/04/2024';
+            //bookedDepartureDate = '05/16/2024';
 
             availableDates = [
                 '05/01/2024', '05/02/2024', '05/03/2024', '05/04/2024', '05/05/2024', '05/06/2024',
@@ -479,11 +475,12 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
 
             if (!leadingArrivalDate || !trailingArrivalDate) {
-                console.log("\nNo suitable leading or trailing date range found.");
+                console.log("\nNo consecutive leading or trailing date range found.");
             }
 
             console.log("\nAvailabile Date Range:");
             console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
+            
             await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
             await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
 
@@ -632,8 +629,6 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     // Clear database and reset availability
     await sleep(sleepMilliseconds);
 
-    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);
