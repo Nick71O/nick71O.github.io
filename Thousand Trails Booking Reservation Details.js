@@ -432,20 +432,21 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let trailingNumberOfNights = 0;
 
             // Finding leading dates
-            let currentIndex = availableDates.indexOf(bookedArrivalDate);
-            let currentLeadingArrival = bookedArrivalDate;
-            let currentLeadingDeparture = bookedArrivalDate;
+            let currentLeadingDate = addDays(bookedArrivalDate, -1);
+            let currentIndex = availableDates.indexOf(currentLeadingDate);
             let currentLeadingCount = 0;
-
-            while (currentIndex > 0 && availableDates[currentIndex - 1] === addDays(currentLeadingArrival, -1)) {
-                currentLeadingArrival = availableDates[currentIndex - 1];
+            
+            while (currentIndex >= 0 && availableDates[currentIndex] === currentLeadingDate) {
+                console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Leading Date:", currentLeadingDate);
+                currentLeadingDate = addDays(currentLeadingDate, -1);
                 currentLeadingCount++;
                 currentIndex--;
             }
-
-            leadingArrivalDate = currentLeadingArrival;
-            leadingDepartureDate = currentLeadingDeparture;
-            leadingNumberOfNights = currentLeadingCount;
+            if (currentLeadingCount > 0) {
+                leadingArrivalDate = addDays(currentLeadingDate, 1);
+                leadingDepartureDate = bookedArrivalDate;
+                leadingNumberOfNights = currentLeadingCount - 1;
+            }
 
             // Finding trailing dates
             currentIndex = availableDates.indexOf(bookedDepartureDate);
@@ -453,14 +454,13 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentTrailingCount = 0;
 
             while (currentIndex < availableDates.length - 1 && availableDates[currentIndex] === currentTrailingDate) {
-                console.log("Current Index:", currentIndex, "Next Date:", availableDates[currentIndex + 1], "Current Trailing Date:", currentTrailingDate);
+                console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Trailing Date:", currentTrailingDate);
                 currentTrailingDate = addDays(currentTrailingDate, 1);
                 currentTrailingCount++;
                 currentIndex++;
             }
             if (currentTrailingCount > 0) {
                 trailingArrivalDate = bookedDepartureDate;
-                //trailingDepartureDate = addDays(trailingArrivalDate, currentTrailingCount);
                 trailingDepartureDate = currentTrailingDate;
                 trailingNumberOfNights = currentTrailingCount;
             }
