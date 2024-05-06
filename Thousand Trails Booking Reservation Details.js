@@ -36,14 +36,14 @@ async function openThousandTrailsDB() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-        const scProcessArrivalConstant = await getSiteConstant(db, 'ProcessArrivalDate');
-        const scProcessDepartureConstant = await getSiteConstant(db, 'ProcessDepartureDate');
+        const scProcessArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
+        const scProcessDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailabileArrivalDate');
         const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailabileDepartureDate');
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
-        let scProcessArrivalDate = null;
-        let scProcessDepartureDate = null;
+        let scBookedArrivalDate = null;
+        let scBookedDepartureDate = null;
         let scAvailabileArrivalDate = null;
         let scAvailabileDepartureDate = null;
 
@@ -69,15 +69,15 @@ async function openThousandTrailsDB() {
             scProcessArrivalConstant.value !== null && scProcessDepartureConstant.value !== null &&
             scProcessArrivalConstant.value.trim() !== '' && scProcessDepartureConstant.value.trim() !== '') {
 
-            scProcessArrivalDate = scProcessArrivalConstant.value;
-            scProcessDepartureDate = scProcessDepartureConstant.value;
+            scBookedArrivalDate = scProcessArrivalConstant.value;
+            scBookedDepartureDate = scProcessDepartureConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-            const dateDifference = Math.abs(new Date(scProcessDepartureDate).getTime() - new Date(scProcessArrivalDate).getTime());
+            const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
             const scProcessNumberOfNights = Math.round(dateDifference / oneDay);
 
-            console.log("SiteConstants Process Dates to Book\n   Arrival: " + scProcessArrivalDate + "    Departure: " + scProcessDepartureDate + "    Number of Nights: " + scProcessNumberOfNights);
+            console.log("SiteConstants Process Dates to Book\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scProcessNumberOfNights);
         } else {
             console.log('SiteConstant Process Arrival or Departure constant is null, empty, or not found.');
         }
@@ -109,13 +109,13 @@ async function openThousandTrailsDB() {
 
             //openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
 
-            //await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', nextAvailabilityDate.arrivalDate);
-            //await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', nextAvailabilityDate.departureDate);
+            //await addOrUpdateSiteConstant(db, 'BookedArrivalDate', nextAvailabilityDate.arrivalDate);
+            //await addOrUpdateSiteConstant(db, 'BookedDepartureDate', nextAvailabilityDate.departureDate);
             inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
         }
         else {
-            //await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', null);
-            //await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', null);
+            //await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
+            //await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
             await logSiteConstants(db);
             await logAvailabilityRecords(db);
 
@@ -244,7 +244,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
     let availableArrivalDate = null;
     let availableDepartureDate = null;
 
-    //bookingPreference switch: none | trailing | leading | consecutive
+    //bookingPreference switch: none | trailing | leading | consecutive | leadingtrailing
     switch (bookingPreference.toLowerCase()) {
         case "trailing":
             console.log("Found Arrival Date: " + availableDates.contains(arrivalDate.toLocaleDateString('en-US')))
@@ -427,63 +427,86 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log('Booked Arrival Date:', bookedArrivalDate);
             console.log('Booked Departure Date:', bookedDepartureDate);
 
-            // Filter out dates based on booked arrival and departure
-            const filteredDates = availableDates.filter(date => date < bookedArrivalDate || date > bookedDepartureDate);
 
-            console.log("Filtered Dates:");
-            console.log(filteredDates);
+            let longestLeadingArrival = '';
+            let longestLeadingDeparture = '';
+            let longestLeadingCount = 0;
 
-            // Function to calculate consecutive date ranges
-            const getConsecutiveDateRanges = dates => {
-                let ranges = [];
-                let currentRange = [];
+            let longestTrailingArrival = '';
+            let longestTrailingDeparture = '';
+            let longestTrailingCount = 0;
 
-                dates.forEach((date, index) => {
-                    const prevDate = dates[index - 1];
-                    const currentDate = new Date(date);
-                    const nextDate = dates[index + 1];
+            let currentLeadingArrival = '';
+            let currentLeadingDeparture = '';
+            let currentLeadingCount = 0;
 
-                    if (!prevDate || (currentDate.getTime() - new Date(prevDate).getTime()) / (1000 * 3600 * 24) !== 1) {
-                        // Start a new range
-                        currentRange = [date];
-                    } else if ((nextDate && (new Date(nextDate).getTime() - currentDate.getTime()) / (1000 * 3600 * 24) !== 1) || !nextDate) {
-                        // End the current range and push to ranges
-                        currentRange.push(date);
-                        ranges.push(currentRange);
+            let currentTrailingArrival = '';
+            let currentTrailingDeparture = '';
+            let currentTrailingCount = 0;
+
+            for (let i = 0; i < availableDates.length; i++) {
+                if (availableDates[i] === bookedArrivalDate) {
+                    currentLeadingArrival = availableDates[i];
+                    currentLeadingDeparture = availableDates[i];
+                    currentLeadingCount = 1;
+                } else if (currentLeadingCount > 0) {
+                    currentLeadingDeparture = addDays(currentLeadingDeparture, 1);
+                    if (!availableDates.includes(currentLeadingDeparture)) {
+                        if (currentLeadingCount > longestLeadingCount) {
+                            longestLeadingCount = currentLeadingCount;
+                            longestLeadingArrival = currentLeadingArrival;
+                            longestLeadingDeparture = currentLeadingDeparture;
+                        }
+                        currentLeadingArrival = '';
+                        currentLeadingDeparture = '';
+                        currentLeadingCount = 0;
                     } else {
-                        // Continue the current range
-                        currentRange.push(date);
+                        currentLeadingCount++;
                     }
-                });
+                }
 
-                return ranges;
-            };
+                if (availableDates[i] === bookedDepartureDate) {
+                    currentTrailingArrival = availableDates[i];
+                    currentTrailingDeparture = availableDates[i];
+                    currentTrailingCount = 1;
+                } else if (currentTrailingCount > 0) {
+                    currentTrailingArrival = addDays(currentTrailingArrival, -1);
+                    if (!availableDates.includes(currentTrailingArrival)) {
+                        if (currentTrailingCount > longestTrailingCount) {
+                            longestTrailingCount = currentTrailingCount;
+                            longestTrailingArrival = addDays(currentTrailingArrival, 1);
+                            longestTrailingDeparture = currentTrailingDeparture;
+                        }
+                        currentTrailingArrival = '';
+                        currentTrailingDeparture = '';
+                        currentTrailingCount = 0;
+                    } else {
+                        currentTrailingCount++;
+                    }
+                }
+            }
 
-            const consecutiveRanges = getConsecutiveDateRanges(filteredDates);
+            let availableArrivalDate = longestLeadingCount >= longestTrailingCount ? longestLeadingArrival : longestTrailingArrival;
+            let availableDepartureDate = longestLeadingCount >= longestTrailingCount ? longestLeadingDeparture : longestTrailingDeparture;
 
-            console.log("\nAll Leading/Trailing Date Ranges:");
-            consecutiveRanges.forEach(range => {
-                const arrivalDate = range[0];
-                const departureDate = range[range.length - 1];
-                const numberOfNights = range.length - 1; // Subtract 1 for the arrival date
+            console.log("Leading Date Range:");
+            console.log("   Arrival:", longestLeadingArrival, "Departure:", longestLeadingDeparture, "Number of Nights:", longestLeadingCount);
 
-                console.log(`Arrival: ${arrivalDate} Departure: ${departureDate} Number of Nights: ${numberOfNights}`);
-            });
+            console.log("Trailing Date Range:");
+            console.log("   Arrival:", longestTrailingArrival, "Departure:", longestTrailingDeparture, "Number of Nights:", longestTrailingCount);
 
-            // Find the longest range
-            const longestRange = consecutiveRanges.reduce((prev, current) => (current.length > prev.length ? current : prev));
+            if (Object.keys({ arrivalDate: longestLeadingArrival, departureDate: longestLeadingDeparture, numberOfNights: longestLeadingCount }).length === 0) {
+                console.log("No suitable leading date range found.");
+            }
 
-            console.log("\nLongest Leading/Trailing Date Range:");
-            console.log(`Arrival: ${longestRange[0]} Departure: ${longestRange[longestRange.length - 1]} Number of Nights: ${longestRange.length - 1}`);
+            if (Object.keys({ arrivalDate: longestTrailingArrival, departureDate: longestTrailingDeparture, numberOfNights: longestTrailingCount }).length === 0) {
+                console.log("No suitable trailing date range found.");
+            }
 
-            return {
-                arrivalDate: longestRange[0],
-                departureDate: longestRange[longestRange.length - 1],
-                numberOfNights: longestRange.length - 1
-            };
-
-            //const result = findLeadingTrailingDates(bookedArrivalDate, bookedDepartureDate, availableDates);
-            //console.log("\nResult:", result);
+            console.log("\nAvailabile Date Range:");
+            console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
+            await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', availableArrivalDate);
+            await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', availableDepartureDate);
 
             break;
 
@@ -508,6 +531,12 @@ function getTimestamp() {
     var timestamp = '--' + date + ', ' + time + '--';
     console.log(timestamp);
     return timestamp;
+}
+
+function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
 
 function getDates(start, end) {
@@ -624,8 +653,8 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     // Clear database and reset availability
     await sleep(sleepMilliseconds);
 
-    await addOrUpdateSiteConstant(db, 'ProcessArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'ProcessDepartureDate', null);
+    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
     await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', null);
     await resetAvailabilityTable(db);
