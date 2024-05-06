@@ -33,7 +33,7 @@ async function launch() {
         //set the SiteConstant with the newly booked dates
         await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scAvailableArrivalDate);
         await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scAvailableDepartureDate);
-          //bookingPreference switch: none | trailing | leading | consecutive | leadingtrailing
+        //bookingPreference switch: consecutive | leadingtrailing
         await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
 
         //clear database, sleep and start looking for the next booking

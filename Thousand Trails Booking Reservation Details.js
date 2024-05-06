@@ -240,78 +240,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
     let availableArrivalDate = null;
     let availableDepartureDate = null;
 
-    //bookingPreference switch: none | trailing | leading | consecutive | leadingtrailing
+    //bookingPreference switch: consecutive | leadingtrailing
     switch (bookingPreference.toLowerCase()) {
-        case "trailing":
-            console.log("Found Arrival Date: " + availableDates.contains(arrivalDate.toLocaleDateString('en-US')))
-            if (availableDates.length > 0) {
-                var foundArrivalDate;
-                var foundDepartureDate;
-                var foundNumberOfNights = 0;
-                if (availableDates.contains(arrivalDate.toLocaleDateString('en-US'))) {
-                    foundArrivalDate = arrivalDate;
-                    console.log("foundArrivalDate: " + foundArrivalDate);
-                    var dateArray = getDates(arrivalDate, departureDate);
-                    console.log("dateArray.length: " + dateArray.length);
-                    console.log("dateArray: " + dateArray);
-                    for (i = 0; i < dateArray.length; i++) {
-                        if (availableDates.contains(dateArray[i].toLocaleDateString('en-US'))) {
-                            console.log("dateArray[" + i + "]: " + dateArray[i]);
-                            foundDepartureDate = dateArray[i];
-                            if (foundArrivalDate.toLocaleDateString('en-US') == foundDepartureDate.toLocaleDateString('en-US')) {
-                                foundDepartureDate.setDate(foundDepartureDate.getDate() + 1);
-                            }
-                            foundNumberOfNights = i + 1;
-                            console.log("foundDepartureDate: " + foundDepartureDate);
-                            console.log("foundNumberOfNights: " + foundNumberOfNights);
-                        }
-                        else {
-                            i = dateArray.length;
-                        }
-                    }
-                    if (foundNumberOfNights > 0) {
-                        console.log("Available Dates to Book\n   Arrival: " + foundArrivalDate.toLocaleDateString('en-US', formatDateOptions) + "    Departure: " + foundDepartureDate.toLocaleDateString('en-US', formatDateOptions) + "    Number of Nights: " + foundNumberOfNights);
-                        openTabs(foundArrivalDate, foundDepartureDate);
-                    }
-                }
-            }
-            break;
-
-        case "leading":
-            console.log("Found Departure Date: " + availableDates.contains(departureDate.toLocaleDateString('en-US')))
-            if (availableDates.length > 0) {
-                var foundArrivalDate;
-                var foundDepartureDate;
-                var foundNumberOfNights = 0;
-                if (availableDates.contains(departureDate.toLocaleDateString('en-US'))) {
-                    foundDepartureDate = departureDate;
-                    console.log("foundDepartureDate: " + foundDepartureDate);
-                    var dateArray = getDates(arrivalDate, departureDate);
-                    console.log("dateArray.length: " + dateArray.length);
-                    console.log("dateArray: " + dateArray);
-                    for (i = dateArray.length - 1; i >= 0; i--) {
-                        if (availableDates.contains(dateArray[i].toLocaleDateString('en-US'))) {
-                            console.log("dateArray[" + i + "]: " + dateArray[i]);
-                            foundArrivalDate = dateArray[i];
-                            if (foundArrivalDate.toLocaleDateString('en-US') == foundDepartureDate.toLocaleDateString('en-US')) {
-                                foundArrivalDate.setDate(foundArrivalDate.getDate() - 1);
-                            }
-                            foundNumberOfNights = i + 1;
-                            console.log("foundArrivalDate: " + foundArrivalDate);
-                            console.log("foundNumberOfNights: " + foundNumberOfNights);
-                        }
-                        else {
-                            i = -1;
-                        }
-                    }
-                    if (foundNumberOfNights > 0) {
-                        console.log("Available Dates to Book\n   Arrival: " + foundArrivalDate.toLocaleDateString('en-US', formatDateOptions) + "    Departure: " + foundDepartureDate.toLocaleDateString('en-US', formatDateOptions) + "    Number of Nights: " + foundNumberOfNights);
-                        openTabs(foundArrivalDate, foundDepartureDate);
-                    }
-                }
-            }
-            break;
-
         case "consecutive":
             console.log('AvailableBooking - Consecutive');
             console.log('Available Dates:', availableDates);
@@ -422,7 +352,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
             */
-           
+
             console.log('Booked Arrival Date:', bookedArrivalDate);
             console.log('Booked Departure Date:', bookedDepartureDate);
 
