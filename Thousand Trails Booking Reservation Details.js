@@ -36,8 +36,8 @@ async function openThousandTrailsDB() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-        const scBookedArrivalDateConstant = await getSiteConstant(db, 'BookedArrivalDate');
-        const scBookedDepartureDateConstant = await getSiteConstant(db, 'BookedDepartureDate');
+        const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
+        const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
         let scDesiredArrivalDate = null;
@@ -65,12 +65,12 @@ async function openThousandTrailsDB() {
             console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
         }
 
-        if (scBookedArrivalDateConstant && scBookedDepartureDateConstant &&
-            scBookedArrivalDateConstant.value !== null && scBookedDepartureDateConstant.value !== null &&
-            scBookedArrivalDateConstant.value.trim() !== '' && scBookedDepartureDateConstant.value.trim() !== '') {
+        if (scBookedArrivalConstant && scBookedDepartureConstant &&
+            scBookedArrivalConstant.value !== null && scBookedDepartureConstant.value !== null &&
+            scBookedArrivalConstant.value.trim() !== '' && scBookedDepartureConstant.value.trim() !== '') {
 
-            scBookedArrivalDate = scBookedArrivalDateConstant.value;
-            scBookedDepartureDate = scBookedDepartureDateConstant.value;
+            scBookedArrivalDate = scBookedArrivalConstant.value;
+            scBookedDepartureDate = scBookedDepartureConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
@@ -125,7 +125,7 @@ async function openThousandTrailsDB() {
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
 
             if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
-                const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookedArrivalDateConstant.value, scBookedDepartureDateConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value);
+                const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookedArrivalConstant.value, scBookedDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value);
                 if (availableArrivalDate && availableDepartureDate) {
                     console.log("Available Arrival Date:", availableArrivalDate);
                     console.log("Available Departure Date:", availableDepartureDate);

@@ -17,8 +17,8 @@ async function openThousandTrailsDB() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-        const scProcessArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
-        const scProcessDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
+        const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
+        const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
         let scDesiredArrivalDate = null;
@@ -46,21 +46,21 @@ async function openThousandTrailsDB() {
             console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
         }
 
-        if (scProcessArrivalConstant && scProcessDepartureConstant &&
-            scProcessArrivalConstant.value !== null && scProcessDepartureConstant.value !== null &&
-            scProcessArrivalConstant.value.trim() !== '' && scProcessDepartureConstant.value.trim() !== '') {
+        if (scBookedArrivalConstant && scBookedDepartureConstant &&
+            scBookedArrivalConstant.value !== null && scBookedDepartureConstant.value !== null &&
+            scBookedArrivalConstant.value.trim() !== '' && scBookedDepartureConstant.value.trim() !== '') {
 
-            scBookedArrivalDate = scProcessArrivalConstant.value;
-            scBookedDepartureDate = scProcessDepartureConstant.value;
+            scBookedArrivalDate = scBookedArrivalConstant.value;
+            scBookedDepartureDate = scBookedDepartureConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
             const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
             const scProcessNumberOfNights = Math.round(dateDifference / oneDay);
 
-            console.log("SiteConstants Process Dates to Book\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scProcessNumberOfNights);
+            console.log("SiteConstants Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scProcessNumberOfNights);
         } else {
-            console.log('SiteConstant Process Arrival or Departure constant is null, empty, or not found.');
+            console.log('SiteConstant Booked Arrival or Departure constant is null, empty, or not found.');
         }
 
         // Check if Availabile Arrival and Departure constants are not null and their values are valid dates
