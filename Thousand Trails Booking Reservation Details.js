@@ -437,7 +437,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentLeadingDeparture = bookedArrivalDate;
             let currentLeadingCount = 0;
 
-            while (currentIndex > 0 && addDays(availableDates[currentIndex - 1], 1) === currentLeadingDeparture) {
+            while (currentIndex > 0 && availableDates[currentIndex - 1] === addDays(currentLeadingArrival, -1)) {
                 currentLeadingArrival = availableDates[currentIndex - 1];
                 currentLeadingCount++;
                 currentIndex--;
@@ -453,7 +453,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentTrailingDeparture = bookedDepartureDate;
             let currentTrailingCount = 0;
 
-            while (currentIndex < availableDates.length - 1 && addDays(availableDates[currentIndex + 1], 1) === currentTrailingDeparture) {
+            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === addDays(currentTrailingDeparture, 1)) {
                 currentTrailingDeparture = availableDates[currentIndex + 1];
                 currentTrailingCount++;
                 currentIndex++;
@@ -483,7 +483,6 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
             await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
             await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
-
 
             break;
 
