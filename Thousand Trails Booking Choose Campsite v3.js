@@ -19,14 +19,14 @@ async function openThousandTrailsDB() {
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
         const scProcessArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scProcessDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
-        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailabileArrivalDate');
-        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailabileDepartureDate');
+        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
+        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
         let scBookedArrivalDate = null;
         let scBookedDepartureDate = null;
-        let scAvailabileArrivalDate = null;
-        let scAvailabileDepartureDate = null;
+        let scAvailableArrivalDate = null;
+        let scAvailableDepartureDate = null;
 
         // Check if constants were retrieved successfully and if their values are not null or empty
         if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
@@ -69,22 +69,22 @@ async function openThousandTrailsDB() {
             isValidDate(scAvailabileArrivalConstant.value) && isValidDate(scAvailabileDepartureConstant.value)) {
 
             // Proceed with operations only if the constants are valid
-            scAvailabileArrivalDate = scAvailabileArrivalConstant.value;
-            scAvailabileDepartureDate = scAvailabileDepartureConstant.value;
+            scAvailableArrivalDate = scAvailabileArrivalConstant.value;
+            scAvailableDepartureDate = scAvailabileDepartureConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-            const dateDifference = Math.abs(new Date(scAvailabileDepartureDate).getTime() - new Date(scAvailabileArrivalDate).getTime());
+            const dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
             const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
 
-            console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailabileArrivalDate + "    Departure: " + scAvailabileDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
+            console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailableArrivalDate + "    Departure: " + scAvailableDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
         } else {
             console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not a valid date.');
         }
 
 
 
-        if (scAvailabileArrivalDate !== null && scAvailabileDepartureDate !== null) {
+        if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
             //check if the book campsite button is available and click it
             window.console.log('searching page for the "Select Site" button');
             const isCampsiteAvailableResult = isCampsiteAvailable(true);
@@ -303,8 +303,8 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
 
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);
 
     openThousandTrailsDB();

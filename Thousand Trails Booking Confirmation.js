@@ -26,8 +26,8 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
 
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);
 }
 

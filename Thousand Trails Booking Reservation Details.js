@@ -38,14 +38,14 @@ async function openThousandTrailsDB() {
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
         const scProcessArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scProcessDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
-        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailabileArrivalDate');
-        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailabileDepartureDate');
+        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
+        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
         let scBookedArrivalDate = null;
         let scBookedDepartureDate = null;
-        let scAvailabileArrivalDate = null;
-        let scAvailabileDepartureDate = null;
+        let scAvailableArrivalDate = null;
+        let scAvailableDepartureDate = null;
 
         // Check if constants were retrieved successfully and if their values are not null or empty
         if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
@@ -86,15 +86,15 @@ async function openThousandTrailsDB() {
             scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null &&
             scAvailabileArrivalConstant.value.trim() !== '' && scAvailabileDepartureConstant.value.trim() !== '') {
 
-            scAvailabileArrivalDate = scAvailabileArrivalConstant.value;
-            scAvailabileDepartureDate = scAvailabileDepartureConstant.value;
+            scAvailableArrivalDate = scAvailabileArrivalConstant.value;
+            scAvailableDepartureDate = scAvailabileDepartureConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-            const dateDifference = Math.abs(new Date(scAvailabileDepartureDate).getTime() - new Date(scAvailabileArrivalDate).getTime());
+            const dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
             const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
 
-            console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailabileArrivalDate + "    Departure: " + scAvailabileDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
+            console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailableArrivalDate + "    Departure: " + scAvailableDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
         } else {
             console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
         }
@@ -386,8 +386,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
                     console.log("\nLongest Consecutive Date Range with Minimum of", minimumConsecutiveDays, "Nights:");
                     console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
-                    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', availableArrivalDate);
-                    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', availableDepartureDate);
+                    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
+                    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
                     //openTabs(availableArrivalDate, availableDepartureDate);
                     //redirectBookingPage();
                 } else {
@@ -472,20 +472,20 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let availableDepartureDate = leadingNumberOfNights >= trailingNumberOfNights ? leadingDepartureDate : trailingDepartureDate;
             let availableNumberOfNights = leadingNumberOfNights >= trailingNumberOfNights ? leadingNumberOfNights : trailingNumberOfNights;
 
-            console.log("Leading Date Range:");
+            console.log("\nLeading Date Range:");
             console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
 
-            console.log("Trailing Date Range:");
+            console.log("\nTrailing Date Range:");
             console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
 
             if (!leadingArrivalDate || !trailingArrivalDate) {
-                console.log("No suitable leading or trailing date range found.");
+                console.log("\nNo suitable leading or trailing date range found.");
             }
 
             console.log("\nAvailabile Date Range:");
             console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
-            await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', availableArrivalDate);
-            await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', availableDepartureDate);
+            await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
+            await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
 
             break;
 
@@ -634,8 +634,8 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
 
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);
 
     openThousandTrailsDB();
