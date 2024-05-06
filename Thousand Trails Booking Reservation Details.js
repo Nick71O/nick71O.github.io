@@ -441,8 +441,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentLeadingDeparture = bookedArrivalDate;
             let currentLeadingCount = 1;
 
-            while (currentIndex > 0 && availableDates[currentIndex - 1] === addDays(currentLeadingDeparture, -1)) {
-                currentLeadingDeparture = availableDates[currentIndex - 1];
+            while (currentIndex > 0 && availableDates[currentIndex - 1] === addDays(currentLeadingArrival, -1)) {
+                currentLeadingArrival = availableDates[currentIndex - 1];
                 currentLeadingCount++;
                 currentIndex--;
             }
@@ -457,8 +457,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentTrailingDeparture = bookedDepartureDate;
             let currentTrailingCount = 1;
 
-            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === addDays(currentTrailingArrival, 1)) {
-                currentTrailingArrival = availableDates[currentIndex + 1];
+            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex + 1] === addDays(currentTrailingDeparture, 1)) {
+                currentTrailingDeparture = availableDates[currentIndex + 1];
                 currentTrailingCount++;
                 currentIndex++;
             }
@@ -478,12 +478,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log("Trailing Date Range:");
             console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
 
-            if (Object.keys({ arrivalDate: longestLeadingArrival, departureDate: longestLeadingDeparture }).length === 0) {
-                console.log("No suitable leading date range found.");
-            }
-
-            if (Object.keys({ arrivalDate: longestTrailingArrival, departureDate: longestTrailingDeparture }).length === 0) {
-                console.log("No suitable trailing date range found.");
+            if (!leadingArrivalDate || !trailingArrivalDate) {
+                console.log("No suitable leading or trailing date range found.");
             }
 
             console.log("\nAvailabile Date Range:");
