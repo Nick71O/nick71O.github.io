@@ -127,14 +127,14 @@ async function openThousandTrailsDB() {
             if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
                 const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookedArrivalConstant.value, scBookedDepartureConstant.value, scBookingPreferenceConstant.value, scMinimumConsecutiveDaysConstant.value);
                 if (availableArrivalDate && availableDepartureDate) {
-                    console.log("Available Arrival Date:", availableArrivalDate);
+                    console.log("\nAvailable Arrival Date:", availableArrivalDate);
                     console.log("Available Departure Date:", availableDepartureDate);
 
                     inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
                 } else {
-                    console.log("No available dates found.");
-                    console.log("Available Arrival Date:", availableArrivalDate);
-                    console.log("Available Departure Date:", availableDepartureDate);
+                    console.log("\nNo available dates found.");
+                    //console.log("Available Arrival Date:", availableArrivalDate);
+                    //console.log("Available Departure Date:", availableDepartureDate);
                 }
 
                 //sleep, clear database and try again
@@ -298,10 +298,9 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
             });
 
+            console.log("\n")
+            getTimestamp();
             if (allRanges.length > 0) {
-                console.log("\n")
-                getTimestamp();
-
                 const longestRange = allRanges.filter(range => range.length >= minimumConsecutiveDays)
                     .reduce((a, b) => a.length > b.length ? a : b, []);
 
@@ -355,6 +354,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
             console.log('Booked Arrival Date:', bookedArrivalDate);
             console.log('Booked Departure Date:', bookedDepartureDate);
+            console.log("\n")
+            getTimestamp();
 
             let leadingArrivalDate = null;
             let leadingDepartureDate = null;
@@ -379,9 +380,10 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 leadingArrivalDate = addDays(currentLeadingDate, 1);
                 leadingDepartureDate = bookedArrivalDate;
                 leadingNumberOfNights = currentLeadingCount;
+            
+                console.log("\nLeading Date Range:");
+                console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
             }
-            console.log("\nLeading Date Range:");
-            console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
 
             // Finding trailing dates
             currentIndex = availableDates.indexOf(bookedDepartureDate);
@@ -398,9 +400,10 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 trailingArrivalDate = bookedDepartureDate;
                 trailingDepartureDate = currentTrailingDate;
                 trailingNumberOfNights = currentTrailingCount;
+            
+                console.log("\nTrailing Date Range:");
+                console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
             }
-            console.log("\nTrailing Date Range:");
-            console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
 
             // Determine which date range is longer
             if (leadingNumberOfNights > 0 && trailingNumberOfNights > 0 && leadingNumberOfNights >= trailingNumberOfNights) {
