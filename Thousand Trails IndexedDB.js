@@ -126,6 +126,47 @@ async function addOrUpdateSiteConstant(db, name, value) {
         if (existingConstant) {
             if (existingConstant.value !== value) {
                 existingConstant.value = value;
+                const updateRequest = siteConstantsStore.put(existingConstant);
+                updateRequest.onsuccess = () => {
+                    console.log(`SiteConstant '${name}' updated successfully.`);
+                    transaction.commit(); // Commit the transaction after successful update
+                };
+                updateRequest.onerror = (event) => {
+                    console.error('Error updating SiteConstant:', event.target.error);
+                    transaction.abort(); // Abort transaction on error
+                };
+            } else {
+                console.log(`SiteConstant '${name}' already contains the same value. No update needed.`);
+                transaction.commit(); // Commit the transaction since no update is needed
+            }
+        } else {
+            const newConstant = { name, value };
+            const addRequest = siteConstantsStore.add(newConstant);
+            addRequest.onsuccess = () => {
+                console.log(`SiteConstant '${name}' added successfully.`);
+                transaction.commit(); // Commit the transaction after successful addition
+            };
+            addRequest.onerror = (event) => {
+                console.error('Error adding SiteConstant:', event.target.error);
+                transaction.abort(); // Abort transaction on error
+            };
+        }
+    } catch (error) {
+        console.error(`Error adding or updating SiteConstant '${name}':`, error);
+        console.error('Error stack trace:', error.stack);
+        throw error;
+    }
+}
+/*
+async function addOrUpdateSiteConstant(db, name, value) {
+    try {
+        const existingConstant = await getSiteConstant(db, name);
+        const transaction = db.transaction('SiteConstant', 'readwrite');
+        const siteConstantsStore = transaction.objectStore('SiteConstant');
+
+        if (existingConstant) {
+            if (existingConstant.value !== value) {
+                existingConstant.value = value;
                 await new Promise((resolve, reject) => {
                     const updateRequest = siteConstantsStore.put(existingConstant);
                     updateRequest.onsuccess = () => resolve();
@@ -150,7 +191,7 @@ async function addOrUpdateSiteConstant(db, name, value) {
         throw error;
     }
 }
-
+*/
 
 async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
     const desiredArrivalDate = new Date(newArrivalDate);
