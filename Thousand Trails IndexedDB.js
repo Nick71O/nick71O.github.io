@@ -50,7 +50,7 @@ function logError(errorType, errorMessage) {
 // retrieve an entry from the SiteConstant table based on name
 async function getSiteConstant(db, name) {
     try {
-        console.log('Trying to retrieve constant:', name);
+        //console.log('Trying to retrieve constant:', name);
         const transaction = db.transaction('SiteConstant', 'readonly');
         const siteConstantsStore = transaction.objectStore('SiteConstant');
         const index = siteConstantsStore.index('name');
@@ -61,10 +61,10 @@ async function getSiteConstant(db, name) {
             request.onsuccess = function (event) {
                 const constant = event.target.result;
                 if (constant) {
-                    console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
+                    //console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
                     resolve(constant); // Resolve the promise with the retrieved constant
                 } else {
-                    console.error(`Constant "${name}" not found.`);
+                    //console.error(`Constant "${name}" not found.`);
                     resolve(null); // Resolve with null if constant is not found
                 }
             };
