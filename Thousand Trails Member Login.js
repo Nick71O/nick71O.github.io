@@ -12,7 +12,7 @@ function initializeGlobalVariables(globalVariables) {
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
 
   // Call Launch() after initializing global variables
-  launch();
+  //launch();
 }
 
 // Call initializeGlobalVariables function in "Thousand Trails Member Login (Browser).js"
