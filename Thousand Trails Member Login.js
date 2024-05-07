@@ -7,10 +7,10 @@ function initializeGlobalVariables(globalVariables) {
   console.log("memberNumber: " + globalVariables.memberNumber);
   console.log("PIN: " + globalVariables.PIN);
   console.log('bookingPreference: "' + globalVariables.bookingPreference + '"');
-  console.log('minimumConsecutiveDays: ' + globalVariables.minimumConsecutiveDays);
+  console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
-  
+
   // Call Launch() after initializing global variables
   launch();
 }
