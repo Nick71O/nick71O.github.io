@@ -1,11 +1,28 @@
-//bookingPreference switch: consecutive | leadingtrailing
-const bookingPreference = "consecutive";
-const minimumConsecutiveDays = 3;
-const bookedArrivalDate = null;
-const bookedDepartureDate = null;
+/*
+ * Receives and processes global variables from another script (e.g., "Thousand Trails Member Login (Browser).js").
+ * @param {Object} globalVariables - Object containing global variables.
+ */
+function initializeGlobalVariables(globalVariables) {
+  // Process the received globalVariables object
+  console.log("memberNumber: " + globalVariables.memberNumber);
+  console.log("PIN: " + globalVariables.PIN);
+  console.log('bookingPreference: "' + globalVariables.bookingPreference + '"');
+  console.log('minimumConsecutiveDays: ' + globalVariables.minimumConsecutiveDays);
+  console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
+  console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
+  
+  // Call Launch() after initializing global variables
+  launch();
+}
 
-//bookedArrivalDate = '05/04/2024';  
-//bookedDepartureDate = '05/16/2024';
+// Call initializeGlobalVariables function in "Thousand Trails Member Login (Browser).js"
+// This function will be called from "Thousand Trails Member Login (Browser).js" and receive the globalVariables object as an argument
+// If initializeGlobalVariables is called from "Thousand Trails Member Login (Browser).js" before this script is loaded,
+// it will execute immediately after this code block due to asynchronous loading
+if (typeof globalVariables !== 'undefined') {
+  initializeGlobalVariables(globalVariables);
+}
+
 
 const baseURL = "https://members.thousandtrails.com";
 
@@ -13,36 +30,6 @@ const baseURL = "https://members.thousandtrails.com";
 var buttonXPath = "//*[@id='profile-form']/div[5]/button";
 
 var $elements;
-
-/*
- * Receives and processes global variables from another script (e.g., "Brave Books Checkout with Discount.js").
- * @param {Object} globalVariables - Object containing global variables.
- */
-function initializeGlobalVariables(globalVariables) {
-  // Process the received globalVariables object
-  console.log("memberNumber: " + globalVariables.memberNumber);
-  console.log("PIN: " + globalVariables.PIN);
-  //console.log('discountCode1: "' + globalVariables.discountCode1 + '"');
-  //console.log('discountCode2: "' + globalVariables.discountCode2 + '"');
-  //console.log("maxAttempts1: " + globalVariables.maxAttempts1);
-  //console.log("maxAttempts2: " + globalVariables.maxAttempts2);
-  
-  // Call Launch() after initializing global variables
-  launch();
-}
-
-// Call initializeGlobalVariables function in "Brave Books Checkout with Discount.js"
-// This function will be called from "Brave Books Checkout with Discount.js" and receive the globalVariables object as an argument
-// If initializeGlobalVariables is called from "Brave Books Checkout with Discount.js" before this script is loaded,
-// it will execute immediately after this code block due to asynchronous loading
-if (typeof globalVariables !== 'undefined') {
-  initializeGlobalVariables(globalVariables);
-}
-
-
-
-
-
 
 function getElementsByXPath(xpath, parent) {
   let results = [];
@@ -153,10 +140,10 @@ async function launch() {
 
     await deleteAllSiteConstants(db);
     await updateSiteConstantsDates(db, arrivalDate, departureDate);
-    await addOrUpdateSiteConstant(db, 'BookingPreference', bookingPreference);
-    await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', minimumConsecutiveDays);
-    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', bookedArrivalDate);
-    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', bookedDepartureDate);
+    await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
+    await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
+    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
+    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', globalVariables.bookedDepartureDate);
     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
 
