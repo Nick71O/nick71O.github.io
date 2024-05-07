@@ -14,6 +14,36 @@ var buttonXPath = "//*[@id='profile-form']/div[5]/button";
 
 var $elements;
 
+/*
+ * Receives and processes global variables from another script (e.g., "Brave Books Checkout with Discount.js").
+ * @param {Object} globalVariables - Object containing global variables.
+ */
+function initializeGlobalVariables(globalVariables) {
+  // Process the received globalVariables object
+  console.log("memberNumber: " + globalVariables.memberNumber);
+  console.log("PIN: " + globalVariables.PIN);
+  //console.log('discountCode1: "' + globalVariables.discountCode1 + '"');
+  //console.log('discountCode2: "' + globalVariables.discountCode2 + '"');
+  //console.log("maxAttempts1: " + globalVariables.maxAttempts1);
+  //console.log("maxAttempts2: " + globalVariables.maxAttempts2);
+  
+  // Call Launch() after initializing global variables
+  launch();
+}
+
+// Call initializeGlobalVariables function in "Brave Books Checkout with Discount.js"
+// This function will be called from "Brave Books Checkout with Discount.js" and receive the globalVariables object as an argument
+// If initializeGlobalVariables is called from "Brave Books Checkout with Discount.js" before this script is loaded,
+// it will execute immediately after this code block due to asynchronous loading
+if (typeof globalVariables !== 'undefined') {
+  initializeGlobalVariables(globalVariables);
+}
+
+
+
+
+
+
 function getElementsByXPath(xpath, parent) {
   let results = [];
   let query = document.evaluate(xpath, parent || document,
@@ -43,8 +73,8 @@ async function click() {
 
   var memberid = document.getElementById('memberid');
   var pin = document.getElementById('pin');
-  memberid.value = "290471063";
-  pin.value = "0708";
+  memberid.value = globalVariables.memberNumber;
+  pin.value = globalVariables.PIN;
 
   $elements = getElementsByXPath(buttonXPath);
   $elements.forEach(($element) => {
@@ -166,8 +196,8 @@ async function redirectLoginPage() {
   window.location.replace(loginURL);
 }
 
+
 console.log("-=~=- Logging into Thousand Trails -=~=-");
 launch();
-
 
 
