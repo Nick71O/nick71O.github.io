@@ -53,6 +53,38 @@ async function getSiteConstant(db, name) {
         console.log('Trying to retrieve constant:', name);
         const transaction = db.transaction('SiteConstant', 'readonly');
         const siteConstantsStore = transaction.objectStore('SiteConstant');
+        const index = siteConstantsStore.index('name');
+
+        const request = index.get(name);
+
+        return new Promise((resolve, reject) => {
+            request.onsuccess = function (event) {
+                const constant = event.target.result;
+                if (constant) {
+                    console.log(`Retrieved Constant "${name}", "${constant.value}":`, constant);
+                    resolve(constant); // Resolve the promise with the retrieved constant
+                } else {
+                    console.error(`Constant "${name}" not found.`);
+                    resolve(null); // Resolve with null if constant is not found
+                }
+            };
+
+            request.onerror = function (event) {
+                console.error(`Error getting constant "${name}":`, event.target.error);
+                reject(event.target.error); // Reject the promise on error
+            };
+        });
+    } catch (error) {
+        console.error('Error in getSiteConstant:', error);
+        return null; // Return null in case of any other error
+    }
+}
+/*
+async function getSiteConstant(db, name) {
+    try {
+        console.log('Trying to retrieve constant:', name);
+        const transaction = db.transaction('SiteConstant', 'readonly');
+        const siteConstantsStore = transaction.objectStore('SiteConstant');
         const request = siteConstantsStore.openCursor();
 
         return new Promise((resolve, reject) => {
@@ -82,6 +114,7 @@ async function getSiteConstant(db, name) {
         return null; // Return null in case of any other error
     }
 }
+*/
 
 // Add or update an entry in the SiteConstant table based on name
 async function addOrUpdateSiteConstant(db, name, value) {
