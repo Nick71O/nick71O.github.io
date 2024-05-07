@@ -89,7 +89,7 @@ function extractDatesFromQueryString(queryString) {
 }
 
 async function launch() {
-  console.log('Hello from Thousand Trails Pre Login Javascript');
+  console.log('Hello from Thousand Trails Member Login');
   getTimestamp();
 
   //check for fatal site error
