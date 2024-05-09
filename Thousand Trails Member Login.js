@@ -166,11 +166,6 @@ async function launch() {
     console.error('Error performing operations:', error);
   }
 
-
-  if (params != "") {
-    localStorage.setItem("bookingQueryString", params);
-  }
-
   await sleep(500);
   click();
 }
@@ -183,7 +178,6 @@ async function redirectLoginPage() {
   await sleep(500);
   window.location.replace(loginURL);
 }
-
 
 console.log("-=~=- Logging into Thousand Trails -=~=-");
 launch();
