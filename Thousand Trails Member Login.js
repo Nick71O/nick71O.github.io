@@ -139,7 +139,6 @@ async function launch() {
     console.log('DB initialized successfully.');
 
     await deleteAllSiteConstants(db);
-    await updateSiteConstantsDates(db, arrivalDate, departureDate);
     await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
