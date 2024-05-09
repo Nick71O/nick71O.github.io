@@ -59,10 +59,14 @@
             //console.log(futureArrivalDate);
 
             let txtArrivalDate = document.getElementById("txtArrivalDate");
-            txtArrivalDate.value = "06/27/2024";
+            //txtArrivalDate.value = "06/27/2024";
+            txtArrivalDate.value = "";
+            txtArrivalDate.disabled = true;
 
             let txtDepartureDate = document.getElementById("txtDepartureDate");
-            txtDepartureDate.value = "07/15/2024";
+            //txtDepartureDate.value = "07/15/2024";
+            txtDepartureDate.value = "";
+            txtDepartureDate.disabled = true;
 
 
             //let txtLengthOfStay = document.getElementById("txtLengthOfStay");
@@ -109,6 +113,7 @@
 
             console.log(bookingURL);
             window.open(loginURL + bookingQueryString);
+            window.open(loginURL);
         }
         function openBaseUrl(){
             var url = baseCampgroundURL
