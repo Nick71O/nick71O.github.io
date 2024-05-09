@@ -5,10 +5,10 @@ var globalVariables = {
     //bookingPreference switch: consecutive | leadingtrailing
     bookingPreference: "consecutive",
     minimumConsecutiveDays: 3,
-    bookedArrivalDate: null,
-    bookedDepartureDate: null,
-    //bookedArrivalDate: "05/04/2024",  
-    //bookedDepartureDate: "05/16/2024",
+    bookedArrivalDate: null,   //"06/28/2024",
+    bookedDepartureDate: null, //"07/01/2024",
+    desiredArrivalDate: "06/27/2024",  
+    desiredDepartureDate: "07/15/2024",
 };
 
 // Call initializeGlobalVariables function in "Thousand Trails Member Login.js"

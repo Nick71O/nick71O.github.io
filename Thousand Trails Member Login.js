@@ -10,7 +10,8 @@ function initializeGlobalVariables(globalVariables) {
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
-
+  console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
+  console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate);
   //launch() will be called after initializing global variables at the root of this file
 }
 
@@ -126,12 +127,12 @@ async function launch() {
   }
 
   //pull the query string that you assigned from the launch file
-  let params = new URLSearchParams(document.location.search);
-  window.console.log("parms: " + params);
+  //let params = new URLSearchParams(document.location.search);
+  //window.console.log("parms: " + params);
 
-  const { arrivalDate, departureDate } = extractDatesFromQueryString(params);
-  console.log('Arrival Date:', arrivalDate);
-  console.log('Departure Date:', departureDate);
+  //const { arrivalDate, departureDate } = extractDatesFromQueryString(params);
+  //console.log('Desired Arrival Date:', arrivalDate);
+  //console.log('Desired Departure Date:', departureDate);
 
   try {
     const db = await initializeDB();
@@ -143,6 +144,8 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
     await addOrUpdateSiteConstant(db, 'BookedDepartureDate', globalVariables.bookedDepartureDate);
+    await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);
+    await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', globalVariables.desiredDepartureDate);
     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
 
