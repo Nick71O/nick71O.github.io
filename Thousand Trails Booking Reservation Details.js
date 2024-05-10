@@ -250,18 +250,20 @@ async function processAvailabilityTable(db) {
             if (cursor) {
                 if (cursor.value.Available === true) {
                     availableDates.push(cursor.value.ArrivalDate);
-                    const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null; // Get timestamp if not null
-
-                    if (checkedTime !== null) {
-                        oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
-                        latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
-                    }
-                    console.log('Math.min(oldestCheckedTime, checkedTime): ', Math.min(oldestCheckedTime, checkedTime));
-                    console.log('Math.max(latestCheckedTime, checkedTime)): ', Math.max(latestCheckedTime, checkedTime));
-                    console.log('checkedTime: ', checkedTime);
-                    console.log('oldestCheckedTime: ', oldestCheckedTime);
-                    console.log('latestCheckedTime: ', latestCheckedTime);
                 }
+                //calculate elaspe time
+                const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null; 
+                if (checkedTime !== null) {
+                    oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
+                    latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
+                }
+                
+                console.log('Math.min(oldestCheckedTime, checkedTime): ', Math.min(oldestCheckedTime, checkedTime));
+                console.log('Math.max(latestCheckedTime, checkedTime)): ', Math.max(latestCheckedTime, checkedTime));
+                console.log('checkedTime: ', checkedTime);
+                console.log('oldestCheckedTime: ', oldestCheckedTime);
+                console.log('latestCheckedTime: ', latestCheckedTime);
+
                 cursor.continue();
             } else {
                 let elapseTime = 0;
