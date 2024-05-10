@@ -3,7 +3,7 @@ const baseURL = "https://members.thousandtrails.com"
 // Pushover API credentials
 const userKey = 'uhd4fsc2u9vtgo2xmeud2m3b2afssc';
 const apiTokenCampsiteAvailability = 'ap4vd6fzg5gk6d8baewc5ph67qbsxn';
-const ApiTokenCampsiteHackr = 'azjfxgydofw9k6dpm3zyebcz6of4qw';
+const apiTokenCampsiteHackr = 'azjfxgydofw9k6dpm3zyebcz6of4qw';
 
 
 // Pushover API endpoint for sending messages
@@ -20,6 +20,7 @@ axiosScript.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
 document.head.appendChild(axiosScript);
 */
 
+const sleepInterval = 5;
 var clickCount = 0;
 
 // IndexedDB library functions
@@ -138,8 +139,10 @@ async function openThousandTrailsDB() {
             console.log('Goto Step 2');
 
             console.log('Load processAvailabilityTable');
-            const availableDates = await processAvailabilityTable(db);
+            const { availableDates, elapseTime } = await processAvailabilityTable(db);
+
             console.log('All Available Dates:', availableDates);
+            console.log('Elapsed Time:', elapseTime, 'minutes');
 
             // Call the sendMessage function with the required parameters
             const messageToSend = `Thousand Trails - Lake & Shore\n${concatenateAvailableDatesToString(availableDates)}`;
@@ -235,6 +238,8 @@ async function processAvailabilityTable(db) {
     const objectStore = transaction.objectStore('Availability');
 
     const availableDates = [];
+    let oldestCheckedTime = null;
+    let latestCheckedTime = null;
 
     return new Promise((resolve, reject) => {
         const request = objectStore.openCursor();
@@ -243,13 +248,25 @@ async function processAvailabilityTable(db) {
             const cursor = event.target.result;
 
             if (cursor) {
-                if (cursor.value.Available === true) { // Check availability
+                if (cursor.value.Available === true) {
                     availableDates.push(cursor.value.ArrivalDate);
+                    const checkedTime = new Date(cursor.value.Checked).getTime(); // Get timestamp
+
+                    if (!oldestCheckedTime || checkedTime < oldestCheckedTime) {
+                        oldestCheckedTime = checkedTime;
+                    }
+                    if (!latestCheckedTime || checkedTime > latestCheckedTime) {
+                        latestCheckedTime = checkedTime;
+                    }
                 }
                 cursor.continue();
             } else {
-                //console.log('Available Dates:', availableDates);
-                resolve(availableDates);
+                // Calculate elapseTime in minutes
+                const elapseTime = oldestCheckedTime && latestCheckedTime ?
+                    Math.floor((latestCheckedTime - oldestCheckedTime) / (1000 * 60)) :
+                    null;
+
+                resolve({ availableDates, elapseTime });
             }
         };
 
