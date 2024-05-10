@@ -2,7 +2,9 @@ const baseURL = "https://members.thousandtrails.com"
 
 // Pushover API credentials
 const userKey = 'uhd4fsc2u9vtgo2xmeud2m3b2afssc';
-const apiToken = 'ap4vd6fzg5gk6d8baewc5ph67qbsxn';
+const apiTokenCampsiteAvailability = 'ap4vd6fzg5gk6d8baewc5ph67qbsxn';
+const ApiTokenCampsiteHackr = 'azjfxgydofw9k6dpm3zyebcz6of4qw';
+
 
 // Pushover API endpoint for sending messages
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
@@ -143,8 +145,8 @@ async function openThousandTrailsDB() {
             console.log('All Available Dates:', availableDates);
 
             // Call the sendMessage function with the required parameters
-            const messageToSend = concatenateAvailableDatesToString(availableDates);
-            sendMessage(userKey, apiToken, pushoverUrl, messageToSend);
+            const messageToSend = `Thousand Trails - Lake & Shore ${concatenateAvailableDatesToString(availableDates)}`;
+            sendMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, messageToSend);
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
@@ -394,7 +396,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentLeadingDate = addDays(bookedArrivalDate, -1);
             let currentIndex = availableDates.indexOf(currentLeadingDate);
             let currentLeadingCount = 0;
-            
+
             while (currentIndex >= 0 && availableDates[currentIndex] === currentLeadingDate) {
                 //console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Leading Date:", currentLeadingDate);
                 currentLeadingDate = addDays(currentLeadingDate, -1);
@@ -405,7 +407,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 leadingArrivalDate = addDays(currentLeadingDate, 1);
                 leadingDepartureDate = bookedArrivalDate;
                 leadingNumberOfNights = currentLeadingCount;
-            
+
                 console.log("\nLeading Date Range:");
                 console.log("   Arrival:", leadingArrivalDate, "Departure:", leadingDepartureDate, "Number of Nights:", leadingNumberOfNights);
             }
@@ -425,9 +427,9 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 trailingArrivalDate = bookedDepartureDate;
                 trailingDepartureDate = currentTrailingDate;
                 trailingNumberOfNights = currentTrailingCount;
-            
-            console.log("\nTrailing Date Range:");
-            console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
+
+                console.log("\nTrailing Date Range:");
+                console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
             }
 
             // Determine which date range is longer
@@ -480,11 +482,13 @@ async function sendMessage(userKey, apiToken, pushoverUrl, message) {
     }
 }
 
-// Function to concatenate array items into a string
 function concatenateAvailableDatesToString(datesArray) {
     let concatenatedString = 'Available Dates: ';
-    datesArray.forEach(date => {
-        concatenatedString += date + ', ';
+    datesArray.forEach((date, index) => {
+        concatenatedString += date;
+        if (index < datesArray.length - 1) {
+            concatenatedString += ', '; // Add comma if it's not the last item
+        }
     });
     return concatenatedString;
 }
