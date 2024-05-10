@@ -238,8 +238,8 @@ async function processAvailabilityTable(db) {
     const objectStore = transaction.objectStore('Availability');
 
     const availableDates = [];
-    let oldestCheckedTime = null;
-    let latestCheckedTime = null;
+    let oldestCheckedTime = Infinity; // Initialize to a large value
+    let latestCheckedTime = -Infinity; // Initialize to a small value
 
     return new Promise((resolve, reject) => {
         const request = objectStore.openCursor();
@@ -250,23 +250,23 @@ async function processAvailabilityTable(db) {
             if (cursor) {
                 if (cursor.value.Available === true) {
                     availableDates.push(cursor.value.ArrivalDate);
-                    const checkedTime = new Date(cursor.value.Checked).getTime(); // Get timestamp
+                    const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null; // Get timestamp if not null
 
-                    if (!oldestCheckedTime || checkedTime < oldestCheckedTime) {
-                        oldestCheckedTime = checkedTime;
-                    }
-                    if (!latestCheckedTime || checkedTime > latestCheckedTime) {
-                        latestCheckedTime = checkedTime;
+                    if (checkedTime !== null) {
+                        oldestCheckedTime = Math.min(oldestCheckedTime, checkedTime);
+                        latestCheckedTime = Math.max(latestCheckedTime, checkedTime);
                     }
                 }
                 cursor.continue();
             } else {
-                // Calculate elapseTime in minutes
-                const elapseTime = oldestCheckedTime && latestCheckedTime ?
-                    Math.floor((latestCheckedTime - oldestCheckedTime) / (1000 * 60)) :
-                    null;
-
-                resolve({ availableDates, elapseTime });
+                if (oldestCheckedTime !== Infinity && latestCheckedTime !== -Infinity) {
+                    // Calculate elapseTime in minutes
+                    const elapseTime = Math.floor((latestCheckedTime - oldestCheckedTime) / (1000 * 60));
+                    resolve({ availableDates, elapseTime });
+                } else {
+                    // No valid Checked timestamps
+                    resolve({ availableDates, elapseTime: 0 });
+                }
             }
         };
 
@@ -275,6 +275,7 @@ async function processAvailabilityTable(db) {
         };
     });
 }
+
 
 
 async function AvailableBooking(db, availableDates, arrivalDate, departureDate, bookedArrivalDate, bookedDepartureDate, bookingPreference, minimumConsecutiveDays) {
