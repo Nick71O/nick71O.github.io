@@ -142,7 +142,7 @@ async function openThousandTrailsDB() {
             const { availableDates, elapseTime } = await processAvailabilityTable(db);
 
             console.log('All Available Dates:', availableDates);
-            console.log('Elapsed Time:', elapseTime, 'minutes');
+            console.log(`Elapsed Time: ${elapseTime} seconds`);
 
             // Call the sendMessage function with the required parameters
             const messageToSend = `Thousand Trails - Lake & Shore\n${concatenateAvailableDatesToString(availableDates)}`;
@@ -257,7 +257,7 @@ async function processAvailabilityTable(db) {
                     oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
                     latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
                 }
-                
+
                 console.log('Math.min(oldestCheckedTime, checkedTime): ', Math.min(oldestCheckedTime, checkedTime));
                 console.log('Math.max(latestCheckedTime, checkedTime)): ', Math.max(latestCheckedTime, checkedTime));
                 console.log('checkedTime: ', checkedTime);
@@ -268,7 +268,7 @@ async function processAvailabilityTable(db) {
             } else {
                 let elapseTime = 0;
                 if (oldestCheckedTime !== null && latestCheckedTime !== null) {
-                    elapseTime = Math.floor((latestCheckedTime - oldestCheckedTime) / (1000 * 60));
+                    elapseTime = Math.floor((latestCheckedTime - oldestCheckedTime) / 1000);
                 }
                 resolve({ availableDates, elapseTime });
             }
