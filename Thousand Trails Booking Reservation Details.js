@@ -19,7 +19,7 @@ document.head.appendChild(axiosScript);
 */
 
 // Import the axios library
-const axios = require('axios');
+//const axios = require('axios');
 
 var clickCount = 0;
 
