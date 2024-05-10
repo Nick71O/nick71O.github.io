@@ -268,12 +268,6 @@ async function processAvailabilityTable(db) {
                     latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
                 }
 
-                //console.log('Math.min(oldestCheckedTime, checkedTime): ', Math.min(oldestCheckedTime, checkedTime));
-                //console.log('Math.max(latestCheckedTime, checkedTime)): ', Math.max(latestCheckedTime, checkedTime));
-                //console.log('checkedTime: ', checkedTime);
-                //console.log('oldestCheckedTime: ', oldestCheckedTime);
-                //console.log('latestCheckedTime: ', latestCheckedTime);
-
                 cursor.continue();
             } else {
                 let elapseTime = 0;

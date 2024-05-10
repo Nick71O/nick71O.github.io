@@ -1,15 +1,5 @@
 console.log('Hello From Thousand Trails IndexedDB.js');
 
-// Create a new <script> element
-const axiosScript = document.createElement('script');
-
-// Set the src attribute of the <script> element to the Axios CDN URL
-axiosScript.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
-
-// Append the <script> element to the <head> of the HTML document
-document.head.appendChild(axiosScript);
-
-
 const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 const dbName = 'ThousandTrailsDB';
 const dbVersion = 10;
