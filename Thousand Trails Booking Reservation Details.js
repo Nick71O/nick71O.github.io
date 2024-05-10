@@ -145,7 +145,7 @@ async function openThousandTrailsDB() {
             console.log('All Available Dates:', availableDates);
 
             // Call the sendMessage function with the required parameters
-            const messageToSend = `Thousand Trails - Lake & Shore ${concatenateAvailableDatesToString(availableDates)}`;
+            const messageToSend = `Thousand Trails - Lake & Shore\n ${concatenateAvailableDatesToString(availableDates)}`;
             sendMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, messageToSend);
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
