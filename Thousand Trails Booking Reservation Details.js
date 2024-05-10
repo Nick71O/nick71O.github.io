@@ -1,5 +1,15 @@
 const baseURL = "https://members.thousandtrails.com"
 
+// Pushover API credentials
+const userKey = 'uhd4fsc2u9vtgo2xmeud2m3b2afssc';
+const apiToken = 'ap4vd6fzg5gk6d8baewc5ph67qbsxn';
+
+// Pushover API endpoint for sending messages
+const pushoverUrl = 'https://api.pushover.net/1/messages.json';
+
+// Import the axios library
+const axios = require('axios');
+
 var clickCount = 0;
 
 // IndexedDB library functions
@@ -119,7 +129,11 @@ async function openThousandTrailsDB() {
 
             console.log('Load processAvailabilityTable');
             const availableDates = await processAvailabilityTable(db);
-            console.log('Available Dates:', availableDates);
+            console.log('All Available Dates:', availableDates);
+
+            // Call the sendMessage function with the required parameters
+            const messageToSend = concatenateAvailableDatesToString(availableDates);
+            sendMessage(userKey, apiToken, pushoverUrl, messageToSend);
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
@@ -401,8 +415,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 trailingDepartureDate = currentTrailingDate;
                 trailingNumberOfNights = currentTrailingCount;
             
-                console.log("\nTrailing Date Range:");
-                console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
+            console.log("\nTrailing Date Range:");
+            console.log("   Arrival:", trailingArrivalDate, "Departure:", trailingDepartureDate, "Number of Nights:", trailingNumberOfNights);
             }
 
             // Determine which date range is longer
@@ -435,6 +449,33 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
     // Return the available dates or null if not found
     return { availableArrivalDate, availableDepartureDate };
+}
+
+// Function to send a message using Pushover API
+async function sendMessage(userKey, apiToken, pushoverUrl, message) {
+    try {
+        // Message data to send
+        const messageData = {
+            token: apiToken,
+            user: userKey,
+            message: message,
+        };
+
+        // Send a POST request to Pushover API using Axios
+        const response = await axios.post(pushoverUrl, messageData);
+        console.log('Message sent:', response.data);
+    } catch (error) {
+        console.error('Error sending message:', error.response.data || error.message);
+    }
+}
+
+// Function to concatenate array items into a string
+function concatenateAvailableDatesToString(datesArray) {
+    let concatenatedString = 'Available Dates: ';
+    datesArray.forEach(date => {
+        concatenatedString += date + ', ';
+    });
+    return concatenatedString;
 }
 
 
@@ -564,6 +605,8 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         redirectLoginPage();
     }
 }
+
+
 
 
 
