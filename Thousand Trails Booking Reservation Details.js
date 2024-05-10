@@ -250,16 +250,16 @@ async function processAvailabilityTable(db) {
             if (cursor) {
                 if (cursor.value.Available === true) {
                     availableDates.push(cursor.value.ArrivalDate);
-                    const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null;
+                    const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null; // Get timestamp if not null
 
                     if (checkedTime !== null) {
-                        oldestCheckedTime = Math.min(oldestCheckedTime, checkedTime);
-                        latestCheckedTime = Math.max(latestCheckedTime, checkedTime);
+                        oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
+                        latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
                     }
                 }
                 cursor.continue();
             } else {
-                const elapseTime = 0;
+                let elapseTime = 0;
                 if (oldestCheckedTime !== null && latestCheckedTime !== null) {
                     elapseTime = Math.floor((latestCheckedTime - oldestCheckedTime) / (1000 * 60));
                 }
