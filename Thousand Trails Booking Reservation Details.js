@@ -165,8 +165,18 @@ async function openThousandTrailsDB() {
                 }
 
                 //sleep, clear database and try again
-                console.log("\nSleeping...5 minutes");
-                resetBookingAvailabilityProcess(db, 297000)
+                const fiveMinutesInMillis = sleepInterval * 60 * 1000;
+                const remainingTimeInMillis = fiveMinutesInMillis - (elapseTime * 1000);
+
+                const remainingMinutes = Math.floor(remainingTimeInMillis / (1000 * 60));
+                const remainingSeconds = Math.floor((remainingTimeInMillis % (1000 * 60)) / 1000);
+
+                let message = `\nSleeping... ${remainingMinutes} minutes`;
+                if (remainingSeconds > 0) {
+                    message += ` and ${remainingSeconds} seconds`;
+                }
+                console.log(message);
+                resetBookingAvailabilityProcess(db, remainingTimeInMillis)
             } else {
                 console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
             }
@@ -252,17 +262,17 @@ async function processAvailabilityTable(db) {
                     availableDates.push(cursor.value.ArrivalDate);
                 }
                 //calculate elaspe time
-                const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null; 
+                const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null;
                 if (checkedTime !== null) {
                     oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
                     latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
                 }
 
-                console.log('Math.min(oldestCheckedTime, checkedTime): ', Math.min(oldestCheckedTime, checkedTime));
-                console.log('Math.max(latestCheckedTime, checkedTime)): ', Math.max(latestCheckedTime, checkedTime));
-                console.log('checkedTime: ', checkedTime);
-                console.log('oldestCheckedTime: ', oldestCheckedTime);
-                console.log('latestCheckedTime: ', latestCheckedTime);
+                //console.log('Math.min(oldestCheckedTime, checkedTime): ', Math.min(oldestCheckedTime, checkedTime));
+                //console.log('Math.max(latestCheckedTime, checkedTime)): ', Math.max(latestCheckedTime, checkedTime));
+                //console.log('checkedTime: ', checkedTime);
+                //console.log('oldestCheckedTime: ', oldestCheckedTime);
+                //console.log('latestCheckedTime: ', latestCheckedTime);
 
                 cursor.continue();
             } else {
