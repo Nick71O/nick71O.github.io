@@ -7,7 +7,7 @@ const apiToken = 'ap4vd6fzg5gk6d8baewc5ph67qbsxn';
 // Pushover API endpoint for sending messages
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
 
-
+/*
 // Create a new <script> element
 const axiosScript = document.createElement('script');
 
@@ -16,7 +16,7 @@ axiosScript.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
 
 // Append the <script> element to the <head> of the HTML document
 document.head.appendChild(axiosScript);
-
+*/
 
 // Import the axios library
 const axios = require('axios');
