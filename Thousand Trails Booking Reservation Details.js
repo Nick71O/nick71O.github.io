@@ -20,9 +20,6 @@ axiosScript.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
 document.head.appendChild(axiosScript);
 */
 
-// Import the axios library
-//const axios = require('axios');
-
 var clickCount = 0;
 
 // IndexedDB library functions
@@ -146,7 +143,7 @@ async function openThousandTrailsDB() {
 
             // Call the sendMessage function with the required parameters
             const messageToSend = `Thousand Trails - Lake & Shore\n ${concatenateAvailableDatesToString(availableDates)}`;
-            sendMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, messageToSend);
+            sendMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, messageToSend, 'cosmic');
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
@@ -465,13 +462,14 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 }
 
 // Function to send a message using Pushover API
-async function sendMessage(userKey, apiToken, pushoverUrl, message) {
+async function sendMessage(userKey, apiToken, pushoverUrl, message, sound = '') {
     try {
         // Message data to send
         const messageData = {
             token: apiToken,
             user: userKey,
             message: message,
+            sound: sound,
         };
 
         // Send a POST request to Pushover API using Axios
@@ -481,6 +479,7 @@ async function sendMessage(userKey, apiToken, pushoverUrl, message) {
         console.error('Error sending message:', error.response.data || error.message);
     }
 }
+
 
 function concatenateAvailableDatesToString(datesArray) {
     let concatenatedString = 'Available Dates: ';
