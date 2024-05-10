@@ -480,18 +480,20 @@ async function sendMessage(userKey, apiToken, pushoverUrl, message, sound = '') 
     }
 }
 
-
 function concatenateAvailableDatesToString(datesArray) {
     let concatenatedString = 'Available Dates: ';
-    datesArray.forEach((date, index) => {
-        concatenatedString += date;
-        if (index < datesArray.length - 1) {
-            concatenatedString += ', '; // Add comma if it's not the last item
-        }
-    });
+    if (datesArray.length === 0) {
+        concatenatedString += 'None';
+    } else {
+        datesArray.forEach((date, index) => {
+            concatenatedString += date;
+            if (index < datesArray.length - 1) {
+                concatenatedString += ', ';
+            }
+        });
+    }
     return concatenatedString;
 }
-
 
 async function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
