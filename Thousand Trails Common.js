@@ -1,4 +1,4 @@
-console.log('Hello From Thousand Trails Common.js');
+//console.log('Hello From Thousand Trails Common.js');
 
 const callCenterHours = {
     mondayToFriday: { open: 9, close: 20 }, // 9 AM to 8 PM
