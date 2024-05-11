@@ -142,7 +142,7 @@ async function launch() {
                 const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
 
                 // Call the sendMessage function with the required parameters
-                const messageToSend = `Thousand Trails - Lake & Shore\nA campsite is available for booking!\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`;
+                let messageToSend = `Thousand Trails - Lake & Shore\nA campsite is available for booking!\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`;
                 
                 if (scBookedArrivalDate !== null && scBookedDepartureDate !== null) {
                     // Calculate the number of nights
