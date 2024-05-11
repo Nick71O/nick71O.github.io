@@ -1,5 +1,14 @@
 console.log('Hello From Thousand Trails IndexedDB.js');
 
+const commonScript = document.createElement('script');
+commonScript.src = 'https://nick71o.github.io/Thousand%20Trails%20Common.js';
+document.head.appendChild(commonScript);
+
+const axiosScript = document.createElement('script');
+axiosScript.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
+document.head.appendChild(axiosScript);
+
+
 const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 const dbName = 'ThousandTrailsDB';
 const dbVersion = 10;
