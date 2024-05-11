@@ -233,7 +233,8 @@ async function launch() {
 
     } catch (error) {
         console.error('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
-        await sleep(5000);
+        console.log("Sleeping...30 seconds");
+        await sleep(30000);
         console.log("Reloading Page");
         window.location.reload();
     }
