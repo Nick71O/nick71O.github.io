@@ -1,5 +1,42 @@
+// dynamically load additional scripts
+loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
+    .then(() => {
+        // IndexedDB script has been successfully loaded
+        return loadScript('https://nick71o.github.io/Thousand%20Trails%20Common.js');
+    })
+    .then(() => {
+        // Common script has been successfully loaded
+        return loadScript('https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
+    })
+    .then(() => {
+        // Now you can safely use functions or variables from the loaded scripts here
+        launch();
+    })
+    .catch(error => {
+        // Handle errors if any script fails to load
+        console.error('Error loading scripts:', error);
+    });
 
-const baseURL = "https://members.thousandtrails.com"
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+
+        script.onload = () => {
+            console.log(`Script loaded: ${src}`);
+            resolve();
+        };
+
+        script.onerror = () => {
+            console.error(`Error loading script: ${src}`);
+            reject(new Error(`Error loading script: ${src}`));
+        };
+
+        document.head.appendChild(script);
+    });
+}
 
 async function launch() { 
     getTimestamp();
@@ -38,21 +75,6 @@ async function launch() {
     }
 }
 
-
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-function getTimestamp() {
-    var nowDate = new Date();
-    var date = nowDate.toDateString();
-    var time = nowDate.toLocaleTimeString();
-    var timestamp = '--' + date + ', ' + time + '--';
-    console.log(timestamp);
-    return timestamp;
-  }
-  
-
 async function openTabs(arrivalDate, departureDate) {
     arrivalDate = arrivalDate.replace(/\//g, "%2F");
     departureDate = departureDate.replace(/\//g, "%2F");
@@ -76,5 +98,3 @@ async function redirectBookingPage() {
     await sleep(500);
     window.location.replace(bookingURL);
 }
-
-launch();

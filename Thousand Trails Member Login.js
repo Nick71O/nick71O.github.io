@@ -11,8 +11,7 @@ function initializeGlobalVariables(globalVariables) {
   console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
-  console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate);
-  //launch() will be called after initializing global variables at the root of this file
+  console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
 }
 
 // Call initializeGlobalVariables function in "Thousand Trails Member Login (Browser).js"
@@ -23,8 +22,46 @@ if (typeof globalVariables !== 'undefined') {
   initializeGlobalVariables(globalVariables);
 }
 
+// dynamically load additional scripts
+loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
+    .then(() => {
+        // IndexedDB script has been successfully loaded
+        return loadScript('https://nick71o.github.io/Thousand%20Trails%20Common.js');
+    })
+    .then(() => {
+        // Common script has been successfully loaded
+        return loadScript('https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
+    })
+    .then(() => {
+        // Now you can safely use functions or variables from the loaded scripts here
+        launch();
+    })
+    .catch(error => {
+        // Handle errors if any script fails to load
+        console.error('Error loading scripts:', error);
+    });
 
-const baseURL = "https://members.thousandtrails.com";
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+
+        script.onload = () => {
+            console.log(`Script loaded: ${src}`);
+            resolve();
+        };
+
+        script.onerror = () => {
+            console.error(`Error loading script: ${src}`);
+            reject(new Error(`Error loading script: ${src}`));
+        };
+
+        document.head.appendChild(script);
+    });
+}
+
 
 // XPath of button to click
 var buttonXPath = "//*[@id='profile-form']/div[5]/button";
@@ -41,18 +78,6 @@ function getElementsByXPath(xpath, parent) {
   return results;
 }
 
-function getTimestamp() {
-  var nowDate = new Date();
-  var date = nowDate.toDateString();
-  var time = nowDate.toLocaleTimeString();
-  var timestamp = '--' + date + ', ' + time + '--';
-  console.log(timestamp);
-  return timestamp;
-}
-
-async function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 async function click() {
   var foundButton = false;
@@ -178,8 +203,4 @@ async function redirectLoginPage() {
   await sleep(500);
   window.location.replace(loginURL);
 }
-
-console.log("-=~=- Logging into Thousand Trails -=~=-");
-launch();
-
 

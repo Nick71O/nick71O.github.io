@@ -1,4 +1,44 @@
-const baseURL = "https://members.thousandtrails.com"
+// dynamically load additional scripts
+loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
+    .then(() => {
+        // IndexedDB script has been successfully loaded
+        return loadScript('https://nick71o.github.io/Thousand%20Trails%20Common.js');
+    })
+    .then(() => {
+        // Common script has been successfully loaded
+        return loadScript('https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
+    })
+    .then(() => {
+        // Now you can safely use functions or variables from the loaded scripts here
+        launch();
+    })
+    .catch(error => {
+        // Handle errors if any script fails to load
+        console.error('Error loading scripts:', error);
+    });
+
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+
+        script.onload = () => {
+            console.log(`Script loaded: ${src}`);
+            resolve();
+        };
+
+        script.onerror = () => {
+            console.error(`Error loading script: ${src}`);
+            reject(new Error(`Error loading script: ${src}`));
+        };
+
+        document.head.appendChild(script);
+    });
+}
+
+
 
 // XPath of button to click
 //const selectSiteButtonXPath = "//*[@id='btnSelect0']";
@@ -7,7 +47,7 @@ const baseURL = "https://members.thousandtrails.com"
 var clickCount = 0;
 
 // IndexedDB library functions
-async function openThousandTrailsDB() {
+async function launch() {
     try {
         console.log('Hello from Thousand Trails Booking Choose Campsite');
         getTimestamp();
@@ -113,7 +153,7 @@ async function openThousandTrailsDB() {
                 await sleep(177000);
                 if (clickCount <= 49) {
                     getTimestamp();
-                    openThousandTrailsDB();
+                    launch();
                 }
                 else {
                     console.log("Reloading Page");
@@ -310,7 +350,7 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);
 
-    openThousandTrailsDB();
+    launch();
 }
 
 
@@ -386,10 +426,6 @@ function PlayAlert() {
     alertsound.play();
 }
 
-async function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
 // Function to format date and time
 function formatDateTime(date) {
     const options = {
@@ -404,13 +440,4 @@ function formatDateTime(date) {
     return new Date(date).toLocaleString('en-US', options);
 }
 
-function getTimestamp() {
-    var nowDate = new Date();
-    var date = nowDate.toDateString();
-    var time = nowDate.toLocaleTimeString();
-    var timestamp = '--' + date + ', ' + time + '--';
-    console.log(timestamp);
-    return timestamp;
-}
 
-openThousandTrailsDB();
