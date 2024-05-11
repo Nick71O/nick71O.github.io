@@ -2,7 +2,7 @@
 
 const callCenterHours = {
     mondayToFriday: { open: 9, close: 20 }, // 9 AM to 8 PM
-    saturday: { open: 10, close: 14 }, // 10 AM to 2 PM
+    saturday: { open: 1, close: 14 }, // 10 AM to 2 PM
     sunday: { open: 12, close: 14 }, // 12 PM to 2 PM
 };
 
