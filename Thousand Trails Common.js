@@ -60,7 +60,7 @@ async function pushBookSiteMessage(message) {
 }
 
 // Function to send a message using Pushover API
-async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = '', priority = 0, ttl = 0) {
+async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = '', priority = '', ttl = '') {
     //const ttl = 3600; // TTL in seconds (1 hour)
     try {
         // Message data to send
