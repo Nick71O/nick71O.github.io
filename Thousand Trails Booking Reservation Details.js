@@ -1,3 +1,46 @@
+// dynamically load additional scripts
+loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
+    .then(() => {
+        // IndexedDB script has been successfully loaded
+        return loadScript('https://nick71o.github.io/Thousand%20Trails%20Common.js');
+    })
+    .then(() => {
+        // Common script has been successfully loaded
+        return loadScript('https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
+    })
+    .then(() => {
+        // Axios script has been successfully loaded
+        // Now you can safely use functions or variables from the loaded scripts here
+    })
+    .catch(error => {
+        // Handle errors if any script fails to load
+        console.error('Error loading scripts:', error);
+    });
+
+    
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = src;
+        script.defer = true;
+
+        script.onload = () => {
+            console.log(`Script loaded: ${src}`);
+            resolve();
+        };
+
+        script.onerror = () => {
+            console.error(`Error loading script: ${src}`);
+            reject(new Error(`Error loading script: ${src}`));
+        };
+
+        document.head.appendChild(script);
+    });
+}
+
+
+
+
 const baseURL = "https://members.thousandtrails.com"
 
 // Pushover API credentials
