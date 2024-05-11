@@ -51,7 +51,7 @@ async function launch() {
     try {
         console.log('Hello from Thousand Trails Booking Choose Campsite');
         getTimestamp();
-        
+
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
@@ -135,6 +135,25 @@ async function launch() {
             if (isCampsiteAvailableResult) {
                 clickCount = clickCount + 1;
                 console.log('\nclicked the "Select Site" button ' + clickCount + ' times');
+                
+                // Calculate the number of nights
+                var oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+                var dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
+                const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
+
+                // Call the sendMessage function with the required parameters
+                const messageToSend = `Thousand Trails - Lake & Shore\nA campsite is available for booking!\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`;
+                
+                if (scBookedArrivalDate !== null && scBookedDepartureDate !== null) {
+                    // Calculate the number of nights
+                    let oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+                    let dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
+                    const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
+
+                    messageToSend += `\n\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scProcessNumberOfNights}`;
+                }
+                messageToSend += `\n\nTo book, call: 888-551-9102`;
+                pushBookSiteMessage(messageToSend)
 
                 PlayAlert();
                 await sleep(3000);
