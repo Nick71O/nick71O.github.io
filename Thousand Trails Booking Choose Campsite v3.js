@@ -98,9 +98,9 @@ async function launch() {
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
             const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
-            const scProcessNumberOfNights = Math.round(dateDifference / oneDay);
+            const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
 
-            console.log("SiteConstants Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scProcessNumberOfNights);
+            console.log("SiteConstants Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scBookedNumberOfNights);
         } else {
             console.log('SiteConstant Booked Arrival or Departure constant is null, empty, or not found.');
         }
@@ -150,7 +150,7 @@ async function launch() {
                     let dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
                     const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
 
-                    messageToSend += `\n\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scProcessNumberOfNights}`;
+                    messageToSend += `\n\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`;
                 }
                 messageToSend += `\n\nTo book, call: 888-551-9102`;
                 pushBookSiteMessage(messageToSend)
