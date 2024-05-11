@@ -32,8 +32,8 @@ async function pushBookSiteMessage(message) {
     const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     const hourOfDay = now.getHours();
 
-    const priority = 0;
-    const sound = '';
+    let priority = 0;
+    let sound = '';
 
     // Set priority and sound based on call center hours
     if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday

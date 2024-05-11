@@ -441,10 +441,23 @@ function isValidDate(dateString) {
     return dateString && !isNaN(Date.parse(dateString));
 }
 
+
 function PlayAlert() {
-    var alertsound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
-    alertsound.play();
+    // Create an Audio object for the alert sound
+    var alertSound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
+
+    // Add a click event listener to a button or element
+    document.getElementById('playButton').addEventListener('click', function() {
+        try {
+            // Attempt to play the alert sound
+            alertSound.play();
+        } catch (error) {
+            // Handle any errors that occur during playback
+            console.error('Error playing alert sound:', error);
+        }
+    });
 }
+
 
 // Function to format date and time
 function formatDateTime(date) {
