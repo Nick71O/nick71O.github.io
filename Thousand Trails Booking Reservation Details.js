@@ -38,31 +38,6 @@ function loadScript(src) {
     });
 }
 
-
-
-
-const baseURL = "https://members.thousandtrails.com"
-
-// Pushover API credentials
-const userKey = 'uhd4fsc2u9vtgo2xmeud2m3b2afssc';
-const apiTokenCampsiteAvailability = 'ap4vd6fzg5gk6d8baewc5ph67qbsxn';
-const apiTokenCampsiteHackr = 'azjfxgydofw9k6dpm3zyebcz6of4qw';
-
-
-// Pushover API endpoint for sending messages
-const pushoverUrl = 'https://api.pushover.net/1/messages.json';
-
-/*
-// Create a new <script> element
-const axiosScript = document.createElement('script');
-
-// Set the src attribute of the <script> element to the Axios CDN URL
-axiosScript.src = 'https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js';
-
-// Append the <script> element to the <head> of the HTML document
-document.head.appendChild(axiosScript);
-*/
-
 const sleepInterval = 5;
 var clickCount = 0;
 
@@ -189,7 +164,7 @@ async function launch() {
 
             // Call the sendMessage function with the required parameters
             const messageToSend = `Thousand Trails - Lake & Shore\n${concatenateAvailableDatesToString(availableDates)}`;
-            sendMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, messageToSend, 'none');
+            pushSiteAvailabilityMessage(messageToSend)
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
