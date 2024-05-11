@@ -174,7 +174,7 @@ async function launch() {
             var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
             console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions) + "    Number of Nights: " + bookingNumberOfNights);
 
-            console.log('If (' + bookingNumberOfNights + ' === 1)');
+            //console.log('If (' + bookingNumberOfNights + ' === 1)');
             if (bookingNumberOfNights === '1') {
                 console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
                 const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
@@ -213,7 +213,7 @@ async function launch() {
         }
 
     } catch (error) {
-        console.error('ERROR: In Thousand Trails Start Booking v2 that uses IndexedDB.', error);
+        console.error('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
         await sleep(5000);
         console.log("Reloading Page");
         window.location.reload();
@@ -276,7 +276,7 @@ async function getAvailabilityRecord(db, arrivalDate) {
 //Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
 //If there are no more rows returned, but the 'Availability' table has more than 0 rows it is time to process the AvailabilityTable.
 async function getNextAvailabilityDate(db) {
-    console.log('Hello from getNextAvailabilityDate()');
+    //console.log('Hello from getNextAvailabilityDate()');
 
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['Availability'], 'readonly');
