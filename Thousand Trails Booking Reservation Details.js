@@ -9,15 +9,15 @@ loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
         return loadScript('https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
     })
     .then(() => {
-        // Axios script has been successfully loaded
         // Now you can safely use functions or variables from the loaded scripts here
+        launch();
     })
     .catch(error => {
         // Handle errors if any script fails to load
         console.error('Error loading scripts:', error);
     });
 
-    
+
 function loadScript(src) {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
@@ -67,7 +67,7 @@ const sleepInterval = 5;
 var clickCount = 0;
 
 // IndexedDB library functions
-async function openThousandTrailsDB() {
+async function launch() {
     console.log('Hello from Thousand Trails Booking Reservation Details');
     getTimestamp();
 
@@ -683,7 +683,7 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);
 
-    openThousandTrailsDB();
+    launch();
 }
 
 async function redirectLoginPage() {
@@ -717,6 +717,3 @@ async function openTabs(arrivalDate, departureDate) {
     await sleep(500);
     window.location.replace(bookingURL);
 }
-
-
-openThousandTrailsDB();
