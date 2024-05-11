@@ -153,14 +153,16 @@ async function launch() {
                     messageToSend += `\n\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`;
                 }
                 messageToSend += `\n\nTo book, call: 888-551-9102`;
-                pushBookSiteMessage(messageToSend)
 
                 PlayAlert();
                 await sleep(3000);
                 var reservationError = document.getElementById('reservationError').innerText;
                 if (reservationError != undefined) {
                     console.log('ERROR:\n' + reservationError);
+                    messageToSend += `\n\nError Received: ${reservationError}`;
                 }
+                pushBookSiteMessage(messageToSend);
+
                 if (reservationError == "Unable to process your request.") {
                     console.log("Sleeping...1 minute");
                     await sleep(59000);
@@ -170,9 +172,18 @@ async function launch() {
 
                 if (clickCount <= 49) {
                     getTimestamp();
+                    console.log("Sleeping...1 minutes");
+                    await sleep(60000);
+                    var bookingURL = baseURL + "/reserve/step3"
+                    console.log("Redirecting to Step 3 - Enter Payment (Bug that allows booking)");
+                    console.log(bookingURL);
+                    await sleep(500);
+                    window.location.replace(bookingURL);
+                    /*
                     console.log("Sleeping...3 minutes");
                     await sleep(177000);
                     launch();
+                    */
                 }
                 else {
                     console.log("Reloading Page");
