@@ -473,14 +473,16 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             }
 
             // Determine which date range is longer
-            if (leadingNumberOfNights > 0 && trailingNumberOfNights > 0 && leadingNumberOfNights >= trailingNumberOfNights) {
-                availableArrivalDate = leadingArrivalDate;
-                availableDepartureDate = leadingDepartureDate;
-                availableNumberOfNights = leadingNumberOfNights;
-            } else if (trailingNumberOfNights > 0) {
-                availableArrivalDate = trailingArrivalDate;
-                availableDepartureDate = trailingDepartureDate;
-                availableNumberOfNights = trailingNumberOfNights;
+            if (leadingNumberOfNights > 0 || trailingNumberOfNights > 0) {
+                if (leadingNumberOfNights >= trailingNumberOfNights) {
+                    availableArrivalDate = leadingArrivalDate;
+                    availableDepartureDate = leadingDepartureDate;
+                    availableNumberOfNights = leadingNumberOfNights;
+                } else if (trailingNumberOfNights > 0) {
+                    availableArrivalDate = trailingArrivalDate;
+                    availableDepartureDate = trailingDepartureDate;
+                    availableNumberOfNights = trailingNumberOfNights;
+                }
             } else {
                 console.log("\nNo consecutive leading or trailing date range found.");
             }
