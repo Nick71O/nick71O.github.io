@@ -18,8 +18,8 @@ const apiTokenCampsiteHackr = 'azjfxgydofw9k6dpm3zyebcz6of4qw';
 
 // Function to push site availability message
 async function pushSiteAvailabilityMessage(message) {
-    await sendPushMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, message, '', '-1');
-}
+    await sendPushMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, message, '', -1);
+
 
 // Function to push book site message
 async function pushBookSiteMessage(message) {
@@ -71,6 +71,7 @@ async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = 
             sound: sound,
             priority: priority,
             ttl: ttl,
+            html: 1
         };
 
         // Send a POST request to Pushover API using Axios
