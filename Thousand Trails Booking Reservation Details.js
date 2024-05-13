@@ -478,7 +478,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                     availableArrivalDate = leadingArrivalDate;
                     availableDepartureDate = leadingDepartureDate;
                     availableNumberOfNights = leadingNumberOfNights;
-                } else if (trailingNumberOfNights > 0) {
+                } else {
                     availableArrivalDate = trailingArrivalDate;
                     availableDepartureDate = trailingDepartureDate;
                     availableNumberOfNights = trailingNumberOfNights;
