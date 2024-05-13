@@ -143,8 +143,8 @@ async function launch() {
 
 
         //clear database, sleep and start looking for the next booking
-        resetBookingAvailabilityProcess(db, 240000);
         console.log("\nSleeping...4 minutes");
+        await resetBookingAvailabilityProcess(db, 240000);
 
         //you do need to change the type of searching...
         redirectBookingPage();
