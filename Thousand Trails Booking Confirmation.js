@@ -138,13 +138,13 @@ async function launch() {
         }
 
         // Call the sendPushMessage function with the required parameters
-        pushBookSiteMessage(composeMessageToSend('step4', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
+        pushSiteBookedMessage(composeMessageToSend('step4', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
             scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, null, null));
 
 
         //clear database, sleep and start looking for the next booking
-        resetBookingAvailabilityProcess(db, 117000);
-        console.log("\nSleeping...2 minutes");
+        resetBookingAvailabilityProcess(db, 240000);
+        console.log("\nSleeping...4 minutes");
 
         //you do need to change the type of searching...
         redirectBookingPage();

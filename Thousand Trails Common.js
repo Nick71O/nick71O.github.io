@@ -59,6 +59,11 @@ async function pushBookSiteMessage(message) {
     await sendPushMessage(userKey, apiTokenCampsiteHackr, pushoverUrl, message, sound, priority);
 }
 
+// Function to push site booked message
+async function pushSiteBookedMessage(message) {
+    await sendPushMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, message, '', 0);
+}
+
 // Function to send a message using Pushover API
 async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = '', priority = '', ttl = '') {
     //const ttl = 3600; // TTL in seconds (1 hour)
@@ -106,10 +111,10 @@ function composeMessageToSend(
             //messageBuilder.push('Step 2: Some specific message for Step 2');
             break;
         case 'step3':
-            messageBuilder.push('A campsite is available for booking!\n');
+            messageBuilder.push('Campsite is available for booking!\n');
             break;
         case 'step4':
-            messageBuilder.push('A campsite is booked!\n');
+            messageBuilder.push('Campsite is booked!\n');
             break;
         default:
             //messageBuilder.push('Default message for unknown step');
