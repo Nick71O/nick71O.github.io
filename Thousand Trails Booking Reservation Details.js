@@ -163,8 +163,8 @@ async function launch() {
             console.log(`Elapsed Time: ${elapseTime} seconds`);
 
             // Call the sendMessage function with the required parameters
-            composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate, 
-                scBookedArrivalDate, scBookedDepartureDate, availableDates, null);
+            pushSiteAvailabilityMessage(composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
+                scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, availableDates, null);
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
