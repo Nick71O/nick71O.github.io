@@ -161,7 +161,7 @@ function composeMessageToSend(
 function concatenateAvailableDatesToString(datesArray) {
     let concatenatedString = 'Currently Available Dates: ';
     if (datesArray.length === 0) {
-        concatenatedString += '<b>None<b/>';
+        concatenatedString += '<b>None</b>';
     } else {
         datesArray.forEach((date, index) => {
             concatenatedString += date;
