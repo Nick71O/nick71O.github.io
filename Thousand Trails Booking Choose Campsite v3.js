@@ -440,11 +440,6 @@ function getElementsByXPath(xpath, parent) {
 }
 
 
-function isValidDate(dateString) {
-    // Check if the input is a valid date
-    return dateString && !isNaN(Date.parse(dateString));
-}
-
 // Function to play the alert sound in response to a user click
 function PlayAlert() {
     // Log a message to indicate that the function is being executed

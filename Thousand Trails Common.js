@@ -178,6 +178,11 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function isValidDate(dateString) {
+    // Check if the input is a valid date
+    return dateString && !isNaN(Date.parse(dateString));
+}
+
 function getTimestamp() {
     var nowDate = new Date();
     var date = nowDate.toDateString();
