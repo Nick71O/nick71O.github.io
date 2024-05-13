@@ -144,7 +144,7 @@ async function launch() {
                 PlayAlert();
                 await sleep(3000);
                 var reservationError = document.getElementById('reservationError').innerText;
-                if (reservationError !== undefined) {
+                if (reservationError !== null && reservationError !== undefined) {
                     reservationError = reservationError.trim(); // Trim whitespace
                     console.log(`\nError Received: ${reservationError}`);
                 }

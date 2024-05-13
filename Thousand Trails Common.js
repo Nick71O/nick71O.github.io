@@ -149,8 +149,9 @@ function composeMessageToSend(
     messageBuilder.push('\nTo book, call: 888-551-9102');
 
     // Append reservation error if defined
-    if (reservationError !== undefined) {
-        const trimmedError = reservationError.trim(); // Trim whitespace
+    if (reservationError !== null && reservationError !== undefined) {
+        const trimmedError = reservationError.trim();
+        console.log('ERROR:\n' + trimmedError);
         messageBuilder.push(`\nError Received: ${trimmedError}`);
     }
 
