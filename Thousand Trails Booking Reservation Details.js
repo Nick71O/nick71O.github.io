@@ -164,7 +164,7 @@ async function launch() {
 
             // Call the sendMessage function with the required parameters
             pushSiteAvailabilityMessage(composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
-                scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, availableDates, null);
+                scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, availableDates, null));
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
