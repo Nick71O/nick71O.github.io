@@ -19,7 +19,7 @@ const apiTokenCampsiteHackr = 'azjfxgydofw9k6dpm3zyebcz6of4qw';
 // Function to push site availability message
 async function pushSiteAvailabilityMessage(message) {
     await sendPushMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, message, '', -1);
-
+}
 
 // Function to push book site message
 async function pushBookSiteMessage(message) {
