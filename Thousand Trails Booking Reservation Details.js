@@ -163,8 +163,8 @@ async function launch() {
             console.log(`Elapsed Time: ${elapseTime} seconds`);
 
             // Call the sendMessage function with the required parameters
-            const messageToSend = `Thousand Trails - Lake & Shore\n${concatenateAvailableDatesToString(availableDates)}`;
-            pushSiteAvailabilityMessage(messageToSend)
+            composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate, 
+                scBookedArrivalDate, scBookedDepartureDate, availableDates, null);
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
@@ -503,24 +503,6 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
     // Return the available dates or null if not found
     return { availableArrivalDate, availableDepartureDate };
 }
-
-function concatenateAvailableDatesToString(datesArray) {
-    let concatenatedString = 'Available Dates: ';
-    if (datesArray.length === 0) {
-        concatenatedString += 'None';
-    } else {
-        datesArray.forEach((date, index) => {
-            concatenatedString += date;
-            if (index < datesArray.length - 1) {
-                concatenatedString += ', ';
-            }
-        });
-    }
-    return concatenatedString;
-}
-
-
-
 
 function addDays(date, days) {
     const result = new Date(date);

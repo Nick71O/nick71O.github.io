@@ -81,6 +81,98 @@ async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = 
     }
 }
 
+function composeMessageToSend(
+    messageType,
+    scDesiredArrivalDate,
+    scDesiredDepartureDate,
+    scAvailableArrivalDate,
+    scAvailableDepartureDate,
+    scBookedArrivalDate,
+    scBookedDepartureDate,
+    availableDateArray,
+    reservationError
+) {
+    const messageBuilder = [];
+
+    messageBuilder.push('Thousand Trails - Lake & Shore');
+
+    // Switch to handle different message types
+    switch (messageType) {
+        case 'step1':
+            //messageBuilder.push('Step 1: Some specific message for Step 1');
+            break;
+        case 'step2':
+            //messageBuilder.push('Step 2: Some specific message for Step 2');
+            break;
+        case 'step3':
+            messageBuilder.push('A campsite is available for booking!');
+            break;
+        case 'step4':
+            //messageBuilder.push('Step 4: Some specific message for Step 4');
+            break;
+        default:
+            //messageBuilder.push('Default message for unknown step');
+    }
+
+    // Append availabile dates to book
+    if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
+        const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+        const dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
+        const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
+
+        messageBuilder.push(`Availabile Dates to Book:\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`);
+    }
+
+    // Append available dates from array
+    if (availableDateArray !== null) {
+        messageBuilder.push(concatenateAvailableDatesToString(availableDateArray));
+    }
+
+    // Append desired dates to book
+    if (scDesiredArrivalDate !== null && scDesiredDepartureDate !== null) {
+        const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+        const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
+        const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
+    
+        messageBuilder.push(`Desired Dates to Book:\nArrival: ${scDesiredArrivalDate}    Departure: ${scDesiredDepartureDate}    Number of Nights: ${scDesiredNumberOfNights}`);
+    }
+
+    // Append existing booked reservation if available
+    if (scBookedArrivalDate !== null && scBookedDepartureDate !== null) {
+        const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+        const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
+        const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
+
+        messageBuilder.push(`Existing Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
+    }
+
+    messageBuilder.push('\nTo book, call: 888-551-9102');
+
+    // Append reservation error if defined
+    if (reservationError !== undefined) {
+        const trimmedError = reservationError.trim(); // Trim whitespace
+        messageBuilder.push(`\nError Received: ${trimmedError}`);
+    }
+
+    return messageBuilder.join('\n'); // Convert array to string using newline separator
+}
+
+
+function concatenateAvailableDatesToString(datesArray) {
+    let concatenatedString = '\nCurrently Available Dates: ';
+    if (datesArray.length === 0) {
+        concatenatedString += 'None';
+    } else {
+        datesArray.forEach((date, index) => {
+            concatenatedString += date;
+            if (index < datesArray.length - 1) {
+                concatenatedString += ', ';
+            }
+        });
+    }
+    return concatenatedString;
+}
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

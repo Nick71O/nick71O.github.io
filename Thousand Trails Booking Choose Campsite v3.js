@@ -141,27 +141,17 @@ async function launch() {
                 var dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
                 const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
 
-                // Call the sendMessage function with the required parameters
-                let messageToSend = `Thousand Trails - Lake & Shore\nA campsite is available for booking!\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`;
-                
-                if (scBookedArrivalDate !== null && scBookedDepartureDate !== null) {
-                    // Calculate the number of nights
-                    let oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-                    let dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
-                    const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
-
-                    messageToSend += `\n\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`;
-                }
-                messageToSend += `\n\nTo book, call: 888-551-9102`;
-
                 PlayAlert();
                 await sleep(3000);
                 var reservationError = document.getElementById('reservationError').innerText;
-                if (reservationError != undefined) {
-                    console.log('ERROR:\n' + reservationError);
-                    messageToSend += `\n\nError Received: ${reservationError}`;
+                if (reservationError !== undefined) {
+                    reservationError = reservationError.trim(); // Trim whitespace
+                    console.log(`\nError Received: ${reservationError}`);
                 }
-                pushBookSiteMessage(messageToSend);
+
+                // Call the sendPushMessage function with the required parameters
+                composeMessageToSend('step3', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate, 
+                    scBookedArrivalDate, scBookedDepartureDate, null, reservationError);
 
                 if (reservationError == "Unable to process your request.") {
                     console.log("Sleeping...1 minute");
