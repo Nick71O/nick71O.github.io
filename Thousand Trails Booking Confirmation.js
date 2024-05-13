@@ -46,16 +46,61 @@ async function launch() {
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
-        
+
+        const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
+        const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+        const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
+        const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
+        let scDesiredArrivalDate = null;
+        let scDesiredDepartureDate = null;
+        let scBookedArrivalDate = null;
+        let scBookedDepartureDate = null;
         let scAvailableArrivalDate = null;
         let scAvailableDepartureDate = null;
 
+        // Check if constants were retrieved successfully and if their values are not null or empty
+        if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
+            scDesiredArrivalConstant.value !== null && scDesiredDepartureConstant.value !== null &&
+            scDesiredArrivalConstant.value.trim() !== '' && scDesiredDepartureConstant.value.trim() !== '') {
+
+            scDesiredArrivalDate = scDesiredArrivalConstant.value;
+            scDesiredDepartureDate = scDesiredDepartureConstant.value;
+
+            // Calculate the number of nights
+            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+            const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
+            const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
+
+            console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
+        } else {
+            console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
+        }
+
+        if (scBookedArrivalConstant && scBookedDepartureConstant &&
+            scBookedArrivalConstant.value !== null && scBookedDepartureConstant.value !== null &&
+            scBookedArrivalConstant.value.trim() !== '' && scBookedDepartureConstant.value.trim() !== '') {
+
+            scBookedArrivalDate = scBookedArrivalConstant.value;
+            scBookedDepartureDate = scBookedDepartureConstant.value;
+
+            // Calculate the number of nights
+            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+            const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
+            const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
+
+            console.log("SiteConstants Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scBookedNumberOfNights);
+        } else {
+            console.log('SiteConstant Booked Arrival or Departure constant is null, empty, or not found.');
+        }
+
+        // Check if Availabile Arrival and Departure constants are not null and their values are valid dates
         if (scAvailabileArrivalConstant && scAvailabileDepartureConstant &&
             scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null &&
-            scAvailabileArrivalConstant.value.trim() !== '' && scAvailabileDepartureConstant.value.trim() !== '') {
+            isValidDate(scAvailabileArrivalConstant.value) && isValidDate(scAvailabileDepartureConstant.value)) {
 
+            // Proceed with operations only if the constants are valid
             scAvailableArrivalDate = scAvailabileArrivalConstant.value;
             scAvailableDepartureDate = scAvailabileDepartureConstant.value;
 
@@ -66,14 +111,36 @@ async function launch() {
 
             console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailableArrivalDate + "    Departure: " + scAvailableDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
         } else {
-            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
+            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not a valid date.');
         }
 
-        //set the SiteConstant with the newly booked dates
-        await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scAvailableArrivalDate);
-        await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scAvailableDepartureDate);
-        //bookingPreference switch: consecutive | leadingtrailing
-        await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
+        const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
+        if (combinedBookingDates) {
+            scBookedArrivalDate = combinedBookingDates.bookedArrivalDate.toLocaleDateString('en-US', formatDateOptions);
+            scBookedDepartureDate = combinedBookingDates.bookedDepartureDate.toLocaleDateString('en-US', formatDateOptions);
+
+            // Calculate the number of nights
+            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+            const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
+            const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
+
+            console.log("Combined Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scBookedNumberOfNights);
+        
+            //set the SiteConstant with the newly booked dates
+            await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scBookedArrivalDate);
+            await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scBookedDepartureDate);
+
+            //bookingPreference switch: consecutive | leadingtrailing
+            await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
+
+        } else {
+            console.log('Dates cannot be combined without gaps.');
+        }
+
+        // Call the sendPushMessage function with the required parameters
+        pushBookSiteMessage(composeMessageToSend('step4', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
+            scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, null, null));
+
 
         //clear database, sleep and start looking for the next booking
         resetBookingAvailabilityProcess(db, 117000);
@@ -84,6 +151,31 @@ async function launch() {
 
     } catch (error) {
         console.error("An error occurred during form submission:", error);
+    }
+}
+
+function combineBookingDates(existingArrivalDate, existingDepartureDate, newArrivalDate, newDepartureDate) {
+    if (!existingArrivalDate && !existingDepartureDate && !newArrivalDate && !newDepartureDate) {
+        return null; // Return null if all dates are missing
+    } else if (!existingArrivalDate && !existingDepartureDate && newArrivalDate && newDepartureDate) {
+        const newArrival = new Date(newArrivalDate);
+        const newDeparture = new Date(newDepartureDate);
+        return { bookedArrivalDate: newArrival, bookedDepartureDate: newDeparture };
+    }
+
+    // Convert dates to JavaScript Date objects
+    const existingArrival = existingArrivalDate ? new Date(existingArrivalDate) : null;
+    const existingDeparture = existingDepartureDate ? new Date(existingDepartureDate) : null;
+    const newArrival = new Date(newArrivalDate);
+    const newDeparture = new Date(newDepartureDate);
+
+    // Combine dates without gaps
+    if (existingDeparture && newDeparture.getTime() === existingArrival.getTime()) {
+        return { bookedArrivalDate: newArrival, bookedDepartureDate: existingDeparture };
+    } else if (existingArrival && existingDeparture && existingDeparture.getTime() === newArrival.getTime()) {
+        return { bookedArrivalDate: existingArrival, bookedDepartureDate: newDeparture };
+    } else {
+        return null; // Dates cannot be combined without gaps
     }
 }
 

@@ -106,10 +106,10 @@ function composeMessageToSend(
             //messageBuilder.push('Step 2: Some specific message for Step 2');
             break;
         case 'step3':
-            messageBuilder.push('A campsite is available for booking!/n');
+            messageBuilder.push('A campsite is available for booking!\n');
             break;
         case 'step4':
-            //messageBuilder.push('Step 4: Some specific message for Step 4');
+            messageBuilder.push('A campsite is booked!\n');
             break;
         default:
             //messageBuilder.push('Default message for unknown step');
