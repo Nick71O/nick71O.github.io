@@ -134,7 +134,7 @@ function composeMessageToSend(
         const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
         const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
     
-        messageBuilder.push(`Desired Dates to Book:\nArrival: ${scDesiredArrivalDate}    Departure: ${scDesiredDepartureDate}    Number of Nights: ${scDesiredNumberOfNights}`);
+        messageBuilder.push(`\nDesired Dates to Book:\nArrival: ${scDesiredArrivalDate}    Departure: ${scDesiredDepartureDate}    Number of Nights: ${scDesiredNumberOfNights}`);
     }
 
     // Append existing booked reservation if available
@@ -143,7 +143,7 @@ function composeMessageToSend(
         const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
         const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
 
-        messageBuilder.push(`Existing Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
+        messageBuilder.push(`\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
     }
 
     messageBuilder.push('\nTo book, call: 888-551-9102');
@@ -151,7 +151,6 @@ function composeMessageToSend(
     // Append reservation error if defined
     if (reservationError !== null && reservationError !== undefined) {
         const trimmedError = reservationError.trim();
-        console.log('ERROR:\n' + trimmedError);
         messageBuilder.push(`\nError Received: ${trimmedError}`);
     }
 
@@ -160,7 +159,7 @@ function composeMessageToSend(
 
 
 function concatenateAvailableDatesToString(datesArray) {
-    let concatenatedString = '\nCurrently Available Dates: ';
+    let concatenatedString = 'Currently Available Dates: ';
     if (datesArray.length === 0) {
         concatenatedString += 'None';
     } else {
