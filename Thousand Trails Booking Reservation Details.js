@@ -487,7 +487,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
             if (leadingNumberOfNights > 0 || trailingNumberOfNights > 0) {
                 console.log("\nAvailable Date Range:");
-                console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
+                //console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate, "Number of Nights:", availableNumberOfNights);
+                console.log("   Arrival:", availableArrivalDate, "Departure:", availableDepartureDate);
 
                 await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', availableArrivalDate);
                 await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', availableDepartureDate);
