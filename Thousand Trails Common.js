@@ -179,6 +179,49 @@ function concatenateAvailableDatesToString(datesArray) {
     return concatenatedString;
 }
 
+async function availabilityCheckIntervalSleep(db) {
+    const scAvailabilityCheckIntervalMinutesConstant = await getSiteConstant(db, 'AvailabilityCheckIntervalMinutes');
+    let scAvailabilityCheckIntervalMinutes = 5;
+
+    if (scAvailabilityCheckIntervalMinutesConstant !== null && scAvailabilityCheckIntervalMinutesConstant !== undefined) {
+        const intervalMinutes = parseInt(scAvailabilityCheckIntervalMinutesConstant.value, 10);
+
+        if (!isNaN(intervalMinutes)) {
+            scAvailabilityCheckIntervalMinutes = intervalMinutes;
+            console.log(`Availability check interval updated to ${scAvailabilityCheckIntervalMinutes} minutes.`);
+        } else {
+            console.error('Invalid value for availability check interval in site constants.');
+        }
+    } else {
+        console.log('Availability check interval not found in site constants. Using default value.');
+    }
+
+    const processAvailabilityElapseTime = await getProcessAvailabilityElapseTime(db);
+    console.log(`Process Availability Elapse Time: ${processAvailabilityElapseTime} seconds`);
+
+    const availabilityCheckIntervalInMillis = scAvailabilityCheckIntervalMinutes * 60 * 1000;
+    const remainingTimeInMillis = availabilityCheckIntervalInMillis - (processAvailabilityElapseTime * 1000);
+
+    const remainingMinutes = Math.floor(remainingTimeInMillis / (1000 * 60));
+    const remainingSeconds = Math.floor((remainingTimeInMillis % (1000 * 60)) / 1000);
+
+    let message = `\nSleeping... ${remainingMinutes} minutes`;
+    if (remainingSeconds > 0) {
+        message += ` and ${remainingSeconds} seconds`;
+    }
+    console.log(message);
+
+    await sleep(remainingTimeInMillis);
+}
+
+async function resetBookingAvailabilityProcess(db) {
+    // Clear database and reset availability
+    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
+    await resetAvailabilityTable(db);
+}
+
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }

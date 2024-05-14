@@ -72,15 +72,13 @@ async function launch() {
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
 
-        const scAvailabilityCheckIntervalMinutesConstant = await getSiteConstant(db, 'AvailabilityCheckIntervalMinutes');
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
         const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
-        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
-        let scAvailabilityCheckIntervalMinutes = 5;
+        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate')
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
         let scDesiredDatesArray = null;
@@ -88,19 +86,6 @@ async function launch() {
         let scBookedDepartureDate = null;
         let scAvailableArrivalDate = null;
         let scAvailableDepartureDate = null;
-
-        if (scAvailabilityCheckIntervalMinutesConstant !== null && scAvailabilityCheckIntervalMinutesConstant !== undefined) {
-            const intervalMinutes = parseInt(scAvailabilityCheckIntervalMinutesConstant.value, 10);
-
-            if (!isNaN(intervalMinutes)) {
-                scAvailabilityCheckIntervalMinutes = intervalMinutes;
-                console.log(`Availability check interval updated to ${scAvailabilityCheckIntervalMinutes} minutes.`);
-            } else {
-                console.error('Invalid value for availability check interval in site constants.');
-            }
-        } else {
-            console.log('Availability check interval not found in site constants. Using default value.');
-        }
 
         // Check if constants were retrieved successfully and if their values are not null or empty
         if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
@@ -179,11 +164,9 @@ async function launch() {
 
             console.log('Goto Step 2');
 
-            console.log('Load processAvailabilityTable');
-            const { availableDates, elapseTime } = await processAvailabilityTable(db);
-
+            console.log('Load getOnlyAvailableSiteRecords');
+            const { availableDates, elapseTime } = await getOnlyAvailableSiteRecords(db)
             console.log('All Available Dates:', availableDates);
-            console.log(`Elapsed Time: ${elapseTime} seconds`);
 
             // Call the sendMessage function with the required parameters
             pushSiteAvailabilityMessage(composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
@@ -195,14 +178,14 @@ async function launch() {
             if (scBookingPreferenceConstant && scMinimumConsecutiveDaysConstant) {
                 let minimumConsecutiveDays = scMinimumConsecutiveDaysConstant ? parseInt(scMinimumConsecutiveDaysConstant.value) : 3;
                 let bookingPreference = scBookingPreferenceConstant.value.toLowerCase();
-                
+
                 // Set the minimumConsecutiveDays to 1 and bookingPreference if we are using a bookingPreference of auto with a desired dates array
                 if (scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null &&
                     scBookingPreferenceConstant && scBookingPreferenceConstant.value === 'auto') {
                     bookingPreference = 'datearray';
                     minimumConsecutiveDays = 1;
                 }
-                
+
                 const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookedArrivalConstant.value, scBookedDepartureConstant.value, bookingPreference, minimumConsecutiveDays);
                 if (availableArrivalDate && availableDepartureDate) {
                     console.log("\nAvailable Arrival Date:", availableArrivalDate);
@@ -216,18 +199,10 @@ async function launch() {
                 }
 
                 //sleep, clear database and try again
-                const fiveMinutesInMillis = scAvailabilityCheckIntervalMinutes * 60 * 1000;
-                const remainingTimeInMillis = fiveMinutesInMillis - (elapseTime * 1000);
+                await availabilityCheckIntervalSleep(db);
+                await resetBookingAvailabilityProcess(db);
+                launch();
 
-                const remainingMinutes = Math.floor(remainingTimeInMillis / (1000 * 60));
-                const remainingSeconds = Math.floor((remainingTimeInMillis % (1000 * 60)) / 1000);
-
-                let message = `\nSleeping... ${remainingMinutes} minutes`;
-                if (remainingSeconds > 0) {
-                    message += ` and ${remainingSeconds} seconds`;
-                }
-                console.log(message);
-                resetBookingAvailabilityProcess(db, remainingTimeInMillis)
             } else {
                 console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
             }
@@ -290,51 +265,6 @@ async function getNextAvailabilityDate(db) {
         };
     });
 }
-
-
-async function processAvailabilityTable(db) {
-    console.log('Hello from processAvailabilityTable()');
-
-    const transaction = db.transaction(['Availability'], 'readonly');
-    const objectStore = transaction.objectStore('Availability');
-
-    const availableDates = [];
-    let oldestCheckedTime = null;
-    let latestCheckedTime = null;
-
-    return new Promise((resolve, reject) => {
-        const request = objectStore.openCursor();
-
-        request.onsuccess = function (event) {
-            const cursor = event.target.result;
-
-            if (cursor) {
-                if (cursor.value.Available === true) {
-                    availableDates.push(cursor.value.ArrivalDate);
-                }
-                //calculate elaspe time
-                const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null;
-                if (checkedTime !== null) {
-                    oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
-                    latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
-                }
-
-                cursor.continue();
-            } else {
-                let elapseTime = 0;
-                if (oldestCheckedTime !== null && latestCheckedTime !== null) {
-                    elapseTime = Math.floor((latestCheckedTime - oldestCheckedTime) / 1000);
-                }
-                resolve({ availableDates, elapseTime });
-            }
-        };
-
-        request.onerror = function (event) {
-            reject(event.target.error);
-        };
-    });
-}
-
 
 async function AvailableBooking(db, availableDates, arrivalDate, departureDate, bookedArrivalDate, bookedDepartureDate, bookingPreference, minimumConsecutiveDays) {
     let availableArrivalDate = null;
@@ -663,21 +593,6 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         await sleep(30000);
         redirectLoginPage();
     }
-}
-
-
-
-
-
-async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
-    // Clear database and reset availability
-    await sleep(sleepMilliseconds);
-
-    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
-    await resetAvailabilityTable(db);
-
-    launch();
 }
 
 async function redirectLoginPage() {

@@ -39,7 +39,6 @@ function loadScript(src) {
 }
 
 
-
 async function launch() {
     try {
         console.log('Hello from Thousand Trails Booking Enter Payments');

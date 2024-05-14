@@ -130,12 +130,12 @@ async function launch() {
             //check if the book campsite button is available and click it
             console.log('\n');
             getTimestamp();
-            window.console.log('\nsearching page for the "Select Site" button');
+            window.console.log('\nSearching page for the "Select Site" button');
             const isCampsiteAvailableResult = isCampsiteAvailable(true);
             if (isCampsiteAvailableResult) {
                 clickCount = clickCount + 1;
                 console.log('\nclicked the "Select Site" button ' + clickCount + ' times');
-                
+
                 // Calculate the number of nights
                 var oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
                 var dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
@@ -150,10 +150,10 @@ async function launch() {
                 }
 
                 // Call the sendPushMessage function with the required parameters
-                pushBookSiteMessage(composeMessageToSend('step3', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
+                pushBookSiteMessage(composeMessageToSend('step3', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
                     scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, null, reservationError));
 
-                    
+
                 if (reservationError == "Unable to process your request.") {
                     console.log("Sleeping...1 minute");
                     await sleep(59000);
@@ -185,10 +185,10 @@ async function launch() {
             } else {
                 console.log('\n"Select Site" button was not found on the page; reset and try again.');
                 //sleep, clear database and try again
-                console.log("\nSleeping...5 minutes");
-                resetBookingAvailabilityProcess(db, 300000)
+                await availabilityCheckIntervalSleep(db);
+                await resetBookingAvailabilityProcess(db);
+                launch();
             }
-
 
         } else {
             //Gather Available Dates
@@ -243,7 +243,6 @@ async function launch() {
         window.location.reload();
     }
 }
-
 
 
 async function getSiteConstants(db) {
@@ -363,21 +362,6 @@ async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTi
     });
 }
 
-
-async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
-    // Clear database and reset availability
-    await sleep(sleepMilliseconds);
-
-    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
-    await resetAvailabilityTable(db);
-
-    launch();
-}
-
-
 function isCampsiteAvailable(clickButton = false) {
     // Find all elements with class "site-title desktop"
     const siteTitles = document.querySelectorAll('.site-title.desktop');
@@ -451,12 +435,12 @@ function PlayAlert() {
     // Check if the element exists and log its status
     if (playButton) {
         console.log('playButton element found:', playButton);
-        
+
         // Create an Audio object for the alert sound
         var alertSound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
 
         // Add a click event listener to the playButton element
-        playButton.addEventListener('click', function() {
+        playButton.addEventListener('click', function () {
             try {
                 // Attempt to play the alert sound
                 alertSound.play();

@@ -415,6 +415,56 @@ async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate)
     }
 }
 
+async function getProcessAvailabilityElapseTime(db) {
+    console.log('Hello from getProcessAvailabilityElapseTime()');
+    const { availableDates, elapseTime } = await getOnlyAvailableSiteRecords(db);
+    console.log(`Elapsed Time: ${elapseTime} seconds`);
+    return elapseTime;
+}
+
+async function getOnlyAvailableSiteRecords(db) {
+    console.log('Hello from getOnlyAvailableSiteRecords()');
+
+    const transaction = db.transaction(['Availability'], 'readonly');
+    const objectStore = transaction.objectStore('Availability');
+
+    const availableDates = [];
+    let oldestCheckedTime = null;
+    let latestCheckedTime = null;
+
+    return new Promise((resolve, reject) => {
+        const request = objectStore.openCursor();
+
+        request.onsuccess = function (event) {
+            const cursor = event.target.result;
+
+            if (cursor) {
+                if (cursor.value.Available === true) {
+                    availableDates.push(cursor.value.ArrivalDate);
+                }
+                //calculate elaspe time
+                const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null;
+                if (checkedTime !== null) {
+                    oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
+                    latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
+                }
+
+                cursor.continue();
+            } else {
+                let elapseTime = 0;
+                if (oldestCheckedTime !== null && latestCheckedTime !== null) {
+                    elapseTime = Math.floor((latestCheckedTime - oldestCheckedTime) / 1000);
+                }
+                resolve({ availableDates, elapseTime });
+            }
+        };
+
+        request.onerror = function (event) {
+            reject(event.target.error);
+        };
+    });
+}
+
 
 // Retrieve all entries from the SiteConstant table and log them to the console
 async function logSiteConstants(db) {

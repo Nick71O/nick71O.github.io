@@ -171,7 +171,8 @@ async function launch() {
 
         //clear database, sleep and start looking for the next booking
         console.log("\nSleeping...4 minutes");
-        await resetBookingAvailabilityProcess(db, 240000);
+        await sleep(240000);
+        await resetBookingAvailabilityProcess(db);
 
         //you do need to change the type of searching...
         redirectBookingPage();
@@ -204,15 +205,6 @@ function combineBookingDates(existingArrivalDate, existingDepartureDate, newArri
     } else {
         return null; // Dates cannot be combined without gaps
     }
-}
-
-async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
-    // Clear database and reset availability
-    await sleep(sleepMilliseconds);
-
-    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
-    await resetAvailabilityTable(db);
 }
 
 async function redirectBookingPage() {
