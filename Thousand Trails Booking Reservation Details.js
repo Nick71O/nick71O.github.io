@@ -180,11 +180,14 @@ async function launch() {
                 let bookingPreference = scBookingPreferenceConstant.value.toLowerCase();
 
                 // Set the minimumConsecutiveDays to 1 and bookingPreference if we are using a bookingPreference of auto with a desired dates array
+                /*
+                //forced auto to datearray in the member login page
                 if (scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null &&
                     scBookingPreferenceConstant && scBookingPreferenceConstant.value === 'auto') {
                     bookingPreference = 'datearray';
                     minimumConsecutiveDays = 1;
                 }
+                */
 
                 const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookedArrivalConstant.value, scBookedDepartureConstant.value, bookingPreference, minimumConsecutiveDays);
                 if (availableArrivalDate && availableDepartureDate) {
@@ -306,9 +309,15 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             console.log('Departure Date:', departureDate);
             */
 
-            const availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
+            let availableDatesInRange = [];
+            if (bookingPreference.toLowerCase() === 'datearray') {
+                availableDatesInRange = getDatesInRange(availableDates, null, null);
+            } else {
+                availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
+            }
             console.log('Available Dates In Range:', availableDatesInRange);
-
+            
+            
             const dates = availableDatesInRange.map(dateStr => new Date(dateStr));
 
             let currentRange = [];
@@ -497,16 +506,21 @@ function getDates(start, end) {
 
 function getDatesInRange(array, start, end) {
     var inRange = [];
-    //console.log('Start Date:', start);
-    //console.log('End Date:', end);
-    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
-        var dateString = dt.toLocaleDateString('en-us', formatDateOptions);
-        //console.log('Processing Date:', dateString);
-        if (array.includes(dateString)) {
-            inRange.push(new Date(dt));
+    // console.log('Start Date:', start);
+    // console.log('End Date:', end);
+    if (!start && !end) {
+        // If both start and end are null, add all items in the array to inRange
+        inRange = array.map(dateString => new Date(dateString));
+    } else {
+        for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+            var dateString = dt.toLocaleDateString('en-us', formatDateOptions);
+            // console.log('Processing Date:', dateString);
+            if (array.includes(dateString)) {
+                inRange.push(dt);
+            }
         }
     }
-    //console.log('Dates in Range:', inRange);
+    // console.log('Dates in Range:', inRange);
     return inRange;
 }
 
