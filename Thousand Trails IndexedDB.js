@@ -379,20 +379,15 @@ async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate)
         const arrivalDateObj = new Date(arrivalDate);
         const departureDateObj = new Date(departureDate);
 
-        // Query for records where ArrivalDate is greater than or equal to arrivalDate and less than departureDate
-        const range = IDBKeyRange.bound(
-            arrivalDateObj.toLocaleDateString('en-us', formatDateOptions),
-            departureDateObj.toLocaleDateString('en-us', formatDateOptions),
-            true,  // Include lower bound
-            false  // Exclude upper bound
-        );
-
-        const request = availabilityStore.index('ArrivalDate').openCursor(range);
+        const request = availabilityStore.index('ArrivalDate').openCursor();
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
             if (cursor) {
-                cursor.delete(); // Delete the record
+                const currentDate = new Date(cursor.value.ArrivalDate);
+                if (currentDate >= arrivalDateObj && currentDate < departureDateObj) {
+                    cursor.delete(); // Delete the record
+                }
                 cursor.continue(); // Move to the next record
             } else {
                 console.log('Booked dates removed from Availability.');

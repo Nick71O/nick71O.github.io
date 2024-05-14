@@ -118,24 +118,13 @@ async function launch() {
 
         const bookingPreference = scBookingPreferenceConstant.value.toLowerCase();
         console.log('Booking Preference:', bookingPreference);
-        if ((scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null) && (bookingPreference === 'auto' || bookingPreference === 'datearray')) {
-            let desiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
-            console.log('Original Desired Dates Array:', desiredDatesArray);
-        
-            // Filter out dates within the range [scAvailableArrivalDate, scAvailableDepartureDate)
-            desiredDatesArray = desiredDatesArray.filter(date => {
-                const currentDate = new Date(date);
-                return !(
-                    currentDate >= scAvailableArrivalDate && // Include the arrival date
-                    currentDate < scAvailableDepartureDate   // Exclude the departure date
-                );
-            });
-        
-            console.log('Updated Desired Dates Array:', desiredDatesArray);
-            await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(desiredDatesArray));
+        if (scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null && bookingPreference === 'datearray') {
+
+            // Remove the booked dates from the desired dates array so they are not booked a 2nd time
+            await removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
 
             // Remove the booked dates from the availability table so they are not booked a 2nd time
-            removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
+            await removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
 
         } else {
             const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
@@ -204,6 +193,39 @@ function combineBookingDates(existingArrivalDate, existingDepartureDate, newArri
         return { bookedArrivalDate: existingArrival, bookedDepartureDate: newDeparture };
     } else {
         return null; // Dates cannot be combined without gaps
+    }
+}
+
+async function removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate) {
+    try {
+        if (!scDesiredDatesArrayConstant || !scDesiredDatesArrayConstant.value) {
+            console.error('Desired dates array constant not found or empty.');
+            return;
+        }
+
+        const desiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
+
+        if (!Array.isArray(desiredDatesArray)) {
+            console.error('Desired dates array is not an array.');
+            return;
+        }
+
+        const arrivalDate = new Date(bookedArrivalDate);
+        const departureDate = new Date(bookedDepartureDate);
+
+        console.log('Original Desired Dates Array:', desiredDatesArray);
+
+        const updatedDatesArray = desiredDatesArray.filter(dateString => {
+            const currentDate = new Date(dateString);
+            return !(currentDate >= arrivalDate && currentDate < departureDate);
+        });
+
+        console.log('Updated Desired Dates Array:', updatedDatesArray);
+
+        // Update the site constant with the filtered array
+        await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(updatedDatesArray));
+    } catch (error) {
+        console.error('Error removing booked dates from desired dates array:', error);
     }
 }
 
