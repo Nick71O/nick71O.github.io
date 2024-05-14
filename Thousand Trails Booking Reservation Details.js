@@ -186,7 +186,7 @@ async function launch() {
             console.log(`Elapsed Time: ${elapseTime} seconds`);
 
             // Call the sendMessage function with the required parameters
-            pushSiteAvailabilityMessage(composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
+            pushSiteAvailabilityMessage(composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
                 scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, availableDates, null));
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
@@ -331,15 +331,19 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
     let availableDepartureDate = null;
 
     //bookingPreference switch: auto | consecutive | leadingtrailing | datearray
-    if (bookingPreference.toLowerCase() === "auto" && bookedArrivalDate && bookedDepartureDate) {
-        bookingPreference = "leadingtrailing";
-    } else {
-        bookingPreference = "consecutive";
+    if (bookingPreference.toLowerCase() === "auto") {
+        if (bookedArrivalDate && bookedDepartureDate) {
+            bookingPreference = "leadingtrailing";
+        } else {
+            bookingPreference = "consecutive";
+        }
     }
 
     switch (bookingPreference.toLowerCase()) {
         case "datearray":
             minimumConsecutiveDays = 1;
+            console.log(`AvailableBooking - ${bookingPreference}`);
+            console.log('Minimum Consecutive Days: ', minimumConsecutiveDays);
         case "consecutive":
             console.log(`AvailableBooking - ${bookingPreference}`);
             console.log('Minimum Consecutive Days: ', minimumConsecutiveDays);
@@ -359,7 +363,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             ];
             arrivalDate = '05/04/2024';
             departureDate = '06/18/2024';
-
+    
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
@@ -443,10 +447,10 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 '06/11/2024', '06/17/2024', '06/20/2024', '06/25/2024', '06/26/2024', '07/02/2024',
                 '07/09/2024'
             ];
-
+    
             arrivalDate = '05/01/2024';
             departureDate = '07/04/2024';
-
+    
             console.log('Available Dates:', availableDates);
             console.log('Arrival Date:', arrivalDate);
             console.log('Departure Date:', departureDate);
