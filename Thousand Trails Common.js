@@ -179,6 +179,13 @@ function concatenateAvailableDatesToString(datesArray) {
     return concatenatedString;
 }
 
+async function resetBookingAvailabilityProcess(db) {
+    // Clear database and reset availability
+    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
+    await resetAvailabilityTable(db);
+}
+
 async function availabilityCheckIntervalSleep(db) {
     const scAvailabilityCheckIntervalMinutesConstant = await getSiteConstant(db, 'AvailabilityCheckIntervalMinutes');
     let scAvailabilityCheckIntervalMinutes = 5;
@@ -188,7 +195,7 @@ async function availabilityCheckIntervalSleep(db) {
 
         if (!isNaN(intervalMinutes)) {
             scAvailabilityCheckIntervalMinutes = intervalMinutes;
-            console.log(`Availability check interval updated to ${scAvailabilityCheckIntervalMinutes} minutes.`);
+            //console.log(`Availability check interval updated to ${scAvailabilityCheckIntervalMinutes} minutes.`);
         } else {
             console.error('Invalid value for availability check interval in site constants.');
         }
@@ -213,14 +220,6 @@ async function availabilityCheckIntervalSleep(db) {
 
     await sleep(remainingTimeInMillis);
 }
-
-async function resetBookingAvailabilityProcess(db) {
-    // Clear database and reset availability
-    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
-    await resetAvailabilityTable(db);
-}
-
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

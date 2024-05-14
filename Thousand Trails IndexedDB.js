@@ -416,15 +416,14 @@ async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate)
 }
 
 async function getProcessAvailabilityElapseTime(db) {
-    console.log('Hello from getProcessAvailabilityElapseTime()');
+    //console.log('Hello from getProcessAvailabilityElapseTime()');
     const { availableDates, elapseTime } = await getOnlyAvailableSiteRecords(db);
-    console.log(`Elapsed Time: ${elapseTime} seconds`);
+    //console.log(`Elapsed Time: ${elapseTime} seconds`);
     return elapseTime;
 }
 
 async function getOnlyAvailableSiteRecords(db) {
-    console.log('Hello from getOnlyAvailableSiteRecords()');
-
+    //console.log('Hello from getOnlyAvailableSiteRecords()');
     const transaction = db.transaction(['Availability'], 'readonly');
     const objectStore = transaction.objectStore('Availability');
 
