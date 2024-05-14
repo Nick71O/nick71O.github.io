@@ -197,6 +197,8 @@ async function launch() {
     if ((desiredDatesArrayConstant && desiredDatesArrayConstant.value !== null) && (bookingPreference === 'auto' || bookingPreference === 'datearray')) {
       const desiredDatesArray = JSON.parse(desiredDatesArrayConstant.value);
       console.log('Desired Dates Array: ' + desiredDatesArray);
+      //override MinimumConsecutiveDays because your using a datearray
+      await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', 1);
       await insertAvailabilityRecords(db, desiredDatesArray);
     }
     else if (desiredArrivalConstant && desiredDepartureConstant) {
