@@ -2,13 +2,27 @@
 var globalVariables = {
     memberNumber: "",
     PIN: "",
-    //bookingPreference switch: consecutive | leadingtrailing
-    bookingPreference: "consecutive",
+    //bookingPreference switch: auto | consecutive | leadingtrailing | datearray
+    bookingPreference: "datearray",
     minimumConsecutiveDays: 3,
-    bookedArrivalDate: null,   //"06/28/2024",
-    bookedDepartureDate: null, //"07/01/2024",
+    availabilityCheckIntervalMinutes: 5,
+    bookedArrivalDate: "06/27/2024", //null
+    bookedDepartureDate: "07/01/2024", //null
     desiredArrivalDate: "06/27/2024",  
     desiredDepartureDate: "07/15/2024",
+    desiredDatesArray: [
+        "08/02/2024",
+        "08/03/2024",
+        "08/04/2024",
+        "08/09/2024",
+        "08/13/2024",
+        "08/14/2024",
+        "08/15/2024",
+        "08/16/2024"
+    ],
+    pushoverUserKey: "",
+    pushoverApiTokenAvailability: "",
+    pushoverApiTokenReservation: ""
 };
 
 // Call initializeGlobalVariables function in "Thousand Trails Member Login.js"

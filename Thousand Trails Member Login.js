@@ -8,10 +8,15 @@ function initializeGlobalVariables(globalVariables) {
   console.log("PIN: " + globalVariables.PIN);
   console.log('bookingPreference: "' + globalVariables.bookingPreference + '"');
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
+  console.log("availabilityCheckIntervalMinutes: " + globalVariables.availabilityCheckIntervalMinutes)
   console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
   console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
+  console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
+  console.log("pushoverUserKey: " + globalVariables.pushoverUserKey);
+  console.log("pushoverApiTokenAvailability: " + globalVariables.pushoverApiTokenAvailability);
+  console.log("pushoverApiTokenReservation: " + globalVariables.pushoverApiTokenReservation)
 }
 
 // Call initializeGlobalVariables function in "Thousand Trails Member Login (Browser).js"
@@ -24,42 +29,42 @@ if (typeof globalVariables !== 'undefined') {
 
 // dynamically load additional scripts
 loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
-    .then(() => {
-        // IndexedDB script has been successfully loaded
-        return loadScript('https://nick71o.github.io/Thousand%20Trails%20Common.js');
-    })
-    .then(() => {
-        // Common script has been successfully loaded
-        return loadScript('https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
-    })
-    .then(() => {
-        // Now you can safely use functions or variables from the loaded scripts here
-        launch();
-    })
-    .catch(error => {
-        // Handle errors if any script fails to load
-        console.error('Error loading scripts:', error);
-    });
+  .then(() => {
+    // IndexedDB script has been successfully loaded
+    return loadScript('https://nick71o.github.io/Thousand%20Trails%20Common.js');
+  })
+  .then(() => {
+    // Common script has been successfully loaded
+    return loadScript('https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js');
+  })
+  .then(() => {
+    // Now you can safely use functions or variables from the loaded scripts here
+    launch();
+  })
+  .catch(error => {
+    // Handle errors if any script fails to load
+    console.error('Error loading scripts:', error);
+  });
 
 
 function loadScript(src) {
-    return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.defer = true;
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
 
-        script.onload = () => {
-            console.log(`Script loaded: ${src}`);
-            resolve();
-        };
+    script.onload = () => {
+      console.log(`Script loaded: ${src}`);
+      resolve();
+    };
 
-        script.onerror = () => {
-            console.error(`Error loading script: ${src}`);
-            reject(new Error(`Error loading script: ${src}`));
-        };
+    script.onerror = () => {
+      console.error(`Error loading script: ${src}`);
+      reject(new Error(`Error loading script: ${src}`));
+    };
 
-        document.head.appendChild(script);
-    });
+    document.head.appendChild(script);
+  });
 }
 
 
@@ -166,22 +171,40 @@ async function launch() {
     await deleteAllSiteConstants(db);
     await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
+    await addOrUpdateSiteConstant(db, 'AvailabilityCheckIntervalMinutes', globalVariables.availabilityCheckIntervalMinutes);
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
     await addOrUpdateSiteConstant(db, 'BookedDepartureDate', globalVariables.bookedDepartureDate);
     await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);
     await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', globalVariables.desiredDepartureDate);
+    //await addOrUpdateSiteConstant(db, 'DesiredDatesArray', globalVariables.desiredDatesArray)
+    await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(globalVariables.desiredDatesArray));
+    //console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
+    await addOrUpdateSiteConstant(db, 'PushoverUserKey', globalVariables.pushoverUserKey);
+    await addOrUpdateSiteConstant(db, 'PushoverApiTokenAvailability', globalVariables.pushoverApiTokenAvailability);
+    await addOrUpdateSiteConstant(db, 'PushoverApiTokenReservation', globalVariables.pushoverApiTokenReservation);
 
     await deleteAllAvailabilityRecords(db);
+
     const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
     const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-    if (desiredArrivalConstant && desiredDepartureConstant) {
+    const desiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+    const bookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+
+    const bookingPreference = bookingPreferenceConstant.value.toLowerCase();
+    console.log('Booking Preference:', bookingPreference);
+    if ((desiredDatesArrayConstant && desiredDatesArrayConstant.value !== null) && (bookingPreference === 'auto' || bookingPreference === 'datearray')) {
+      const desiredDatesArray = JSON.parse(desiredDatesArrayConstant.value);
+      console.log('Desired Dates Array: ' + desiredDatesArray);
+      await insertAvailabilityRecords(db, desiredDatesArray);
+    }
+    else if (desiredArrivalConstant && desiredDepartureConstant) {
       console.log('Desired Arrival Date:', desiredArrivalConstant.value);
       console.log('Desired Departure Date:', desiredDepartureConstant.value)
       await insertAvailabilityRecords(db, desiredArrivalConstant.value, desiredDepartureConstant.value);
     } else {
-      console.error('Desired arrival or departure constant not found.');
+      console.error('Desired arrival\departure or dates array constant not found.');
     }
 
     await logSiteConstants(db);

@@ -290,7 +290,6 @@ async function resetAvailabilityTable(db) {
     }
 }
 
-
 async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate) {
     try {
         const transaction = db.transaction('Availability', 'readwrite');
@@ -337,6 +336,41 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
         console.error('Error inserting availability records:', error);
     }
 }
+
+async function insertAvailabilityRecords(db, desiredDatesArray) {
+    try {
+        const transaction = db.transaction('Availability', 'readwrite');
+        const availabilityStore = transaction.objectStore('Availability');
+
+        for (const desiredDate of desiredDatesArray) {
+            const currentDate = new Date(desiredDate);
+            const nextDay = new Date(currentDate);
+            nextDay.setDate(nextDay.getDate() + 1);
+
+            const newRecord = {
+                ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
+                DepartureDate: nextDay.toLocaleDateString('en-us', formatDateOptions),
+                Available: false,
+                Checked: null
+            };
+
+            availabilityStore.add(newRecord);
+        }
+
+        console.log('Availability records inserted successfully.');
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            console.error('Transaction error:', event.target.error);
+        };
+    } catch (error) {
+        console.error('Error inserting availability records:', error);
+    }
+}
+
 
 
 // Retrieve all entries from the SiteConstant table and log them to the console

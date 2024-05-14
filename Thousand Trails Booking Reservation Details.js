@@ -38,7 +38,6 @@ function loadScript(src) {
     });
 }
 
-const sleepInterval = 5;
 var clickCount = 0;
 
 // IndexedDB library functions
@@ -73,18 +72,35 @@ async function launch() {
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
 
+        const scAvailabilityCheckIntervalMinutes = await getSiteConstant(db, 'AvailabilityCheckIntervalMinutes');
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+        const scDesiredDatesArray2 = await getSiteConstant(db, 'DesiredDatesArray');
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
+        let availabilityCheckInterval = 5;
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
+        let scDesiredDatesArray = null;
         let scBookedArrivalDate = null;
         let scBookedDepartureDate = null;
         let scAvailableArrivalDate = null;
         let scAvailableDepartureDate = null;
+
+        if (scAvailabilityCheckIntervalMinutes !== null && scAvailabilityCheckIntervalMinutes !== undefined) {
+            const intervalMinutes = parseInt(scAvailabilityCheckIntervalMinutes.value, 10);
+
+            if (!isNaN(intervalMinutes)) {
+                availabilityCheckInterval = intervalMinutes;
+                console.log(`Availability check interval updated to ${availabilityCheckInterval} minutes.`);
+            } else {
+                console.error('Invalid value for availability check interval in site constants.');
+            }
+        } else {
+            console.log('Availability check interval not found in site constants. Using default value.');
+        }
 
         // Check if constants were retrieved successfully and if their values are not null or empty
         if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
@@ -102,6 +118,13 @@ async function launch() {
             console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
         } else {
             console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
+        }
+
+        if (scDesiredDatesArray2) {
+            scDesiredDatesArray = JSON.parse(scDesiredDatesArray2.value);
+            console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray);
+        } else {
+            console.log('SiteConstant Desired Dates Array constant is null, empty, or not found.');
         }
 
         if (scBookedArrivalConstant && scBookedDepartureConstant &&
@@ -183,7 +206,7 @@ async function launch() {
                 }
 
                 //sleep, clear database and try again
-                const fiveMinutesInMillis = sleepInterval * 60 * 1000;
+                const fiveMinutesInMillis = availabilityCheckInterval * 60 * 1000;
                 const remainingTimeInMillis = fiveMinutesInMillis - (elapseTime * 1000);
 
                 const remainingMinutes = Math.floor(remainingTimeInMillis / (1000 * 60));
@@ -307,13 +330,22 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
     let availableArrivalDate = null;
     let availableDepartureDate = null;
 
-    //bookingPreference switch: consecutive | leadingtrailing
+    //bookingPreference switch: auto | consecutive | leadingtrailing | datearray
+    if (bookingPreference.toLowerCase() === "auto" && bookedArrivalDate && bookedDepartureDate) {
+        bookingPreference = "leadingtrailing";
+    } else {
+        bookingPreference = "consecutive";
+    }
+
     switch (bookingPreference.toLowerCase()) {
+        case "datearray":
+            minimumConsecutiveDays = 1;
         case "consecutive":
-            console.log('AvailableBooking - Consecutive');
-            console.log('Available Dates:', availableDates);
-            console.log('Arrival Date:', arrivalDate);
-            console.log('Departure Date:', departureDate);
+            console.log(`AvailableBooking - ${bookingPreference}`);
+            console.log('Minimum Consecutive Days: ', minimumConsecutiveDays);
+            console.log('Available Dates: ', availableDates);
+            console.log('Arrival Date: ', arrivalDate);
+            console.log('Departure Date: ', departureDate);
 
             /*
             availableDates = [
@@ -393,9 +425,10 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
         case "leadingtrailing":
             console.log('AvailableBooking - Leading\Trailing');
-            console.log('Available Dates:', availableDates);
-            console.log('Arrival Date:', arrivalDate);
-            console.log('Departure Date:', departureDate);
+            console.log('Minimum Consecutive Days: ', minimumConsecutiveDays);
+            console.log('Available Dates: ', availableDates);
+            console.log('Arrival Date: ', arrivalDate);
+            console.log('Departure Date: ', departureDate);
 
             //bookedArrivalDate = '05/04/2024';
             //bookedDepartureDate = '05/16/2024';
