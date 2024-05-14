@@ -61,7 +61,7 @@ async function pushBookSiteMessage(message) {
 
 // Function to push site booked message
 async function pushSiteBookedMessage(message) {
-    await sendPushMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, message, '', 0);
+    await sendPushMessage(userKey, apiTokenCampsiteHackr, pushoverUrl, message, '', 0);
 }
 
 // Function to send a message using Pushover API
