@@ -371,6 +371,49 @@ async function insertAvailabilityRecords(db, desiredDatesArray) {
     }
 }
 
+async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate) {
+    try {
+        const transaction = db.transaction('Availability', 'readwrite');
+        const availabilityStore = transaction.objectStore('Availability');
+
+        const arrivalDateObj = new Date(arrivalDate);
+        const departureDateObj = new Date(departureDate);
+
+        // Query for records where ArrivalDate is greater than or equal to arrivalDate and less than departureDate
+        const range = IDBKeyRange.bound(
+            arrivalDateObj.toLocaleDateString('en-us', formatDateOptions),
+            departureDateObj.toLocaleDateString('en-us', formatDateOptions),
+            true,  // Include lower bound
+            false  // Exclude upper bound
+        );
+
+        const request = availabilityStore.index('ArrivalDate').openCursor(range);
+
+        request.onsuccess = function (event) {
+            const cursor = event.target.result;
+            if (cursor) {
+                cursor.delete(); // Delete the record
+                cursor.continue(); // Move to the next record
+            } else {
+                console.log('Booked dates removed from Availability.');
+            }
+        };
+
+        request.onerror = function (event) {
+            console.error('Error removing booked dates from Availability:', event.target.error);
+        };
+
+        transaction.oncomplete = function () {
+            console.log('Transaction completed.');
+        };
+
+        transaction.onerror = function (event) {
+            console.error('Transaction error:', event.target.error);
+        };
+    } catch (error) {
+        console.error('Error removing booked dates from Availability:', error);
+    }
+}
 
 
 // Retrieve all entries from the SiteConstant table and log them to the console

@@ -49,6 +49,8 @@ async function launch() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+        const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+        const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
@@ -114,31 +116,56 @@ async function launch() {
             console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not a valid date.');
         }
 
-        const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
-        if (combinedBookingDates) {
-            scBookedArrivalDate = combinedBookingDates.bookedArrivalDate.toLocaleDateString('en-US', formatDateOptions);
-            scBookedDepartureDate = combinedBookingDates.bookedDepartureDate.toLocaleDateString('en-US', formatDateOptions);
-
-            // Calculate the number of nights
-            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-            const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
-            const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
-
-            console.log("Combined Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scBookedNumberOfNights);
+        const bookingPreference = scBookingPreferenceConstant.value.toLowerCase();
+        console.log('Booking Preference:', bookingPreference);
+        if ((scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null) && (bookingPreference === 'auto' || bookingPreference === 'datearray')) {
+            let desiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
+            console.log('Original Desired Dates Array:', desiredDatesArray);
         
-            //set the SiteConstant with the newly booked dates
-            await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scBookedArrivalDate);
-            await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scBookedDepartureDate);
+            // Filter out dates within the range [scAvailableArrivalDate, scAvailableDepartureDate)
+            desiredDatesArray = desiredDatesArray.filter(date => {
+                const currentDate = new Date(date);
+                return !(
+                    currentDate >= scAvailableArrivalDate && // Include the arrival date
+                    currentDate < scAvailableDepartureDate   // Exclude the departure date
+                );
+            });
+        
+            console.log('Updated Desired Dates Array:', desiredDatesArray);
+            await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(desiredDatesArray));
 
-            //bookingPreference switch: consecutive | leadingtrailing
-            await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
+            // Remove the booked dates from the availability table so they are not booked a 2nd time
+            removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
 
         } else {
-            console.log('Dates cannot be combined without gaps.');
+            const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
+            if (combinedBookingDates) {
+                scBookedArrivalDate = combinedBookingDates.bookedArrivalDate.toLocaleDateString('en-US', formatDateOptions);
+                scBookedDepartureDate = combinedBookingDates.bookedDepartureDate.toLocaleDateString('en-US', formatDateOptions);
+
+                // Calculate the number of nights
+                const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+                const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
+                const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
+
+                console.log("Combined Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scBookedNumberOfNights);
+
+                //set the SiteConstant with the newly booked dates
+                await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scBookedArrivalDate);
+                await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scBookedDepartureDate);
+
+                //bookingPreference switch: auto | consecutive | leadingtrailing | datearray
+                if (bookingPreference === 'consecutive') {
+                    await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
+                }
+
+            } else {
+                console.log('Dates cannot be combined without gaps.');
+            }
         }
 
         // Call the sendPushMessage function with the required parameters
-        pushSiteBookedMessage(composeMessageToSend('step4', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, 
+        pushSiteBookedMessage(composeMessageToSend('step4', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
             scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, null, null));
 
 
