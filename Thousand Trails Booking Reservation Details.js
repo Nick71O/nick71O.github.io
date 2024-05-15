@@ -169,7 +169,7 @@ async function launch() {
             console.log('All Available Dates:', availableDates);
 
             // Call the sendMessage function with the required parameters
-            pushSiteAvailabilityMessage(composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
+            pushSiteAvailabilityMessage(db, composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
                 scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, availableDates, null));
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
@@ -317,7 +317,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             }
             console.log('Available Dates In Range:', availableDatesInRange);
             
-            
+
             const dates = availableDatesInRange.map(dateStr => new Date(dateStr));
 
             let currentRange = [];

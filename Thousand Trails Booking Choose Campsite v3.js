@@ -150,7 +150,7 @@ async function launch() {
                 }
 
                 // Call the sendPushMessage function with the required parameters
-                pushBookSiteMessage(composeMessageToSend('step3', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
+                pushBookSiteMessage(db,composeMessageToSend('step3', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
                     scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, null, reservationError));
 
 

@@ -49,7 +49,7 @@ async function pushSiteAvailabilityMessage(db, message) {
 }
 
 // Function to push book site message
-async function pushBookSiteMessage(message) {
+async function pushBookSiteMessage(db, message) {
     const pushoverKeys = await getPushoverKeys(db);
     if (pushoverKeys) {
         const openSound = 'echo';
@@ -90,7 +90,7 @@ async function pushBookSiteMessage(message) {
 }
 
 // Function to push site booked message
-async function pushSiteBookedMessage(message) {
+async function pushSiteBookedMessage(db, message) {
     const pushoverKeys = await getPushoverKeys(db);
     if (pushoverKeys) {
         await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiTokenReservation, pushoverUrl, message, '', 0);
