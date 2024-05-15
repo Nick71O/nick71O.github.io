@@ -1,67 +1,100 @@
 //console.log('Hello From Thousand Trails Common.js');
 
 const callCenterHours = {
-    mondayToFriday: { open: 9, close: 20 }, // 9 AM to 8 PM
-    saturday: { open: 10, close: 14 }, // 10 AM to 2 PM
-    sunday: { open: 12, close: 14 }, // 12 PM to 2 PM
+    mondayToFriday: { open: 8, close: 20 }, // 8 AM to 8 PM EST
+    saturday: { open: 8, close: 20 }, // 8 AM to 8 PM EST
+    sunday: { open: 8, close: 20 }, // 8 AM to 8 PM EST
 };
 
 const baseURL = "https://members.thousandtrails.com"
 // Pushover API endpoint for sending messages
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
 
-// Pushover API credentials
-const userKey = 'uhd4fsc2u9vtgo2xmeud2m3b2afssc';
-const apiTokenCampsiteAvailability = 'ap4vd6fzg5gk6d8baewc5ph67qbsxn';
-const apiTokenCampsiteHackr = 'azjfxgydofw9k6dpm3zyebcz6of4qw';
 
+async function getPushoverKeys(db) {
+    // Pushover API credentials
+    const userKey = await getSiteConstant(db, 'PushoverUserKey');
+    const apiTokenAvailability = await getSiteConstant(db, 'PushoverApiTokenAvailability');
+    const apiTokenReservation = await getSiteConstant(db, 'PushoverApiTokenReservation');
+
+    if (!userKey || !userKey.value.trim()) {
+        console.error('Error: PushoverUserKey is null or blank.');
+    }
+    if (!apiTokenAvailability || !apiTokenAvailability.value.trim()) {
+        console.error('Error: PushoverApiTokenAvailability is null or blank.');
+    }
+    if (!apiTokenReservation || !apiTokenReservation.value.trim()) {
+        console.error('Error: PushoverApiTokenReservation is null or blank.');
+    }
+
+    if (userKey && userKey.value.trim() &&
+        apiTokenAvailability && apiTokenAvailability.value.trim() &&
+        apiTokenReservation && apiTokenReservation.value.trim()) {
+        return {
+            userKey: userKey.value.trim(),
+            apiTokenAvailability: apiTokenAvailability.value.trim(),
+            apiTokenReservation: apiTokenReservation.value.trim()
+        };
+    } else {
+        return null;
+    }
+}
 
 // Function to push site availability message
-async function pushSiteAvailabilityMessage(message) {
-    await sendPushMessage(userKey, apiTokenCampsiteAvailability, pushoverUrl, message, '', -1);
+async function pushSiteAvailabilityMessage(db, message) {
+    const pushoverKeys = await getPushoverKeys(db);
+    if (pushoverKeys) {
+        await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiTokenAvailability, pushoverUrl, message, '', -1);
+    }
 }
 
 // Function to push book site message
 async function pushBookSiteMessage(message) {
-    const openSound = 'echo';
-    const openPriority = 1;
-    const closedSound = 'none';
-    const closedPriority = 0;
-    
-    const now = new Date();
-    const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    const hourOfDay = now.getHours();
+    const pushoverKeys = await getPushoverKeys(db);
+    if (pushoverKeys) {
+        const openSound = 'echo';
+        const openPriority = 1;
+        const closedSound = 'none';
+        const closedPriority = 0;
 
-    let priority = 0;
-    let sound = '';
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+        const hourOfDay = now.getHours();
 
-    // Set priority and sound based on call center hours
-    if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
-        if (hourOfDay >= callCenterHours.mondayToFriday.open && hourOfDay < callCenterHours.mondayToFriday.close) {
-            sound = openSound;
-            priority = openPriority;
+        let priority = 0;
+        let sound = '';
+
+        // Set priority and sound based on call center hours
+        if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
+            if (hourOfDay >= callCenterHours.mondayToFriday.open && hourOfDay < callCenterHours.mondayToFriday.close) {
+                sound = openSound;
+                priority = openPriority;
+            }
+        } else if (dayOfWeek === 6) { // Saturday
+            if (hourOfDay >= callCenterHours.saturday.open && hourOfDay < callCenterHours.saturday.close) {
+                sound = openSound;
+                priority = openPriority;
+            }
+        } else if (dayOfWeek === 0) { // Sunday
+            if (hourOfDay >= callCenterHours.sunday.open && hourOfDay < callCenterHours.sunday.close) {
+                sound = openSound;
+                priority = openPriority;
+            }
+        } else { // Outside of call center hours
+            sound = closedSound;
+            priority = closedPriority;
         }
-    } else if (dayOfWeek === 6) { // Saturday
-        if (hourOfDay >= callCenterHours.saturday.open && hourOfDay < callCenterHours.saturday.close) {
-            sound = openSound;
-            priority = openPriority;
-        }
-    } else if (dayOfWeek === 0) { // Sunday
-        if (hourOfDay >= callCenterHours.sunday.open && hourOfDay < callCenterHours.sunday.close) {
-            sound = openSound;
-            priority = openPriority;
-        }
-    } else { // Outside of call center hours
-        sound = closedSound;
-        priority = closedPriority;
+
+        await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiTokenReservation, pushoverUrl, message, sound, priority);
     }
-
-    await sendPushMessage(userKey, apiTokenCampsiteHackr, pushoverUrl, message, sound, priority);
 }
 
 // Function to push site booked message
 async function pushSiteBookedMessage(message) {
-    await sendPushMessage(userKey, apiTokenCampsiteHackr, pushoverUrl, message, '', 0);
+    const pushoverKeys = await getPushoverKeys(db);
+    if (pushoverKeys) {
+        await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiTokenReservation, pushoverUrl, message, '', 0);
+    }
 }
 
 // Function to send a message using Pushover API
@@ -117,7 +150,7 @@ function composeMessageToSend(
             messageBuilder.push('Campsite is booked!\n');
             break;
         default:
-            //messageBuilder.push('Default message for unknown step');
+        //messageBuilder.push('Default message for unknown step');
     }
 
     // Append availabile dates to book
@@ -139,7 +172,7 @@ function composeMessageToSend(
         const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
         const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
         const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
-    
+
         messageBuilder.push(`\nDesired Dates to Book:\nArrival: ${scDesiredArrivalDate}    Departure: ${scDesiredDepartureDate}    Number of Nights: ${scDesiredNumberOfNights}`);
     }
 
@@ -152,7 +185,7 @@ function composeMessageToSend(
         messageBuilder.push(`\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
     }
 
-    messageBuilder.push('\nTo book, call: 888-551-9102');
+    messageBuilder.push('\nThousand Trails: (888) 551-9102');
 
     // Append reservation error if defined
     if (reservationError !== null && reservationError !== undefined) {
