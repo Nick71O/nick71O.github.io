@@ -1,9 +1,9 @@
 //console.log('Hello From Thousand Trails Common.js');
 
 const callCenterHours = {
-    mondayToFriday: { open: 8, close: 20 }, // 8 AM to 8 PM EST
-    saturday: { open: 8, close: 20 }, // 8 AM to 8 PM EST
-    sunday: { open: 8, close: 20 }, // 8 AM to 8 PM EST
+    mondayToFriday: { open: { hours: 8, minutes: 30 }, close: { hours: 20, minutes: 30 } }, // 8:30 AM to 8:30 PM EST
+    saturday: { open: { hours: 9, minutes: 30 }, close: { hours: 18, minutes: 0 } }, // 9:30 AM to 6 PM EST
+    sunday: { open: { hours: 9, minutes: 30 }, close: { hours: 18, minutes: 0 } }, // 9:30 AM to 6 PM EST
 };
 
 const baseURL = "https://members.thousandtrails.com"
@@ -60,23 +60,36 @@ async function pushBookSiteMessage(db, message) {
         const now = new Date();
         const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
         const hourOfDay = now.getHours();
+        const minuteOfHour = now.getMinutes();
 
         let priority = 0;
         let sound = '';
 
         // Set priority and sound based on call center hours
         if (dayOfWeek >= 1 && dayOfWeek <= 5) { // Monday to Friday
-            if (hourOfDay >= callCenterHours.mondayToFriday.open && hourOfDay < callCenterHours.mondayToFriday.close) {
+            const { open, close } = callCenterHours.mondayToFriday;
+            if (
+                (hourOfDay > open.hours || (hourOfDay === open.hours && minuteOfHour >= open.minutes)) &&
+                (hourOfDay < close.hours || (hourOfDay === close.hours && minuteOfHour < close.minutes))
+            ) {
                 sound = openSound;
                 priority = openPriority;
             }
         } else if (dayOfWeek === 6) { // Saturday
-            if (hourOfDay >= callCenterHours.saturday.open && hourOfDay < callCenterHours.saturday.close) {
+            const { open, close } = callCenterHours.saturday;
+            if (
+                (hourOfDay > open.hours || (hourOfDay === open.hours && minuteOfHour >= open.minutes)) &&
+                (hourOfDay < close.hours || (hourOfDay === close.hours && minuteOfHour < close.minutes))
+            ) {
                 sound = openSound;
                 priority = openPriority;
             }
         } else if (dayOfWeek === 0) { // Sunday
-            if (hourOfDay >= callCenterHours.sunday.open && hourOfDay < callCenterHours.sunday.close) {
+            const { open, close } = callCenterHours.sunday;
+            if (
+                (hourOfDay > open.hours || (hourOfDay === open.hours && minuteOfHour >= open.minutes)) &&
+                (hourOfDay < close.hours || (hourOfDay === close.hours && minuteOfHour < close.minutes))
+            ) {
                 sound = openSound;
                 priority = openPriority;
             }
