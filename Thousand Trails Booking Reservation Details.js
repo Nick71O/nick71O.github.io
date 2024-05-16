@@ -108,6 +108,46 @@ async function launch() {
         if (scDesiredDatesArrayConstant) {
             scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
             console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray);
+
+            //compile ranges to output.
+            let availableDatesInRange = [];
+            if (bookingPreference.toLowerCase() === 'datearray') {
+                availableDatesInRange = getDatesInRange(scDesiredDatesArray, null, null);
+            } else {
+                //availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
+            }
+            console.log('Desired Dates In Range:', availableDatesInRange);
+            
+
+            const dates = availableDatesInRange.map(dateStr => new Date(dateStr));
+
+            let currentRange = [];
+            let allRanges = [];
+
+            for (let i = 0; i < dates.length; i++) {
+                if (i === 0 || dates[i].getTime() !== dates[i - 1].getTime() + 86400000) {
+                    if (currentRange.length > 0) {
+                        allRanges.push(currentRange);
+                    }
+                    currentRange = [dates[i]];
+                } else {
+                    currentRange.push(dates[i]);
+                }
+            }
+
+            if (currentRange.length > 0) {
+                allRanges.push(currentRange);
+            }
+
+            console.log("\nAll Consecutive Desired Date Ranges:");
+            allRanges.forEach(range => {
+                const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
+                const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
+                const numberOfNights = range.length; // Number of nights is the length of the range
+
+                console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
+            });
+
         } else {
             console.log('SiteConstant Desired Dates Array constant is null, empty, or not found.');
         }

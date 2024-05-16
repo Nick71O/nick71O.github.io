@@ -1,5 +1,6 @@
 //console.log('Hello From Thousand Trails Common.js');
 
+//called to confirm hours on 5/15/24
 const callCenterHours = {
     mondayToFriday: { open: { hours: 8, minutes: 30 }, close: { hours: 20, minutes: 30 } }, // 8:30 AM to 8:30 PM EST
     saturday: { open: { hours: 9, minutes: 30 }, close: { hours: 18, minutes: 0 } }, // 9:30 AM to 6 PM EST
