@@ -144,6 +144,7 @@ function composeMessageToSend(
     scAvailableDepartureDate,
     scBookedArrivalDate,
     scBookedDepartureDate,
+    scBookedDatesArray,
     availableDateArray,
     reservationError
 ) {
@@ -201,13 +202,21 @@ function composeMessageToSend(
     } 
 
     // Append existing booked reservation if available
-    if (scBookedArrivalDate !== null && scBookedDepartureDate !== null) {
-        const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-        const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
-        const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
-
-        messageBuilder.push(`\n<u>Existing Booked Reservations:</u>\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
-    }
+    if (scBookedDatesArray && scBookingPreference === 'datearray') {
+        let bookedDatesInRange = getAllDatesInRangeOrArray(scBookedDatesArray, null, null);
+        //console.log('Booked Dates In Range:', bookedDatesInRange);
+        let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
+        //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+        const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Existing Booked Reservations:</u>', allConsecutiveRanges);
+        messageBuilder.push(bookedDateRangeMessage);
+    } else if (scBookedArrivalDate && scBookedDepartureDate) {
+        let bookedDatesInRange = getAllDatesInRangeOrArray(null, scBookedArrivalDate, scBookedDepartureDate);
+        //console.log('Booked Dates In Range:', bookedDatesInRange);
+        let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
+        //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+        const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Existing Booked Reservations:</u>', allConsecutiveRanges);
+        messageBuilder.push(bookedDateRangeMessage);
+    } 
 
     messageBuilder.push('\nThousand Trails: (888) 551-9102');
 

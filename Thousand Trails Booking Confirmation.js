@@ -178,7 +178,7 @@ async function launch() {
 
         // Call the sendPushMessage function with the required parameters
         pushSiteBookedMessage(db, composeMessageToSend('step4', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-             scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, null, null));
+             scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, null, null));
 
 
         //clear database, sleep and start looking for the next booking

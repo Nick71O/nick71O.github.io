@@ -185,7 +185,7 @@ async function launch() {
 
                 // Call the sendPushMessage function with the required parameters
                 pushBookSiteMessage(db,composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-                    scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, null, reservationError));
+                    scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, null, reservationError));
 
 
                 if (reservationError == "Unable to process your request.") {
