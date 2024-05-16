@@ -211,7 +211,7 @@ async function launch() {
       await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', 1);
       //override BookingPreference if it was auto to be datearray for identification
       await addOrUpdateSiteConstant(db, 'BookingPreference', 'datearray');
-      await insertAvailabilityRecords(db, scDesiredDatesArray);
+      await insertAvailabilityRecords2(db, scDesiredDatesArray);
     } else if (isValidConstant(scDesiredArrivalConstant) && isValidConstant(scDesiredDepartureConstant)) {
       console.log('SiteConstant Desired Arrival Date:', scDesiredArrivalConstant.value);
       console.log('SiteConstant Desired Departure Date:', scDesiredDepartureConstant.value)

@@ -338,7 +338,7 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
     }
 }
 
-async function insertAvailabilityRecords(db, desiredDatesArray) {
+async function insertAvailabilityRecords2(db, desiredDatesArray) {
     console.log('insertAvailabilityRecords(db, desiredDatesArray)');
     try {
         const transaction = db.transaction('Availability', 'readwrite');
