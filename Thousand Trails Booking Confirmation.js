@@ -140,9 +140,8 @@ async function launch() {
             console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not a valid date.');
         }
 
-        const bookingPreference = scBookingPreferenceConstant.value.toLowerCase();
-        console.log('Booking Preference:', bookingPreference);
-        if (scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null && bookingPreference === 'datearray') {
+
+        if (scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null && scBookingPreference === 'datearray') {
 
             // Remove the booked dates from the desired dates array so they are not booked a 2nd time
             await removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
@@ -168,7 +167,7 @@ async function launch() {
                 await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scBookedDepartureDate);
 
                 //bookingPreference switch: auto | consecutive | leadingtrailing | datearray
-                if (bookingPreference === 'consecutive') {
+                if (scBookingPreference === 'consecutive') {
                     await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
                 }
 
