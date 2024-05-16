@@ -141,7 +141,7 @@ async function launch() {
         }
 
 
-        if (scDesiredDatesArrayConstant && scDesiredDatesArrayConstant.value !== null && scBookingPreference === 'datearray') {
+        if (scDesiredDatesArray && scBookingPreference === 'datearray') {
 
             // Remove the booked dates from the desired dates array so they are not booked a 2nd time
             await removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
