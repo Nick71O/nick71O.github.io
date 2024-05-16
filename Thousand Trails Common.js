@@ -175,7 +175,7 @@ function composeMessageToSend(
         const dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
         const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
 
-        messageBuilder.push(`Availabile Dates to Book:\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`);
+        messageBuilder.push(`<u>Availabile Dates to Book:</u>\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`);
     }
 
     // Append available dates from array
@@ -206,7 +206,7 @@ function composeMessageToSend(
         const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
         const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
 
-        messageBuilder.push(`\nExisting Booked Reservations:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
+        messageBuilder.push(`\n<u>Existing Booked Reservations:</u>\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
     }
 
     messageBuilder.push('\nThousand Trails: (888) 551-9102');
