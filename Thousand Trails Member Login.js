@@ -187,28 +187,37 @@ async function launch() {
 
     await deleteAllAvailabilityRecords(db);
 
-    const desiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
-    const desiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-    const desiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
-    const bookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+    const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
+    const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
+    const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+    const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+    let scBookingPreference = null;
 
-    const bookingPreference = bookingPreferenceConstant.value.toLowerCase();
-    console.log('Booking Preference:', bookingPreference);
-    if ((desiredDatesArrayConstant && desiredDatesArrayConstant.value !== null) && (bookingPreference === 'auto' || bookingPreference === 'datearray')) {
-      const desiredDatesArray = JSON.parse(desiredDatesArrayConstant.value);
-      console.log('Desired Dates Array: ' + desiredDatesArray);
+    // Check if constants were retrieved successfully and if their values are not null or empty
+    const isValidConstant = (constant) =>
+      constant &&
+      constant.value !== null &&
+      constant.value.trim() !== '';
+
+    if (isValidConstant(scBookingPreferenceConstant)) {
+      scBookingPreference = scBookingPreferenceConstant.value.toLowerCase();
+      console.log('Booking Preference:', scBookingPreference);
+    }
+
+    if (isValidConstant(scDesiredDatesArrayConstant) && (scBookingPreference === 'auto' || scBookingPreference === 'datearray')) {
+      let scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
+      console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
       //override MinimumConsecutiveDays because your using a datearray
       await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', 1);
       //override BookingPreference if it was auto to be datearray for identification
       await addOrUpdateSiteConstant(db, 'BookingPreference', 'datearray');
-      await insertAvailabilityRecords(db, desiredDatesArray);
-    }
-    else if (desiredArrivalConstant && desiredDepartureConstant) {
-      console.log('Desired Arrival Date:', desiredArrivalConstant.value);
-      console.log('Desired Departure Date:', desiredDepartureConstant.value)
-      await insertAvailabilityRecords(db, desiredArrivalConstant.value, desiredDepartureConstant.value);
+      await insertAvailabilityRecords(db, scDesiredDatesArray);
+    } else if (isValidConstant(scDesiredArrivalConstant) && isValidConstant(scDesiredDepartureConstant)) {
+      console.log('SiteConstant Desired Arrival Date:', scDesiredArrivalConstant.value);
+      console.log('SiteConstant Desired Departure Date:', scDesiredDepartureConstant.value)
+      await insertAvailabilityRecords(db, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value);
     } else {
-      console.error('Desired arrival\departure or dates array constant not found.');
+      console.error('SiteConstant Desired Arrival\Departure or Array constant is null, empty, or not found.');
     }
 
     await logSiteConstants(db);
