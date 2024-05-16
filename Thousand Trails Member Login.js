@@ -9,11 +9,12 @@ function initializeGlobalVariables(globalVariables) {
   console.log('bookingPreference: "' + globalVariables.bookingPreference + '"');
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("availabilityCheckIntervalMinutes: " + globalVariables.availabilityCheckIntervalMinutes)
-  console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
-  console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
   console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
   console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
+  console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
+  console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
+  console.log("bookedDatesArray: " + globalVariables.bookedDatesArray.join(", "));
   console.log("pushoverUserKey: " + globalVariables.pushoverUserKey);
   console.log("pushoverApiTokenAvailability: " + globalVariables.pushoverApiTokenAvailability);
   console.log("pushoverApiTokenReservation: " + globalVariables.pushoverApiTokenReservation)
@@ -172,13 +173,14 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'AvailabilityCheckIntervalMinutes', globalVariables.availabilityCheckIntervalMinutes);
-    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
-    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', globalVariables.bookedDepartureDate);
     await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);
     await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', globalVariables.desiredDepartureDate);
     //await addOrUpdateSiteConstant(db, 'DesiredDatesArray', globalVariables.desiredDatesArray)
     await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(globalVariables.desiredDatesArray));
     //console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
+    await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
+    await addOrUpdateSiteConstant(db, 'BookedDepartureDate', globalVariables.bookedDepartureDate);
+    await addOrUpdateSiteConstant(db, 'BookedDatesArray', JSON.stringify(globalVariables.bookedDatesArray));
     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await addOrUpdateSiteConstant(db, 'PushoverUserKey', globalVariables.pushoverUserKey);

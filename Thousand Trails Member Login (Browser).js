@@ -6,8 +6,6 @@ var globalVariables = {
     bookingPreference: "datearray",
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
-    bookedArrivalDate: "06/27/2024", //null
-    bookedDepartureDate: "07/01/2024", //null
     desiredArrivalDate: "06/27/2024",  
     desiredDepartureDate: "07/15/2024",
     desiredDatesArray: [
@@ -19,6 +17,16 @@ var globalVariables = {
         "08/14/2024",
         "08/15/2024",
         "08/16/2024"
+    ],
+    bookedArrivalDate: "06/27/2024", //null
+    bookedDepartureDate: "07/01/2024", //null
+    bookedDatesArray: [
+        "06/27/2024",
+        "06/28/2024",
+        "06/29/2024",
+        "06/30/2024",
+        "07/01/2024",
+        "07/02/2024"
     ],
     pushoverUserKey: "",
     pushoverApiTokenAvailability: "",
