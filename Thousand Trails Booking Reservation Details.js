@@ -116,7 +116,7 @@ async function launch() {
 
             const messageBuilder = [];
             messageBuilder.push(`Desired Dates to Book:`);
-            allRanges.forEach(range => {
+            allConsecutiveRanges.forEach(range => {
                 const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
                 const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
                 const numberOfNights = range.length; // Number of nights is the length of the range
