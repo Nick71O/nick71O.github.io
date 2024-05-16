@@ -109,37 +109,25 @@ async function launch() {
             scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
             console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray);
 
-            //compile ranges to output.
-            let availableDatesInRange = [];
-            //if (bookingPreference.toLowerCase() === 'datearray') {
-                availableDatesInRange = getDatesInRange(scDesiredDatesArray, null, null);
-            //} else {
-                //availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
-            //}
-            console.log('Desired Dates In Range:', availableDatesInRange);
-            
+            let desiredDatesInRange = getDatesInRange(scDesiredDatesArray, null, null);
+            //console.log('Desired Dates In Range:', desiredDatesInRange);
+            let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
+            console.log('allConsecutiveRanges: ', allConsecutiveRanges);
 
-            let allRanges = getConsecutiveDateRanges(availableDatesInRange);
-            console.log('allRanges: ', allRanges);
-
-
-            console.log("\nAll Consecutive Desired Date Ranges:");
-            let totalNumberOfNights = 0;
-            let desiredDateRangeList = '';
-            allRanges.forEach((range, index) => {
+            const messageBuilder = [];
+            messageBuilder.push(`Desired Dates to Book:`);
+            allRanges.forEach(range => {
                 const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
                 const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
                 const numberOfNights = range.length; // Number of nights is the length of the range
             
-                desiredDateRangeList += `${arrivalDate}-${departureDate}`;
-                totalNumberOfNights += numberOfNights;            
-                if (index !== allRanges.length - 1) {
-                    desiredDateRangeList += ', ';
-                }
-                //console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
+                const nightsLabel = numberOfNights === 1 ? 'Night' : 'Nights';
+                messageBuilder.push(`    ${arrivalDate} - ${departureDate} (${numberOfNights} ${nightsLabel})`);
             });
-            desiredDateRangeList += `  (${totalNumberOfNights} Nights)`;
-            console.log("desiredDateRangeList: ", desiredDateRangeList);
+            
+            const desiredDateRangeMessage = messageBuilder.join('\n');
+            console.log(desiredDateRangeMessage);
+            
 
         } else {
             console.log('SiteConstant Desired Dates Array constant is null, empty, or not found.');
