@@ -111,11 +111,11 @@ async function launch() {
 
             //compile ranges to output.
             let availableDatesInRange = [];
-            if (bookingPreference.toLowerCase() === 'datearray') {
+            //if (bookingPreference.toLowerCase() === 'datearray') {
                 availableDatesInRange = getDatesInRange(scDesiredDatesArray, null, null);
-            } else {
+            //} else {
                 //availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
-            }
+            //}
             console.log('Desired Dates In Range:', availableDatesInRange);
             
 
