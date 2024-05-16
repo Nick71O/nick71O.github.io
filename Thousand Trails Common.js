@@ -210,6 +210,44 @@ function composeMessageToSend(
     return messageBuilder.join('\n'); // Convert array to string using newline separator
 }
 
+function buildDateRangeMessage(title, allConsecutiveRanges) {
+    const messageBuilder = [title];
+
+    if (allConsecutiveRanges.length === 0) {
+        messageBuilder.push('    None');
+    } else {
+        allConsecutiveRanges.forEach(range => {
+            const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
+            const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
+            const numberOfNights = range.length; // Number of nights is the length of the range
+
+            const nightsLabel = numberOfNights === 1 ? 'Night' : 'Nights';
+            messageBuilder.push(`    ${arrivalDate} - ${departureDate} (${numberOfNights} ${nightsLabel})`);
+        });
+    }
+
+    return messageBuilder.join('\n');
+}
+
+function getAllDatesInRangeOrArray(array, start, end) {
+    const inRange = [];
+
+    if (!start && !end) {
+        if (array && array.length > 0) {
+            inRange.push(...array.map(dateString => new Date(dateString)));
+        }
+    } else {
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+            inRange.push(new Date(dt));
+        }
+    }
+
+    return inRange;
+}
+
 function getConsecutiveDateRanges(dateStrArray) {
     const dates = dateStrArray.map(dateStr => new Date(dateStr));
 
@@ -233,8 +271,6 @@ function getConsecutiveDateRanges(dateStrArray) {
 
     return allRanges;
 }
-
-
 
 function concatenateAvailableDatesToString(datesArray) {
     let concatenatedString = 'Currently Available Dates: ';

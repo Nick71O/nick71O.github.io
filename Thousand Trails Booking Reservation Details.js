@@ -75,6 +75,7 @@ async function launch() {
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
         const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+        const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
@@ -82,55 +83,50 @@ async function launch() {
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
         let scDesiredDatesArray = null;
+        let scBookingPreference = null;
         let scBookedArrivalDate = null;
         let scBookedDepartureDate = null;
         let scAvailableArrivalDate = null;
         let scAvailableDepartureDate = null;
 
         // Check if constants were retrieved successfully and if their values are not null or empty
-        if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
-            scDesiredArrivalConstant.value !== null && scDesiredDepartureConstant.value !== null &&
-            scDesiredArrivalConstant.value.trim() !== '' && scDesiredDepartureConstant.value.trim() !== '') {
+        const isValidConstant = (constant) =>
+            constant &&
+            constant.value !== null &&
+            constant.value.trim() !== '';
 
+        if (isValidConstant(scDesiredArrivalConstant) && isValidConstant(scDesiredDepartureConstant)) {
             scDesiredArrivalDate = scDesiredArrivalConstant.value;
             scDesiredDepartureDate = scDesiredDepartureConstant.value;
-
-            // Calculate the number of nights
-            const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-            const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
-            const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
-
-            console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate + "    Number of Nights: " + scDesiredNumberOfNights);
-        } else {
-            console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
+            //console.log("SiteConstants Desired Dates to Book\n   Arrival: " + scDesiredArrivalDate + "    Departure: " + scDesiredDepartureDate);
         }
 
-        if (scDesiredDatesArrayConstant) {
-            scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
-            console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray);
+        if (isValidConstant(scBookingPreferenceConstant)) {
+            scBookingPreference = scBookingPreferenceConstant.value.toLowerCase();
+            console.log('Booking Preference:', scBookingPreference);
+        }
 
-            let desiredDatesInRange = getDatesInRange(scDesiredDatesArray, null, null);
+        if (isValidConstant(scDesiredDatesArrayConstant) && scBookingPreference === 'datearray') {
+            scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
+            //console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
+        }
+
+        if (scDesiredDatesArrayConstant && scBookingPreference === 'datearray') {
+            let desiredDatesInRange = getAllDatesInRangeOrArray(scDesiredDatesArray, null, null);
             //console.log('Desired Dates In Range:', desiredDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
-            console.log('allConsecutiveRanges: ', allConsecutiveRanges);
-
-            const messageBuilder = [];
-            messageBuilder.push(`Desired Dates to Book:`);
-            allConsecutiveRanges.forEach(range => {
-                const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
-                const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
-                const numberOfNights = range.length; // Number of nights is the length of the range
-            
-                const nightsLabel = numberOfNights === 1 ? 'Night' : 'Nights';
-                messageBuilder.push(`    ${arrivalDate} - ${departureDate} (${numberOfNights} ${nightsLabel})`);
-            });
-            
-            const desiredDateRangeMessage = messageBuilder.join('\n');
+            //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+            const desiredDateRangeMessage = buildDateRangeMessage('Desired Dates to Book:', allConsecutiveRanges);
             console.log(desiredDateRangeMessage);
-            
-
+        } else if (scDesiredArrivalDate && scDesiredDepartureDate) {
+            let desiredDatesInRange = getAllDatesInRangeOrArray(null, scDesiredArrivalDate, scDesiredDepartureDate);
+            //console.log('Desired Dates In Range:', desiredDatesInRange);
+            let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
+            //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+            const desiredDateRangeMessage = buildDateRangeMessage('Desired Dates to Book:', allConsecutiveRanges);
+            console.log(desiredDateRangeMessage);
         } else {
-            console.log('SiteConstant Desired Dates Array constant is null, empty, or not found.');
+            console.error('SiteConstant Desired Arrival, Departure or Array constant is null, empty, or not found.');
         }
 
         if (scBookedArrivalConstant && scBookedDepartureConstant &&
@@ -337,7 +333,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
                 availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
             }
             console.log('Available Dates In Range:', availableDatesInRange);
-            
+
 
             const dates = availableDatesInRange.map(dateStr => new Date(dateStr));
 
@@ -544,6 +540,7 @@ function getDatesInRange(array, start, end) {
     // console.log('Dates in Range:', inRange);
     return inRange;
 }
+
 
 // Define a function to set up the event listener for the "Choose Campsite" button
 function setupEventListener() {
