@@ -140,13 +140,22 @@ async function launch() {
             }
 
             console.log("\nAll Consecutive Desired Date Ranges:");
-            allRanges.forEach(range => {
+            let totalNumberOfNights = 0;
+            let desiredDateRangeList = '';
+            allRanges.forEach((range, index) => {
                 const arrivalDate = range[0].toLocaleDateString('en-US', formatDateOptions);
                 const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
                 const numberOfNights = range.length; // Number of nights is the length of the range
-
-                console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
+            
+                desiredDateRangeList += `${arrivalDate} - ${departureDate}`;
+                totalNumberOfNights += numberOfNights;            
+                if (index !== allRanges.length - 1) {
+                    desiredDateRangeList += ', ';
+                }
+                //console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
             });
+            desiredDateRangeList += `  (${totalNumberOfNights} Nights)`;
+            console.log("desiredDateRangeList: ", desiredDateRangeList);
 
         } else {
             console.log('SiteConstant Desired Dates Array constant is null, empty, or not found.');
