@@ -189,14 +189,14 @@ function composeMessageToSend(
         //console.log('Desired Dates In Range:', desiredDatesInRange);
         let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
-        const desiredDateRangeMessage = buildDateRangeMessage('\nDesired Dates to Book:', allConsecutiveRanges);
+        const desiredDateRangeMessage = buildDateRangeMessage('\n<u>Desired Dates to Book:</u>', allConsecutiveRanges);
         messageBuilder.push(desiredDateRangeMessage);
     } else if (scDesiredArrivalDate && scDesiredDepartureDate) {
         let desiredDatesInRange = getAllDatesInRangeOrArray(null, scDesiredArrivalDate, scDesiredDepartureDate);
         //console.log('Desired Dates In Range:', desiredDatesInRange);
         let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
-        const desiredDateRangeMessage = buildDateRangeMessage('\nDesired Dates to Book:', allConsecutiveRanges);
+        const desiredDateRangeMessage = buildDateRangeMessage('\n<u>Desired Dates to Book:</u>', allConsecutiveRanges);
         messageBuilder.push(desiredDateRangeMessage);
     } 
 
@@ -206,7 +206,7 @@ function composeMessageToSend(
         const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
         const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
 
-        messageBuilder.push(`\nExisting Booked Reservation:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
+        messageBuilder.push(`\nExisting Booked Reservations:\nArrival: ${scBookedArrivalDate}    Departure: ${scBookedDepartureDate}    Number of Nights: ${scBookedNumberOfNights}`);
     }
 
     messageBuilder.push('\nThousand Trails: (888) 551-9102');
