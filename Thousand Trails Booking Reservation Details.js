@@ -79,8 +79,8 @@ async function launch() {
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scBookedDatesArrayConstant = await getSiteConstant(db, 'BookedDatesArray');
-        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
-        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate')
+        const scAvailableArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
+        const scAvailableDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate')
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
         let scDesiredDatesArray = null;
