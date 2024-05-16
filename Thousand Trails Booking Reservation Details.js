@@ -119,25 +119,9 @@ async function launch() {
             console.log('Desired Dates In Range:', availableDatesInRange);
             
 
-            const dates = availableDatesInRange.map(dateStr => new Date(dateStr));
+            let allRanges = getConsecutiveDateRanges(availableDatesInRange);
+            console.log('allRanges: ', allRanges);
 
-            let currentRange = [];
-            let allRanges = [];
-
-            for (let i = 0; i < dates.length; i++) {
-                if (i === 0 || dates[i].getTime() !== dates[i - 1].getTime() + 86400000) {
-                    if (currentRange.length > 0) {
-                        allRanges.push(currentRange);
-                    }
-                    currentRange = [dates[i]];
-                } else {
-                    currentRange.push(dates[i]);
-                }
-            }
-
-            if (currentRange.length > 0) {
-                allRanges.push(currentRange);
-            }
 
             console.log("\nAll Consecutive Desired Date Ranges:");
             let totalNumberOfNights = 0;
@@ -147,7 +131,7 @@ async function launch() {
                 const departureDate = new Date(range[range.length - 1].getTime() + 86400000).toLocaleDateString('en-US', formatDateOptions); // Add 1 day to get the next day
                 const numberOfNights = range.length; // Number of nights is the length of the range
             
-                desiredDateRangeList += `${arrivalDate} - ${departureDate}`;
+                desiredDateRangeList += `${arrivalDate}-${departureDate}`;
                 totalNumberOfNights += numberOfNights;            
                 if (index !== allRanges.length - 1) {
                     desiredDateRangeList += ', ';

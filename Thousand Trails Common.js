@@ -210,6 +210,31 @@ function composeMessageToSend(
     return messageBuilder.join('\n'); // Convert array to string using newline separator
 }
 
+function getConsecutiveDateRanges(dateStrArray) {
+    const dates = dateStrArray.map(dateStr => new Date(dateStr));
+
+    let currentRange = [];
+    let allRanges = [];
+
+    for (let i = 0; i < dates.length; i++) {
+        if (i === 0 || dates[i].getTime() !== dates[i - 1].getTime() + 86400000) {
+            if (currentRange.length > 0) {
+                allRanges.push(currentRange);
+            }
+            currentRange = [dates[i]];
+        } else {
+            currentRange.push(dates[i]);
+        }
+    }
+
+    if (currentRange.length > 0) {
+        allRanges.push(currentRange);
+    }
+
+    return allRanges;
+}
+
+
 
 function concatenateAvailableDatesToString(datesArray) {
     let concatenatedString = 'Currently Available Dates: ';
