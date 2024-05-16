@@ -111,7 +111,7 @@ async function launch() {
             //console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
         }
 
-        if (scDesiredDatesArrayConstant && scBookingPreference === 'datearray') {
+        if (scDesiredDatesArray && scBookingPreference === 'datearray') {
             let desiredDatesInRange = getAllDatesInRangeOrArray(scDesiredDatesArray, null, null);
             //console.log('Desired Dates In Range:', desiredDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
@@ -186,8 +186,8 @@ async function launch() {
             console.log('All Available Dates:', availableDates);
 
             // Call the sendMessage function with the required parameters
-            pushSiteAvailabilityMessage(db, composeMessageToSend('step2', scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate,
-                scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, availableDates, null));
+            pushSiteAvailabilityMessage(db, composeMessageToSend('step2', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray, 
+                scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, availableDates, null));
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');

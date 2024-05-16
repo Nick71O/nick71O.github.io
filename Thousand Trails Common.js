@@ -136,8 +136,10 @@ async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = 
 
 function composeMessageToSend(
     messageType,
+    scBookingPreference,
     scDesiredArrivalDate,
     scDesiredDepartureDate,
+    scDesiredDatesArray,
     scAvailableArrivalDate,
     scAvailableDepartureDate,
     scBookedArrivalDate,
@@ -182,13 +184,21 @@ function composeMessageToSend(
     }
 
     // Append desired dates to book
-    if (scDesiredArrivalDate !== null && scDesiredDepartureDate !== null) {
-        const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-        const dateDifference = Math.abs(new Date(scDesiredDepartureDate).getTime() - new Date(scDesiredArrivalDate).getTime());
-        const scDesiredNumberOfNights = Math.round(dateDifference / oneDay);
-
-        messageBuilder.push(`\nDesired Dates to Book:\nArrival: ${scDesiredArrivalDate}    Departure: ${scDesiredDepartureDate}    Number of Nights: ${scDesiredNumberOfNights}`);
-    }
+    if (scDesiredDatesArray && scBookingPreference === 'datearray') {
+        let desiredDatesInRange = getAllDatesInRangeOrArray(scDesiredDatesArray, null, null);
+        //console.log('Desired Dates In Range:', desiredDatesInRange);
+        let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
+        //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+        const desiredDateRangeMessage = buildDateRangeMessage('\nDesired Dates to Book:', allConsecutiveRanges);
+        messageBuilder.push(desiredDateRangeMessage);
+    } else if (scDesiredArrivalDate && scDesiredDepartureDate) {
+        let desiredDatesInRange = getAllDatesInRangeOrArray(null, scDesiredArrivalDate, scDesiredDepartureDate);
+        //console.log('Desired Dates In Range:', desiredDatesInRange);
+        let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
+        //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+        const desiredDateRangeMessage = buildDateRangeMessage('\nDesired Dates to Book:', allConsecutiveRanges);
+        messageBuilder.push(desiredDateRangeMessage);
+    } 
 
     // Append existing booked reservation if available
     if (scBookedArrivalDate !== null && scBookedDepartureDate !== null) {
