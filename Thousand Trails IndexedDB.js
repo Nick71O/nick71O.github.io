@@ -291,6 +291,7 @@ async function resetAvailabilityTable(db) {
 }
 
 async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate) {
+    console.log('insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate)');
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
@@ -338,6 +339,7 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
 }
 
 async function insertAvailabilityRecords(db, desiredDatesArray) {
+    console.log('insertAvailabilityRecords(db, desiredDatesArray)');
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
