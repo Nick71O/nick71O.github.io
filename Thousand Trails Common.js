@@ -165,7 +165,7 @@ function composeMessageToSend(
             messageBuilder.push('Campsite is available for booking!');
             break;
         case 'step4':
-            messageBuilder.push('Campsite is booked!');
+            messageBuilder.push('Reservation Confirmed!');
             availabileDatesTitle = 'Booked';
             break;
         default:
