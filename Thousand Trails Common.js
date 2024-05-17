@@ -151,6 +151,7 @@ function composeMessageToSend(
     const messageBuilder = [];
 
     messageBuilder.push('Thousand Trails - Lake & Shore');
+    let availabileDatesTitle = 'Availabile Dates to Book';
 
     // Switch to handle different message types
     switch (messageType) {
@@ -165,6 +166,7 @@ function composeMessageToSend(
             break;
         case 'step4':
             messageBuilder.push('Campsite is booked!');
+            availabileDatesTitle = 'Booked';
             break;
         default:
         //messageBuilder.push('Default message for unknown step');
@@ -176,7 +178,7 @@ function composeMessageToSend(
         //console.log('Booked Dates In Range:', bookedDatesInRange);
         let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
-        const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Availabile Dates to Book:</u>', allConsecutiveRanges);
+        const bookedDateRangeMessage = buildDateRangeMessage(`\n<u>${availabileDatesTitle}:</u>${allConsecutiveRanges}`);
         messageBuilder.push(bookedDateRangeMessage);
     }
 
