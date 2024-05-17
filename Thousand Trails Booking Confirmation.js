@@ -138,7 +138,7 @@ async function launch() {
         if (isValidConstant(scAvailableArrivalConstant) && isValidConstant(scAvailableDepartureConstant)) {
             scAvailableArrivalDate = scAvailableArrivalConstant.value;
             scAvailableDepartureDate = scAvailableDepartureConstant.value;
-        
+
             let bookedDatesInRange = getAllDatesInRangeOrArray(null, scAvailableArrivalDate, scAvailableDepartureDate);
             //console.log('Booked Dates In Range:', bookedDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
@@ -149,15 +149,24 @@ async function launch() {
             console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
         }
 
-        if (scDesiredDatesArray && scBookingPreference === 'datearray') {
+        // Remove the booked dates from the availability table so they are not booked a 2nd time
+        await removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
 
+        if (scDesiredDatesArray && scBookingPreference === 'datearray') {
             // Remove the booked dates from the desired dates array so they are not booked a 2nd time
             await removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
 
-            // Remove the booked dates from the availability table so they are not booked a 2nd time
-            await removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
-
         } else {
+            const result = removeBookedDatesFromDesiredDates(scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
+            if (result) {
+                console.log('Desired dates have been removed from existing dates:');
+                console.log('Removed Arrival Date:', result.removedArrivalDate.toLocaleDateString('en-US'));
+                console.log('Removed Departure Date:', result.removedDepartureDate.toLocaleDateString('en-US'));
+            } else {
+                console.log('Desired dates cannot be removed from existing dates due to overlap.');
+            }
+
+
             const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
             if (combinedBookingDates) {
                 scBookedArrivalDate = combinedBookingDates.bookedArrivalDate.toLocaleDateString('en-US', formatDateOptions);
@@ -186,7 +195,7 @@ async function launch() {
 
         // Call the sendPushMessage function with the required parameters
         pushSiteBookedMessage(db, composeMessageToSend('step4', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-             scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, null, null));
+            scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, null, null));
 
 
         //clear database, sleep and start looking for the next booking
@@ -201,6 +210,42 @@ async function launch() {
         console.error("An error occurred during form submission:", error);
     }
 }
+
+function removeBookedDatesFromDesiredDates(existingArrivalDate, existingDepartureDate, newArrivalDate, newDepartureDate) {
+    // Convert dates to JavaScript Date objects
+    const existingArrival = existingArrivalDate ? new Date(existingArrivalDate) : null;
+    const existingDeparture = existingDepartureDate ? new Date(existingDepartureDate) : null;
+    const newArrival = new Date(newArrivalDate);
+    const newDeparture = new Date(newDepartureDate);
+
+    // Check if any of the dates are missing
+    if (!existingArrival || !existingDeparture || !newArrival || !newDeparture) {
+        return null; // Return null if any date is missing
+    }
+
+    // Check if the new booking completely overlaps with the existing booking
+    if (newArrival >= existingArrival && newDeparture <= existingDeparture) {
+        return {
+            updatedArrivalDate: existingArrival,
+            updatedDepartureDate: existingDeparture
+        };
+    }
+
+    // Check if the new booking partially overlaps with the existing booking
+    if ((newArrival >= existingArrival && newArrival < existingDeparture) || (newDeparture > existingArrival && newDeparture <= existingDeparture)) {
+        // Calculate the non-overlapping portion
+        const updatedArrival = newArrival < existingArrival ? newArrival : existingDeparture;
+        const updatedDeparture = newDeparture > existingDeparture ? newDeparture : existingArrival;
+        return {
+            updatedArrivalDate: updatedArrival,
+            updatedDepartureDate: updatedDeparture
+        };
+    }
+
+    // No overlap or partial overlap, return null
+    return null;
+}
+
 
 function combineBookingDates(existingArrivalDate, existingDepartureDate, newArrivalDate, newDepartureDate) {
     if (!existingArrivalDate && !existingDepartureDate && !newArrivalDate && !newDepartureDate) {
