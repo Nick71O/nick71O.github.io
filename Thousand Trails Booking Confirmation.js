@@ -165,12 +165,12 @@ async function launch() {
             } else if (Array.isArray(result)) {
                 console.log('Split date ranges:');
                 result.forEach(range => {
-                    console.log(`Arrival: ${range.arrivalDate.toLocaleDateString('en-US', formatDateOptions)}, Departure: ${range.departureDate.toLocaleDateString('en-US', formatDateOptions)}`);
+                    console.log(`Arrival: ${range.arrivalDate}, Departure: ${range.departureDate}`);
                 });
             } else {
                 console.log(`Updated Existing Dates:\nArrival: ${result.existingArrivalDate}\nDeparture: ${result.existingDepartureDate}`);
-                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', result.existingArrivalDate.toLocaleDateString('en-US', formatDateOptions));
-                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', result.existingDepartureDate.toLocaleDateString('en-US', formatDateOptions));
+                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', result.existingArrivalDate);
+                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', result.existingDepartureDate);
             }
 
             const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
@@ -203,6 +203,9 @@ async function launch() {
         pushSiteBookedMessage(db, composeMessageToSend('step4', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
             scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, null, null));
 
+
+        await logSiteConstants(db);
+        await logAvailabilityRecords(db);
 
         //clear database, sleep and start looking for the next booking
         console.log("\nSleeping...4 minutes");
@@ -248,7 +251,7 @@ function removeBookedDatesFromExistingDates(existingArrivalDate, existingDepartu
     // If new dates overlap only at the start of the existing range
     if (newArrival <= existingArrival && newDeparture < existingDeparture) {
         return {
-            existingArrivalDate: new Date(newDeparture.getTime() + 1),
+            existingArrivalDate: new Date(newDeparture.getTime() + 1).toLocaleDateString('en-US', formatDateOptions),
             existingDepartureDate
         };
     }
@@ -257,7 +260,7 @@ function removeBookedDatesFromExistingDates(existingArrivalDate, existingDepartu
     if (newArrival > existingArrival && newDeparture >= existingDeparture) {
         return {
             existingArrivalDate,
-            existingDepartureDate: new Date(newArrival.getTime() - 1)
+            existingDepartureDate: new Date(newArrival.getTime() - 1).toLocaleDateString('en-US', formatDateOptions)
         };
     }
 
