@@ -49,11 +49,11 @@ async function launch() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-        const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+        let scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
         const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
-        const scBookedDatesArrayConstant = await getSiteConstant(db, 'BookedDatesArray');
+        let scBookedDatesArrayConstant = await getSiteConstant(db, 'BookedDatesArray');
         const scAvailableArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailableDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate')
         let scDesiredArrivalDate = null;
@@ -155,13 +155,19 @@ async function launch() {
         if (scDesiredDatesArray && scBookingPreference === 'datearray') {
             // Remove the booked dates from the desired dates array so they are not booked a 2nd time
             await removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
-
+            scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+            if (isValidConstant(scDesiredDatesArrayConstant) && scBookingPreference === 'datearray') {
+                scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
+                //console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
+            }
         } else {
             const result = removeBookedDatesFromExistingDates(scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
             if (result === null) {
                 console.log('All existing dates are within the new range, so nothing is left.');
-                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', null);
-                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', null);
+                scDesiredArrivalDate = null;
+                scDesiredDepartureDate = null;
+                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', scDesiredArrivalDate);
+                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', scDesiredDepartureDate);
             } else if (Array.isArray(result)) {
                 console.log('Split date ranges:');
                 result.forEach(range => {
@@ -169,8 +175,10 @@ async function launch() {
                 });
             } else {
                 console.log(`Updated Existing Dates:\nArrival: ${result.existingArrivalDate}\nDeparture: ${result.existingDepartureDate}`);
-                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', result.existingArrivalDate);
-                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', result.existingDepartureDate);
+                scDesiredArrivalDate = result.existingArrivalDate;
+                scDesiredDepartureDate = result.existingDepartureDate;
+                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', scDesiredArrivalDate);
+                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', scDesiredDepartureDate);
             }
 
             const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
@@ -189,9 +197,11 @@ async function launch() {
                 await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scBookedArrivalDate);
                 await addOrUpdateSiteConstant(db, 'BookedDepartureDate', scBookedDepartureDate);
 
+
                 //bookingPreference switch: auto | consecutive | leadingtrailing | datearray
                 if (scBookingPreference === 'consecutive') {
-                    await addOrUpdateSiteConstant(db, 'BookingPreference', 'leadingtrailing');
+                    scBookingPreference = 'leadingtrailing';
+                    await addOrUpdateSiteConstant(db, 'BookingPreference', scBookingPreference);
                 }
 
             } else {
