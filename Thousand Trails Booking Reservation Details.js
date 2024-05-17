@@ -163,7 +163,7 @@ async function launch() {
         if (isValidConstant(scAvailableArrivalConstant) && isValidConstant(scAvailableDepartureConstant)) {
             scAvailableArrivalDate = scAvailableArrivalConstant.value;
             scAvailableDepartureDate = scAvailableDepartureConstant.value;
-        
+
             let bookedDatesInRange = getAllDatesInRangeOrArray(null, scAvailableArrivalDate, scAvailableDepartureDate);
             //console.log('Booked Dates In Range:', bookedDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
@@ -339,7 +339,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
             let availableDatesInRange = [];
             if (bookingPreference.toLowerCase() === 'datearray') {
-                availableDatesInRange = getDatesInRange(availableDates, null, null);
+                availableDatesInRange = getAllDatesInRangeOrArray(availableDates, null, null);
             } else {
                 availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
             }
@@ -534,24 +534,18 @@ function getDates(start, end) {
 
 function getDatesInRange(array, start, end) {
     var inRange = [];
-    // console.log('Start Date:', start);
-    // console.log('End Date:', end);
-    if (!start && !end) {
-        // If both start and end are null, add all items in the array to inRange
-        inRange = array.map(dateString => new Date(dateString));
-    } else {
-        for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
-            var dateString = dt.toLocaleDateString('en-us', formatDateOptions);
-            // console.log('Processing Date:', dateString);
-            if (array.includes(dateString)) {
-                inRange.push(dt);
-            }
+    //console.log('Start Date:', start);
+    //console.log('End Date:', end);
+    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
+        var dateString = dt.toLocaleDateString('en-us', formatDateOptions);
+        //console.log('Processing Date:', dateString);
+        if (array.includes(dateString)) {
+            inRange.push(dt);
         }
     }
-    // console.log('Dates in Range:', inRange);
+    //console.log('Dates in Range:', inRange);
     return inRange;
 }
-
 
 // Define a function to set up the event listener for the "Choose Campsite" button
 function setupEventListener() {
