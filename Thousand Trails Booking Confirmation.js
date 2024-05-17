@@ -203,11 +203,19 @@ async function launch() {
 }
 
 function combineBookingDates(existingArrivalDate, existingDepartureDate, newArrivalDate, newDepartureDate) {
+    console.log('Inputs:');
+    console.log('existingArrivalDate:', existingArrivalDate);
+    console.log('existingDepartureDate:', existingDepartureDate);
+    console.log('newArrivalDate:', newArrivalDate);
+    console.log('newDepartureDate:', newDepartureDate);
+
     if (!existingArrivalDate && !existingDepartureDate && !newArrivalDate && !newDepartureDate) {
+        console.log('All dates are missing. Returning null.');
         return null; // Return null if all dates are missing
     } else if (!existingArrivalDate && !existingDepartureDate && newArrivalDate && newDepartureDate) {
         const newArrival = new Date(newArrivalDate);
         const newDeparture = new Date(newDepartureDate);
+        console.log('Only new dates provided. Returning:', { bookedArrivalDate: newArrival, bookedDepartureDate: newDeparture });
         return { bookedArrivalDate: newArrival, bookedDepartureDate: newDeparture };
     }
 
@@ -219,13 +227,17 @@ function combineBookingDates(existingArrivalDate, existingDepartureDate, newArri
 
     // Combine dates without gaps
     if (existingDeparture && newDeparture.getTime() === existingArrival.getTime()) {
+        console.log('Existing departure and new arrival dates can be combined.');
         return { bookedArrivalDate: newArrival, bookedDepartureDate: existingDeparture };
     } else if (existingArrival && existingDeparture && existingDeparture.getTime() === newArrival.getTime()) {
+        console.log('Existing arrival and new departure dates can be combined.');
         return { bookedArrivalDate: existingArrival, bookedDepartureDate: newDeparture };
     } else {
+        console.log('Dates cannot be combined without gaps. Returning null.');
         return null; // Dates cannot be combined without gaps
     }
 }
+
 
 async function removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate) {
     try {
