@@ -46,7 +46,7 @@ async function launch() {
         console.log('DB initialized successfully.');
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
-          
+
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
         const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
@@ -195,7 +195,7 @@ async function launch() {
         await resetBookingAvailabilityProcess(db);
 
         //you do need to change the type of searching...
-        redirectBookingPage();
+        //redirectBookingPage();
 
     } catch (error) {
         console.error("An error occurred during form submission:", error);
