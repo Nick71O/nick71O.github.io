@@ -157,15 +157,21 @@ async function launch() {
             await removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
 
         } else {
-            const result = removeBookedDatesFromDesiredDates(scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
-            if (result) {
-                console.log('Desired dates have been removed from existing dates:');
-                console.log('Removed Arrival Date:', result.removedArrivalDate.toLocaleDateString('en-US'));
-                console.log('Removed Departure Date:', result.removedDepartureDate.toLocaleDateString('en-US'));
+            const result = removeBookedDatesFromExistingDates(scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
+            if (result === null) {
+                console.log('All existing dates are within the new range, so nothing is left.');
+                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', null);
+                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', null);
+            } else if (Array.isArray(result)) {
+                console.log('Split date ranges:');
+                result.forEach(range => {
+                    console.log(`Arrival: ${range.arrivalDate}, Departure: ${range.departureDate}`);
+                });
             } else {
-                console.log('Desired dates cannot be removed from existing dates due to overlap.');
+                console.log(`Updated Existing Dates:\nArrival: ${result.existingArrivalDate}\nDeparture: ${result.existingDepartureDate}`);
+                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', result.existingArrivalDate);
+                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', result.existingDepartureDate);
             }
-
 
             const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
             if (combinedBookingDates) {
@@ -211,39 +217,52 @@ async function launch() {
     }
 }
 
-function removeBookedDatesFromDesiredDates(existingArrivalDate, existingDepartureDate, newArrivalDate, newDepartureDate) {
+function removeBookedDatesFromExistingDates(existingArrivalDate, existingDepartureDate, newArrivalDate, newDepartureDate) {
     // Convert dates to JavaScript Date objects
-    const existingArrival = existingArrivalDate ? new Date(existingArrivalDate) : null;
-    const existingDeparture = existingDepartureDate ? new Date(existingDepartureDate) : null;
+    const existingArrival = new Date(existingArrivalDate);
+    const existingDeparture = new Date(existingDepartureDate);
     const newArrival = new Date(newArrivalDate);
     const newDeparture = new Date(newDepartureDate);
 
-    // Check if any of the dates are missing
-    if (!existingArrival || !existingDeparture || !newArrival || !newDeparture) {
-        return null; // Return null if any date is missing
+    // Check if the new dates overlap with the existing dates
+    if (newDeparture < existingArrival || newArrival > existingDeparture) {
+        // No overlap, return the original existing dates
+        return { existingArrivalDate, existingDepartureDate };
     }
 
-    // Check if the new booking completely overlaps with the existing booking
-    if (newArrival >= existingArrival && newDeparture <= existingDeparture) {
+    // If new dates completely cover the existing dates
+    if (newArrival <= existingArrival && newDeparture >= existingDeparture) {
+        return null; // All existing dates are within the new range, so nothing is left
+    }
+
+    // If there's a partial overlap
+    if (newArrival > existingArrival && newDeparture < existingDeparture) {
+        // Split the existing range into two parts
+        const updatedDates = [
+            { arrivalDate: existingArrival, departureDate: new Date(newArrival.getTime() - 1) },
+            { arrivalDate: new Date(newDeparture.getTime() + 1), departureDate: existingDeparture }
+        ];
+        return updatedDates;
+    }
+
+    // If new dates overlap only at the start of the existing range
+    if (newArrival <= existingArrival && newDeparture < existingDeparture) {
         return {
-            updatedArrivalDate: existingArrival,
-            updatedDepartureDate: existingDeparture
+            existingArrivalDate: new Date(newDeparture.getTime() + 1).toISOString().split('T')[0],
+            existingDepartureDate
         };
     }
 
-    // Check if the new booking partially overlaps with the existing booking
-    if ((newArrival >= existingArrival && newArrival < existingDeparture) || (newDeparture > existingArrival && newDeparture <= existingDeparture)) {
-        // Calculate the non-overlapping portion
-        const updatedArrival = newArrival < existingArrival ? newArrival : existingDeparture;
-        const updatedDeparture = newDeparture > existingDeparture ? newDeparture : existingArrival;
+    // If new dates overlap only at the end of the existing range
+    if (newArrival > existingArrival && newDeparture >= existingDeparture) {
         return {
-            updatedArrivalDate: updatedArrival,
-            updatedDepartureDate: updatedDeparture
+            existingArrivalDate,
+            existingDepartureDate: new Date(newArrival.getTime() - 1).toISOString().split('T')[0]
         };
     }
 
-    // No overlap or partial overlap, return null
-    return null;
+    // If there's any unexpected case, return the original dates
+    return { existingArrivalDate, existingDepartureDate };
 }
 
 
