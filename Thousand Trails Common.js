@@ -151,7 +151,7 @@ function composeMessageToSend(
     const messageBuilder = [];
 
     messageBuilder.push('Thousand Trails - Lake & Shore');
-    let availabileDatesTitle = 'Availabile Dates to Book';
+    let availabileDatesTitle = 'Available Dates to Book';
 
     // Switch to handle different message types
     switch (messageType) {
@@ -172,13 +172,13 @@ function composeMessageToSend(
         //messageBuilder.push('Default message for unknown step');
     }
 
-    // Append availabile dates to book
+    // Append available dates to book
     if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
         let bookedDatesInRange = getAllDatesInRangeOrArray(null, scAvailableArrivalDate, scAvailableDepartureDate);
         //console.log('Booked Dates In Range:', bookedDatesInRange);
         let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
-        const bookedDateRangeMessage = buildDateRangeMessage(`\n<u>${availabileDatesTitle}:</u>${allConsecutiveRanges}`);
+        const bookedDateRangeMessage = buildDateRangeMessage(`\n<u>${availabileDatesTitle}:</u>`, allConsecutiveRanges);
         messageBuilder.push(bookedDateRangeMessage);
     }
 
