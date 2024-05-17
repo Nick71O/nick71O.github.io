@@ -162,10 +162,10 @@ function composeMessageToSend(
             //messageBuilder.push('Step 2: Some specific message for Step 2');
             break;
         case 'step3':
-            messageBuilder.push('Campsite is available for booking!');
+            messageBuilder.push('<b>Campsite is available for booking!</b>');
             break;
         case 'step4':
-            messageBuilder.push('Reservation Confirmed!');
+            messageBuilder.push('<b>Reservation Confirmed!</b>');
             availabileDatesTitle = 'Booked';
             break;
         default:
@@ -226,7 +226,7 @@ function composeMessageToSend(
     // Append reservation error if defined
     if (reservationError !== null && reservationError !== undefined) {
         const trimmedError = reservationError.trim();
-        messageBuilder.push(`\nError Received: ${trimmedError}`);
+        messageBuilder.push(`\n<b>Error Received:</b> ${trimmedError}`);
     }
 
     return messageBuilder.join('\n'); // Convert array to string using newline separator
