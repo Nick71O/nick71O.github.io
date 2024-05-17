@@ -248,7 +248,7 @@ function removeBookedDatesFromExistingDates(existingArrivalDate, existingDepartu
     // If new dates overlap only at the start of the existing range
     if (newArrival <= existingArrival && newDeparture < existingDeparture) {
         return {
-            existingArrivalDate: new Date(newDeparture.getTime() + 1).toISOString().split('T')[0],
+            existingArrivalDate: new Date(newDeparture.getTime() + 1).toLocaleDateString('en-US', formatDateOptions),
             existingDepartureDate
         };
     }
@@ -257,7 +257,7 @@ function removeBookedDatesFromExistingDates(existingArrivalDate, existingDepartu
     if (newArrival > existingArrival && newDeparture >= existingDeparture) {
         return {
             existingArrivalDate,
-            existingDepartureDate: new Date(newArrival.getTime() - 1).toISOString().split('T')[0]
+            existingDepartureDate: new Date(newArrival.getTime() - 1).toLocaleDateString('en-US', formatDateOptions)
         };
     }
 
