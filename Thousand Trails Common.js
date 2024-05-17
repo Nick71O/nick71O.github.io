@@ -259,7 +259,7 @@ function getAllDatesInRangeOrArray(array, start, end) {
         const startDate = new Date(start);
         const endDate = new Date(end);
 
-        for (let dt = new Date(startDate); dt <= endDate; dt.setDate(dt.getDate() + 1)) {
+        for (let dt = new Date(startDate); dt < endDate; dt.setDate(dt.getDate() + 1)) {
             inRange.push(new Date(dt));
         }
     }
