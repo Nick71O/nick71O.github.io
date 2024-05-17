@@ -110,7 +110,7 @@ async function launch() {
 
         if (isValidConstant(scDesiredDatesArrayConstant) && scBookingPreference === 'datearray') {
             scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
-            console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
+            //console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
         }
 
         if (scDesiredDatesArray && scBookingPreference === 'datearray') {
@@ -122,9 +122,9 @@ async function launch() {
             console.log(desiredDateRangeMessage);
         } else if (scDesiredArrivalDate && scDesiredDepartureDate) {
             let desiredDatesInRange = getAllDatesInRangeOrArray(null, scDesiredArrivalDate, scDesiredDepartureDate);
-            console.log('Desired Dates In Range:', desiredDatesInRange);
+            //console.log('Desired Dates In Range:', desiredDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
-            console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+            //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
             const desiredDateRangeMessage = buildDateRangeMessage('Desired Dates to Book:', allConsecutiveRanges);
             console.log(desiredDateRangeMessage);
         } else {
