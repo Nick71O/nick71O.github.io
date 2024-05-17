@@ -177,7 +177,7 @@ function composeMessageToSend(
         let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
         const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Availabile Dates to Book:</u>', allConsecutiveRanges);
-        console.log(bookedDateRangeMessage);
+        messageBuilder.push(bookedDateRangeMessage);
     }
 
     // Append available dates from array
