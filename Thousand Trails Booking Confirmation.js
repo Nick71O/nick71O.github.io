@@ -165,12 +165,12 @@ async function launch() {
             } else if (Array.isArray(result)) {
                 console.log('Split date ranges:');
                 result.forEach(range => {
-                    console.log(`Arrival: ${range.arrivalDate}, Departure: ${range.departureDate}`);
+                    console.log(`Arrival: ${range.arrivalDate.toLocaleDateString('en-US', formatDateOptions)}, Departure: ${range.departureDate.toLocaleDateString('en-US', formatDateOptions)}`);
                 });
             } else {
                 console.log(`Updated Existing Dates:\nArrival: ${result.existingArrivalDate}\nDeparture: ${result.existingDepartureDate}`);
-                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', result.existingArrivalDate);
-                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', result.existingDepartureDate);
+                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', result.existingArrivalDate.toLocaleDateString('en-US', formatDateOptions));
+                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', result.existingDepartureDate.toLocaleDateString('en-US', formatDateOptions));
             }
 
             const combinedBookingDates = combineBookingDates(scBookedArrivalDate, scBookedDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
@@ -248,7 +248,7 @@ function removeBookedDatesFromExistingDates(existingArrivalDate, existingDepartu
     // If new dates overlap only at the start of the existing range
     if (newArrival <= existingArrival && newDeparture < existingDeparture) {
         return {
-            existingArrivalDate: new Date(newDeparture.getTime() + 1).toLocaleDateString('en-US', formatDateOptions),
+            existingArrivalDate: new Date(newDeparture.getTime() + 1),
             existingDepartureDate
         };
     }
@@ -257,7 +257,7 @@ function removeBookedDatesFromExistingDates(existingArrivalDate, existingDepartu
     if (newArrival > existingArrival && newDeparture >= existingDeparture) {
         return {
             existingArrivalDate,
-            existingDepartureDate: new Date(newArrival.getTime() - 1).toLocaleDateString('en-US', formatDateOptions)
+            existingDepartureDate: new Date(newArrival.getTime() - 1)
         };
     }
 
