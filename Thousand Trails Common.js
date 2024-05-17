@@ -161,10 +161,10 @@ function composeMessageToSend(
             //messageBuilder.push('Step 2: Some specific message for Step 2');
             break;
         case 'step3':
-            messageBuilder.push('Campsite is available for booking!\n');
+            messageBuilder.push('Campsite is available for booking!');
             break;
         case 'step4':
-            messageBuilder.push('Campsite is booked!\n');
+            messageBuilder.push('Campsite is booked!');
             break;
         default:
         //messageBuilder.push('Default message for unknown step');
@@ -172,11 +172,12 @@ function composeMessageToSend(
 
     // Append availabile dates to book
     if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
-        const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-        const dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
-        const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
-
-        messageBuilder.push(`<u>Availabile Dates to Book:</u>\nArrival: ${scAvailableArrivalDate}    Departure: ${scAvailableDepartureDate}    Number of Nights: ${scAvailabileNumberOfNights}`);
+        let bookedDatesInRange = getAllDatesInRangeOrArray(null, scAvailableArrivalDate, scAvailableDepartureDate);
+        //console.log('Booked Dates In Range:', bookedDatesInRange);
+        let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
+        //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+        const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Availabile Dates to Book:</u>', allConsecutiveRanges);
+        console.log(bookedDateRangeMessage);
     }
 
     // Append available dates from array

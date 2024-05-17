@@ -163,12 +163,12 @@ async function launch() {
                 scBookedArrivalDate = combinedBookingDates.bookedArrivalDate.toLocaleDateString('en-US', formatDateOptions);
                 scBookedDepartureDate = combinedBookingDates.bookedDepartureDate.toLocaleDateString('en-US', formatDateOptions);
 
-                // Calculate the number of nights
-                const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-                const dateDifference = Math.abs(new Date(scBookedDepartureDate).getTime() - new Date(scBookedArrivalDate).getTime());
-                const scBookedNumberOfNights = Math.round(dateDifference / oneDay);
-
-                console.log("Combined Booked Dates\n   Arrival: " + scBookedArrivalDate + "    Departure: " + scBookedDepartureDate + "    Number of Nights: " + scBookedNumberOfNights);
+                let bookedDatesInRange = getAllDatesInRangeOrArray(null, scBookedArrivalDate, scBookedDepartureDate);
+                //console.log('Booked Dates In Range:', bookedDatesInRange);
+                let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
+                //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
+                const bookedDateRangeMessage = buildDateRangeMessage('Existing Booked Reservations:', allConsecutiveRanges);
+                console.log(bookedDateRangeMessage);
 
                 //set the SiteConstant with the newly booked dates
                 await addOrUpdateSiteConstant(db, 'BookedArrivalDate', scBookedArrivalDate);
@@ -180,7 +180,7 @@ async function launch() {
                 }
 
             } else {
-                console.log('Dates cannot be combined without gaps.');
+                //console.log('Dates cannot be combined without gaps.');
             }
         }
 
@@ -203,19 +203,11 @@ async function launch() {
 }
 
 function combineBookingDates(existingArrivalDate, existingDepartureDate, newArrivalDate, newDepartureDate) {
-    console.log('Inputs:');
-    console.log('existingArrivalDate:', existingArrivalDate);
-    console.log('existingDepartureDate:', existingDepartureDate);
-    console.log('newArrivalDate:', newArrivalDate);
-    console.log('newDepartureDate:', newDepartureDate);
-
     if (!existingArrivalDate && !existingDepartureDate && !newArrivalDate && !newDepartureDate) {
-        console.log('All dates are missing. Returning null.');
         return null; // Return null if all dates are missing
     } else if (!existingArrivalDate && !existingDepartureDate && newArrivalDate && newDepartureDate) {
         const newArrival = new Date(newArrivalDate);
         const newDeparture = new Date(newDepartureDate);
-        console.log('Only new dates provided. Returning:', { bookedArrivalDate: newArrival, bookedDepartureDate: newDeparture });
         return { bookedArrivalDate: newArrival, bookedDepartureDate: newDeparture };
     }
 
@@ -227,19 +219,17 @@ function combineBookingDates(existingArrivalDate, existingDepartureDate, newArri
 
     // Combine dates without gaps
     if (existingDeparture && newDeparture.getTime() === existingArrival.getTime()) {
-        console.log('Existing departure and new arrival dates can be combined.');
         return { bookedArrivalDate: newArrival, bookedDepartureDate: existingDeparture };
     } else if (existingArrival && existingDeparture && existingDeparture.getTime() === newArrival.getTime()) {
-        console.log('Existing arrival and new departure dates can be combined.');
         return { bookedArrivalDate: existingArrival, bookedDepartureDate: newDeparture };
     } else {
-        console.log('Dates cannot be combined without gaps. Returning null.');
         return null; // Dates cannot be combined without gaps
     }
 }
 
 
 async function removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate) {
+    console.log('removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate)');
     try {
         if (!scDesiredDatesArrayConstant || !scDesiredDatesArrayConstant.value) {
             console.error('Desired dates array constant not found or empty.');
