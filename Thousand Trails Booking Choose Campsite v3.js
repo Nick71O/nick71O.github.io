@@ -299,7 +299,7 @@ async function getSiteConstants(db) {
 
 async function getAvailabilityRecord(db, arrivalDate) {
     console.log('Hello from getAvailabilityRecord()');
-    const transaction = db.transaction(['Availability'], 'readonly');
+    const transaction = db.transaction(['Availability'], 'readwrite');
     const availabilityStore = transaction.objectStore('Availability');
 
     return new Promise((resolve, reject) => {
