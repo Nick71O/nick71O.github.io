@@ -184,7 +184,7 @@ async function launch() {
 
             //openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
 
-            inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
+            await inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
         }
         else {
             await logSiteConstants(db);
