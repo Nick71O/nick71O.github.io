@@ -374,7 +374,7 @@ async function insertAvailabilityRecords2(db, desiredDatesArray) {
 }
 
 async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate) {
-    console.log('removeBookedDatesFromAvailability(db, arrivalDate, departureDate)');
+    console.log('removeBookedDatesFromAvailability(db, arrivalDate, departureDate)')
     try {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');

@@ -270,9 +270,9 @@ async function getNextAvailabilityDate(db) {
 
             if (cursor) {
                 const record = cursor.value;
-                //console.log('record.Checked === ' + record.Checked + ')');
+                console.log('record.Checked === ' + record.Checked + ')');
                 if ((record.Checked === null || record.Checked === '') && new Date(record.ArrivalDate) < lowestArrivalDate) {
-                    //console.log("getNextAvailabilityDate() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
+                    console.log("getNextAvailabilityDate() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
                     lowestArrivalDate = new Date(record.ArrivalDate);
                     nextAvailability = {
                         arrivalDate: record.ArrivalDate,
