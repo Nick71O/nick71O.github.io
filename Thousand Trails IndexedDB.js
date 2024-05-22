@@ -2,7 +2,7 @@
 
 const formatDateOptions = { month: '2-digit', day: '2-digit', year: 'numeric' };
 const dbName = 'ThousandTrailsDB';
-const dbVersion = 10;
+const dbVersion = 11;
 let db;
 
 // Function to initialize IndexedDB and return a promise
