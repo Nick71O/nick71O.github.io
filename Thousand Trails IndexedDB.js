@@ -21,7 +21,7 @@ function initializeDB() {
         
 
             if (!db.objectStoreNames.contains('Availability')) {
-                const availabilityStore = db.createObjectStore('Availability', { autoIncrement: true });
+                const availabilityStore = db.createObjectStore('Availability', { keyPath: 'id', autoIncrement: true });
                 availabilityStore.createIndex('ArrivalDate', 'ArrivalDate', { unique: false });
                 availabilityStore.createIndex('DepartureDate', 'DepartureDate', { unique: false });
                 availabilityStore.createIndex('Available', 'Available', { unique: false });
