@@ -346,8 +346,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             }
             console.log('Available Dates In Range:', availableDatesInRange);
 
-
             const dates = availableDatesInRange.map(dateStr => new Date(dateStr));
+            dates.sort((a, b) => a - b);
 
             let currentRange = [];
             let allRanges = [];
