@@ -190,7 +190,7 @@ async function launch() {
             await logSiteConstants(db);
             await logAvailabilityRecords(db);
 
-            console.log('Goto Step 2');
+            //console.log('Goto Step 2');
 
             console.log('Load getOnlyAvailableSiteRecords');
             const { availableDates, elapseTime } = await getOnlyAvailableSiteRecords(db)
@@ -270,7 +270,7 @@ async function getNextAvailabilityDate(db) {
 
             if (cursor) {
                 const record = cursor.value;
-                console.log('record.Checked === ' + record.Checked + ')');
+                //console.log('record.Checked === ' + record.Checked + ')');
                 
                 if ((record.Checked === null || record.Checked === '') && new Date(record.ArrivalDate) < lowestArrivalDate) {
                     console.log("getNextAvailabilityDate() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
