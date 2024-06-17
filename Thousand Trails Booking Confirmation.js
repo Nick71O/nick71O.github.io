@@ -222,8 +222,8 @@ async function launch() {
         await logAvailabilityRecords(db);
 
         //clear database, sleep and start looking for the next booking
-        console.log("\nSleeping...4 minutes");
-        await sleep(240000);
+        console.log("\nSleeping...2 minutes");
+        await sleep(120000);
         await resetBookingAvailabilityProcess(db);
 
         //you do need to change the type of searching...
