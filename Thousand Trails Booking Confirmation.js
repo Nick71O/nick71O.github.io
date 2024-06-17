@@ -160,6 +160,10 @@ async function launch() {
                 scDesiredDatesArray = JSON.parse(scDesiredDatesArrayConstant.value);
                 //console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
             }
+
+            // Add the booked dates to the booked dates array so they can be displayed in the notification
+            await addBookedDatesToBookedDatesArray(db, scBookedDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
+
         } else {
             const result = removeBookedDatesFromExistingDates(scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
             if (result === null) {
@@ -336,6 +340,49 @@ async function removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayCon
         await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(updatedDatesArray));
     } catch (error) {
         console.error('Error removing booked dates from desired dates array:', error);
+    }
+}
+
+async function addBookedDatesToBookedDatesArray(db, bookedDatesArrayConstant, bookedArrivalDate, bookedDepartureDate) {
+    console.log('addBookedDatesToBookedDatesArray(db, bookedDatesArrayConstant)');
+    try {
+        if (!bookedDatesArrayConstant || !bookedDatesArrayConstant.value) {
+            console.error('Booked dates array constant not found or empty.');
+            return;
+        }
+
+        const bookedDatesArray = JSON.parse(bookedDatesArrayConstant.value);
+
+        if (!Array.isArray(bookedDatesArray)) {
+            console.error('Booked dates array is not an array.');
+            return;
+        }
+
+        const arrivalDate = new Date(bookedArrivalDate);
+        const departureDate = new Date(bookedDepartureDate);
+
+        console.log('Original Booked Dates Array:', bookedDatesArray);
+
+        // Filter out dates that fall within the new booking range
+        const updatedDatesArray = bookedDatesArray.filter(dateString => {
+            const currentDate = new Date(dateString);
+            return !(currentDate >= arrivalDate && currentDate < departureDate);
+        });
+
+        // Add new dates from arrival to departure to the updated array with formatting
+        for (let d = new Date(arrivalDate); d < departureDate; d.setDate(d.getDate() + 1)) {
+            updatedDatesArray.push(new Date(d).toLocaleDateString('en-US', formatDateOptions));
+        }
+
+        // Sort the updated dates array
+        updatedDatesArray.sort((a, b) => new Date(a) - new Date(b));
+
+        console.log('Updated Booked Dates Array:', updatedDatesArray);
+
+        // Update the site constant with the filtered and sorted array
+        await addOrUpdateSiteConstant(db, 'BookedDatesArray', JSON.stringify(updatedDatesArray));
+    } catch (error) {
+        console.error('Error adding booked dates to booked dates array:', error);
     }
 }
 
