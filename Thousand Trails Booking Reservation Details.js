@@ -550,7 +550,8 @@ function getDatesInRange(array, start, end) {
 
 // Define a function to set up the event listener for the "Choose Campsite" button
 function setupEventListener() {
-    var btnStep2 = document.getElementById("btnStep2");
+    //var btnStep2 = document.getElementById("btnStep2");
+    var btnStep2 = document.getElementById("btnSelect0");
 
     if (btnStep2) {
         btnStep2.addEventListener("click", function () {
@@ -570,7 +571,8 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
     // Check if the elements exist before performing actions
     var checkinInput = document.getElementById("checkin");
     var checkoutInput = document.getElementById("checkout");
-    var btnStep2 = document.getElementById("btnStep2");
+    //var btnStep2 = document.getElementById("btnStep2"); old
+    var btnStep2 = document.getElementById("btnSelect0");
     var campingTypeSelect = document.getElementById("campingType");
     var equipmentTypeSelect = document.getElementById("equipmentType");
     var adultsSelect = document.getElementById("adults");
