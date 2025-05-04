@@ -12,9 +12,11 @@ function initializeGlobalVariables(globalVariables) {
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
   console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
   console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
+  console.log("desiredSiteTypes: " + globalVariables.desiredSiteTypes.join(", "));
   console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
   console.log("bookedDatesArray: " + globalVariables.bookedDatesArray.join(", "));
+  console.log("bookedSiteType: " + globalVariables.bookedSiteType);
   console.log("pushoverUserKey: " + globalVariables.pushoverUserKey);
   console.log("pushoverApiTokenAvailability: " + globalVariables.pushoverApiTokenAvailability);
   console.log("pushoverApiTokenReservation: " + globalVariables.pushoverApiTokenReservation)
@@ -176,11 +178,14 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);
     await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', globalVariables.desiredDepartureDate);
     await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(globalVariables.desiredDatesArray));
+    await addOrUpdateSiteConstant(db, 'DesiredSiteTypes', JSON.stringify(globalVariables.desiredSiteTypes));
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
     await addOrUpdateSiteConstant(db, 'BookedDepartureDate', globalVariables.bookedDepartureDate);
     await addOrUpdateSiteConstant(db, 'BookedDatesArray', JSON.stringify(globalVariables.bookedDatesArray));
+    await addOrUpdateSiteConstant(db, 'BookedSiteType', globalVariables.bookedSiteType);
     await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
     await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableSiteType', null);
     await addOrUpdateSiteConstant(db, 'PushoverUserKey', globalVariables.pushoverUserKey);
     await addOrUpdateSiteConstant(db, 'PushoverApiTokenAvailability', globalVariables.pushoverApiTokenAvailability);
     await addOrUpdateSiteConstant(db, 'PushoverApiTokenReservation', globalVariables.pushoverApiTokenReservation);
@@ -190,6 +195,7 @@ async function launch() {
     const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
     const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
     const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+    const scDesiredSiteTypesConstant = await getSiteConstant(db, 'scDesiredSiteTypes');
     const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
     let scBookingPreference = null;
 
@@ -218,6 +224,11 @@ async function launch() {
       await insertAvailabilityRecords(db, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value);
     } else {
       console.error('SiteConstant Desired Arrival\Departure or Array constant is null, empty, or not found.');
+    }
+
+    if (isValidConstant(scDesiredSiteTypesConstant)) {
+      let scDesiredSiteTypes = JSON.parse(scDesiredSiteTypesConstant.value);
+      console.log('SiteConstant Desired Site Types: ' + scDesiredSiteTypes)
     }
 
     await logSiteConstants(db);

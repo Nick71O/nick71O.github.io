@@ -6,6 +6,11 @@ var globalVariables = {
     bookingPreference: "datearray",
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
+    desiredSiteTypes: [
+        'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In',
+        'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through',
+        'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through Accessible'
+    ],   
     desiredArrivalDate: "06/27/2024",  
     desiredDepartureDate: "07/15/2024",
     desiredDatesArray: [
@@ -26,6 +31,7 @@ var globalVariables = {
         "08/09/2024",
         "08/13/2024"
     ],
+    bookedSiteType: 'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In', //null
     bookedArrivalDate: "06/27/2024", //null
     bookedDepartureDate: "07/01/2024", //null
     bookedDatesArray: [
