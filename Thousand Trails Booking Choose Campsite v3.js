@@ -124,7 +124,7 @@
   
           if (isValidConstant(scDesiredSiteTypesConstant)) {
               scDesiredSiteTypes = JSON.parse(scDesiredSiteTypesConstant.value);
-              console.log('SiteConstant Desired Site Types: ' + scDesiredSiteTypes)
+              console.log('SiteConstant Desired Site Types: ' + scDesiredSiteTypes);
           }
 
           if (isValidConstant(scBookedArrivalConstant) && isValidConstant(scBookedDepartureConstant)) {
@@ -158,7 +158,7 @@
   
           if (isValidConstant(scBookedSiteTypeConstant)) {
               scBookedSiteType = scBookedSiteTypeConstant.value;
-              console.log('SiteConstant Booked Site Type: ' + scBookedSiteType)
+              console.log('SiteConstant Booked Site Type: ' + scBookedSiteType);
           }
 
           if (isValidConstant(scAvailableArrivalConstant) && isValidConstant(scAvailableDepartureConstant)) {
@@ -175,11 +175,11 @@
               console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
           }
   
-          if (isValidConstant(scAvailabileSiteTypeConstant)) {
-              scAvailabileSiteType = scAvailabileSiteTypeConstant.value;
-              console.log('SiteConstant Availabile Site Type: ' + scAvailabileSiteType)
+          if (isValidConstant(scAvailableSiteTypeConstant)) {
+              scAvailableSiteType = scAvailableSiteTypeConstant.value;
+              console.log('SiteConstant Available Site Type: ' + scAvailableSiteType);
           }
-  
+        
           if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
               //check if the book campsite button is available and click it
               console.log('\n');
