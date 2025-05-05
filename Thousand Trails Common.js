@@ -182,8 +182,9 @@ function composeMessageToSend(
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
         const bookedDateRangeMessage = buildDateRangeMessage(`\n<u>${availabileDatesTitle}:</u>`, allConsecutiveRanges);
         messageBuilder.push(bookedDateRangeMessage);
-        const bookedSiteTypeMessage = `${scAvailableSiteType}`;
-        messageBuilder.push(bookedSiteTypeMessage);
+        if (scAvailableSiteType) {
+            messageBuilder.push(`${scAvailableSiteType}`);
+        }
     }
 
     // Append available dates from array
@@ -225,8 +226,9 @@ function composeMessageToSend(
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
         const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Existing Booked Reservations:</u>', allConsecutiveRanges);
         messageBuilder.push(bookedDateRangeMessage);
-        const bookedSiteTypeMessage = `${scBookedSiteType}`;
-        messageBuilder.push(bookedSiteTypeMessage);
+        if (scBookedSiteType) {
+            messageBuilder.push(`${scBookedSiteType}`);
+        }
     } 
 
     messageBuilder.push('\nThousand Trails: (888) 551-9102');
