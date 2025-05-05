@@ -217,8 +217,9 @@ function composeMessageToSend(
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
         const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Existing Booked Reservations:</u>', allConsecutiveRanges);
         messageBuilder.push(bookedDateRangeMessage);
-        const bookedSiteTypeMessage = `${scBookedSiteType}`;
-        messageBuilder.push(bookedSiteTypeMessage);
+        if (scBookedSiteType) {
+            messageBuilder.push(`${scBookedSiteType}`);
+        }
     } else if (scBookedArrivalDate && scBookedDepartureDate) {
         let bookedDatesInRange = getAllDatesInRangeOrArray(null, scBookedArrivalDate, scBookedDepartureDate);
         //console.log('Booked Dates In Range:', bookedDatesInRange);
