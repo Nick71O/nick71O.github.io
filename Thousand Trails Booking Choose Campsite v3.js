@@ -417,31 +417,40 @@ async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTi
    });
 }
 
+/**
+ * Checks for an available campsite matching one of the desired site types.
+ * Optionally clicks the "Select Site" button if found.
+ */
 function isCampsiteAvailable(scDesiredSiteTypes, clickButton = false) {
-   // Find all elements with class "site-title desktop"
-   const siteTitles = document.querySelectorAll('.site-title.desktop');
+    const siteTitles = document.querySelectorAll('.site-title.desktop');
+    let buttonFound = false;
+    let matchedSiteType = null;
 
-   // Flag to track if the button is found
-   let buttonFound = false;
+    siteTitles.forEach(title => {
+        const text = title.textContent.trim();
 
-   // Loop through each element to find the one with exact text "Site: "
-   siteTitles.forEach(title => {
-       if (title.textContent.trim() === 'Site:') {
-           // Find the "Select Site" button within this element's parent
-           const selectButton = title.closest('.site').querySelector('.select-site');
-           if (selectButton) {
-               // Set the flag to true and optionally click the button
-               buttonFound = true;
-               if (clickButton) {
-                   selectButton.click(); // Click the button
-               }
-               return; // Exit the loop and the enclosing function
-           }
-       }
-   });
+        for (let desired of scDesiredSiteTypes) {
+            if (text.startsWith(desired)) {
+                const selectButton = title.closest('.site').querySelector('.select-site');
 
-   // Return true if buttonFound is true, false otherwise
-   return buttonFound;
+                if (selectButton) {
+                    buttonFound = true;
+                    matchedSiteType = desired;
+
+                    if (clickButton) {
+                        selectButton.click();
+                    }
+
+                    return;
+                }
+            }
+        }
+    });
+
+    return {
+        buttonFound,
+        matchedSiteType
+    };
 }
 
 async function redirectBookingPage() {
