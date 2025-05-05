@@ -204,10 +204,10 @@ async function launch() {
                }
 
                // Call the sendPushMessage function with the required parameters
-               pushBookSiteMessage(db,composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-                   scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteDate, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
-                   scBookedSiteDate, null, reservationError));
-
+               pushBookSiteMessage(db, composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
+                scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
+                scBookedSiteType, null, reservationError));
+            
 
                if (reservationError == "Unable to process your request.") {
                    console.log("Sleeping...1 minute");
