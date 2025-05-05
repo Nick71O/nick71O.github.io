@@ -188,7 +188,7 @@ async function launch() {
            const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, true);
            if (isCampsiteAvailableResult.buttonFound) {
                clickCount = clickCount + 1;
-               console.log(`Selected "${isCampsiteAvailableResultClick.matchedSiteType}" Campsite (click count: ${clickCount})`);
+               console.log(`Selected "${isCampsiteAvailableResult.matchedSiteType}" Campsite (click count: ${clickCount})`);
 
                // Calculate the number of nights
                var oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
