@@ -306,7 +306,7 @@ function getConsecutiveDateRanges(dateStrArray) {
 
 function concatenateAvailableDatesToString(datesArray) {
     let concatenatedString = 'Currently Available Dates: ';
-    if (datesArray.length === 0) {
+    if (!Array.isArray(datesArray) || datesArray.length === 0) {
         concatenatedString += '<b>None</b>';
     } else {
         datesArray.forEach((date, index) => {
