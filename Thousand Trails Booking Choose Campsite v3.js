@@ -10,7 +10,6 @@
    })
    .then(() => {
        // Now you can safely use functions or variables from the loaded scripts here
-       waitAndResetDatepicker();
        launch();
    })
    .catch(error => {
@@ -18,24 +17,6 @@
        console.error('Error loading scripts:', error);
    });
 
-function waitAndResetDatepicker(attempts = 10) {
-    if (typeof $ === 'undefined' || !$('#checkin').hasClass('hasDatepicker')) {
-        if (attempts > 0) {
-            console.log('Waiting for datepicker...');
-            setTimeout(() => waitAndResetDatepicker(attempts - 1), 500);
-        } else {
-            console.warn('Datepicker not found after retries.');
-        }
-        return;
-    }
-
-    console.log('Resetting datepicker constraints...');
-    $('#checkin').datepicker('destroy');
-    $('#checkout').datepicker('destroy');
-
-    $('#checkin').datepicker({ minDate: null, maxDate: null });
-    $('#checkout').datepicker({ minDate: null, maxDate: null });
-}
 
 function loadScript(src) {
    return new Promise((resolve, reject) => {

@@ -583,6 +583,12 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         if (typeof $ !== 'undefined' && $(checkinInput).hasClass("hasDatepicker")) {
             $(checkinInput).datepicker("setDate", arrivalDate);
         } else {
+            // Reset datepicker constraints just before entering values
+            if (typeof $ !== 'undefined' && $('#checkin').hasClass('hasDatepicker')) {
+                console.log('Resetting datepicker before setting arrival...');
+                $('#checkin').datepicker('destroy');
+                $('#checkin').datepicker({ minDate: null, maxDate: null });
+            }
             checkinInput.value = arrivalDate;
             checkinInput.dispatchEvent(new Event('input', { bubbles: true }));
             checkinInput.dispatchEvent(new Event('change', { bubbles: true }));
@@ -592,6 +598,12 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         if (typeof $ !== 'undefined' && $(checkoutInput).hasClass("hasDatepicker")) {
             $(checkoutInput).datepicker("setDate", departureDate);
         } else {
+            // Reset datepicker constraints just before entering values
+            if (typeof $ !== 'undefined' && $('#checkout').hasClass('hasDatepicker')) {
+                console.log('Resetting datepicker before setting departure...');
+                $('#checkout').datepicker('destroy');
+                $('#checkout').datepicker({ minDate: null, maxDate: null });
+            }
             checkoutInput.value = departureDate;
             checkoutInput.dispatchEvent(new Event('input', { bubbles: true }));
             checkoutInput.dispatchEvent(new Event('change', { bubbles: true }));
