@@ -186,7 +186,7 @@ async function launch() {
            getTimestamp();
            window.console.log('\nSearching page for the "Select Site" button');
            const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, true);
-           if (isCampsiteAvailableResult) {
+           if (isCampsiteAvailableResult.buttonFound) {
                clickCount = clickCount + 1;
                console.log(`Selected "${isCampsiteAvailableResultClick.matchedSiteType}" Campsite (click count: ${clickCount})`);
 
@@ -264,8 +264,8 @@ async function launch() {
                    console.log('Load updateAvailabilityRecord');
                    //check if the book campsite button is available
                    const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, );
-                   console.log('Is campsite available:', isCampsiteAvailableResult);
-                   if (isCampsiteAvailableResult) {
+                   console.log('Is campsite available:', isCampsiteAvailableResult.buttonFound);
+                   if (isCampsiteAvailableResult.buttonFound) {
                      console.log(`${isCampsiteAvailableResult.matchedSiteType} Campsite is Available for ${availabilityRecord.ArrivalDate}`);
                    }
 
@@ -280,7 +280,7 @@ async function launch() {
                    */
 
                    const currentTimeStamp = formatDateTime(Date.now());
-                   await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult, currentTimeStamp);
+                   await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult.buttonFound, currentTimeStamp);
                }
                else {
                    console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
