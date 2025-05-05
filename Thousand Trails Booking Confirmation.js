@@ -50,21 +50,27 @@ async function launch() {
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
         let scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
+        let scDesiredSiteTypesConstant = await getSiteConstant(db, 'DesiredSiteTypes');         
         const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         let scBookedDatesArrayConstant = await getSiteConstant(db, 'BookedDatesArray');
+        let scBookedSiteTypeConstant = await getSiteConstant(db, 'BookedSiteType');
         const scAvailableArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailableDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate')
+        let scAvailableSiteTypeConstant = await getSiteConstant(db, 'AvailableSiteType');
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
         let scDesiredDatesArray = null;
+        let scDesiredSiteTypes = null;
         let scBookingPreference = null;
         let scBookedArrivalDate = null;
         let scBookedDepartureDate = null;
         let scBookedDatesArray = null;
+        let scBookedSiteType = null;
         let scAvailableArrivalDate = null;
         let scAvailableDepartureDate = null;
+        let scAvailableSiteType = null;
 
         // Check if constants were retrieved successfully and if their values are not null or empty
         const isValidConstant = (constant) =>
@@ -88,7 +94,7 @@ async function launch() {
             //console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
         }
 
-        if (scDesiredDatesArray && scBookingPreference === 'datearray') {
+        if (hasValidDates(scDesiredDatesArray) && scBookingPreference === 'datearray') {
             let desiredDatesInRange = getAllDatesInRangeOrArray(scDesiredDatesArray, null, null);
             //console.log('Desired Dates In Range:', desiredDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
@@ -106,6 +112,11 @@ async function launch() {
             console.error('SiteConstant Desired Arrival, Departure or Array constant is null, empty, or not found.');
         }
 
+       if (isValidConstant(scDesiredSiteTypesConstant)) {
+           scDesiredSiteTypes = JSON.parse(scDesiredSiteTypesConstant.value);
+           console.log('SiteConstant Desired Site Types: ' + scDesiredSiteTypes);
+       }
+
         if (isValidConstant(scBookedArrivalConstant) && isValidConstant(scBookedDepartureConstant)) {
             scBookedArrivalDate = scBookedArrivalConstant.value;
             scBookedDepartureDate = scBookedDepartureConstant.value;
@@ -117,7 +128,7 @@ async function launch() {
             //console.log('SiteConstant Booked Dates Array: ' + scBookedDatesArray)
         }
 
-        if (scBookedDatesArray && scBookingPreference === 'datearray') {
+        if (hasValidDates(scBookedDatesArray) && scBookingPreference === 'datearray') {
             let bookedDatesInRange = getAllDatesInRangeOrArray(scBookedDatesArray, null, null);
             //console.log('Booked Dates In Range:', bookedDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
@@ -132,8 +143,13 @@ async function launch() {
             const bookedDateRangeMessage = buildDateRangeMessage('Existing Booked Reservations:', allConsecutiveRanges);
             console.log(bookedDateRangeMessage);
         } else {
-            console.error('SiteConstant Booked Arrival, Departure or Array constant is null, empty, or not found.');
+            console.log('SiteConstant Booked Arrival, Departure or Array constant is null, empty, or not found.');
         }
+
+       if (isValidConstant(scBookedSiteTypeConstant)) {
+           scBookedSiteType = scBookedSiteTypeConstant.value;
+           console.log('SiteConstant Booked Site Type: ' + scBookedSiteType);
+       }
 
         if (isValidConstant(scAvailableArrivalConstant) && isValidConstant(scAvailableDepartureConstant)) {
             scAvailableArrivalDate = scAvailableArrivalConstant.value;
@@ -148,6 +164,11 @@ async function launch() {
         } else {
             console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
         }
+
+       if (isValidConstant(scAvailableSiteTypeConstant)) {
+           scAvailableSiteType = scAvailableSiteTypeConstant.value;
+           console.log('SiteConstant Available Site Type: ' + scAvailableSiteType);
+       }
 
         // Remove the booked dates from the availability table so they are not booked a 2nd time
         await removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
@@ -215,8 +236,8 @@ async function launch() {
 
         // Call the sendPushMessage function with the required parameters
         pushSiteBookedMessage(db, composeMessageToSend('step4', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-            scAvailableArrivalDate, scAvailableDepartureDate, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, null, null));
-
+            scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
+            scBookedSiteType, null, null));
 
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
