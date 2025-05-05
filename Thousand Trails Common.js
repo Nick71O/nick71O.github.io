@@ -142,9 +142,11 @@ function composeMessageToSend(
     scDesiredDatesArray,
     scAvailableArrivalDate,
     scAvailableDepartureDate,
+    scAvailableSiteType,
     scBookedArrivalDate,
     scBookedDepartureDate,
     scBookedDatesArray,
+    scBookedSiteType,
     availableDateArray,
     reservationError
 ) {
@@ -180,6 +182,8 @@ function composeMessageToSend(
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
         const bookedDateRangeMessage = buildDateRangeMessage(`\n<u>${availabileDatesTitle}:</u>`, allConsecutiveRanges);
         messageBuilder.push(bookedDateRangeMessage);
+        const bookedSiteTypeMessage = `${scAvailableSiteType}`;
+        messageBuilder.push(bookedSiteTypeMessage);
     }
 
     // Append available dates from array
@@ -212,6 +216,8 @@ function composeMessageToSend(
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
         const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Existing Booked Reservations:</u>', allConsecutiveRanges);
         messageBuilder.push(bookedDateRangeMessage);
+        const bookedSiteTypeMessage = `${scBookedSiteType}`;
+        messageBuilder.push(bookedSiteTypeMessage);
     } else if (scBookedArrivalDate && scBookedDepartureDate) {
         let bookedDatesInRange = getAllDatesInRangeOrArray(null, scBookedArrivalDate, scBookedDepartureDate);
         //console.log('Booked Dates In Range:', bookedDatesInRange);
@@ -219,6 +225,8 @@ function composeMessageToSend(
         //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
         const bookedDateRangeMessage = buildDateRangeMessage('\n<u>Existing Booked Reservations:</u>', allConsecutiveRanges);
         messageBuilder.push(bookedDateRangeMessage);
+        const bookedSiteTypeMessage = `${scBookedSiteType}`;
+        messageBuilder.push(bookedSiteTypeMessage);
     } 
 
     messageBuilder.push('\nThousand Trails: (888) 551-9102');
@@ -271,7 +279,9 @@ function getAllDatesInRangeOrArray(array, start, end) {
 }
 
 function getConsecutiveDateRanges(dateStrArray) {
-    const dates = dateStrArray.map(dateStr => new Date(dateStr));
+    const dates = dateStrArray
+        .filter(str => str && !isNaN(new Date(str))) // Remove empty or invalid strings
+        .map(str => new Date(str));
 
     let currentRange = [];
     let allRanges = [];
