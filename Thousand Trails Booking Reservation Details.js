@@ -579,33 +579,29 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
     var slideoutsNoRadio = document.getElementById("slideoutsNo");
 
     if (checkinInput && checkoutInput && btnStep2 && campingTypeSelect && equipmentTypeSelect && adultsSelect && kidsSelect && lengthInput && slideoutsNoRadio) {
-        // Set Arrival Date
-        if (typeof $ !== 'undefined' && $(checkinInput).hasClass("hasDatepicker")) {
-            $(checkinInput).datepicker("setDate", arrivalDate);
-        } else {
-            // Reset datepicker constraints just before entering values
-            if (typeof $ !== 'undefined' && $('#checkin').hasClass('hasDatepicker')) {
-                console.log('Resetting datepicker before setting arrival...');
-                $('#checkin').datepicker('destroy');
-                $('#checkin').datepicker({ minDate: null, maxDate: null });
+        // Set Arrival/Departure Date
+        // Reset both datepickers regardless of current state
+        if (typeof $ !== 'undefined') {
+            if ($(checkinInput).hasClass("hasDatepicker")) {
+                console.log('Destroying checkin datepicker to override constraints...');
+                $(checkinInput).datepicker('destroy');
             }
-            checkinInput.value = arrivalDate;
-            checkinInput.dispatchEvent(new Event('input', { bubbles: true }));
-            checkinInput.dispatchEvent(new Event('change', { bubbles: true }));
-        }
+            $(checkinInput).datepicker({ minDate: null, maxDate: null });
 
-        // Set Departure Date
-        if (typeof $ !== 'undefined' && $(checkoutInput).hasClass("hasDatepicker")) {
+            if ($(checkoutInput).hasClass("hasDatepicker")) {
+                console.log('Destroying checkout datepicker to override constraints...');
+                $(checkoutInput).datepicker('destroy');
+            }
+            $(checkoutInput).datepicker({ minDate: null, maxDate: null });
+
+            // Now safely set the dates using the datepicker API
+            $(checkinInput).datepicker("setDate", arrivalDate);
             $(checkoutInput).datepicker("setDate", departureDate);
         } else {
-            // Reset datepicker constraints just before entering values
-            if (typeof $ !== 'undefined' && $('#checkout').hasClass('hasDatepicker')) {
-                console.log('Resetting datepicker before setting departure...');
-                $('#checkout').datepicker('destroy');
-                $('#checkout').datepicker({ minDate: null, maxDate: null });
-            }
+            // If jQuery isn't available, fallback to plain DOM
+            checkinInput.value = arrivalDate;
             checkoutInput.value = departureDate;
-            checkoutInput.dispatchEvent(new Event('input', { bubbles: true }));
+            checkinInput.dispatchEvent(new Event('change', { bubbles: true }));
             checkoutInput.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
