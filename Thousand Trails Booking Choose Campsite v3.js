@@ -185,7 +185,7 @@ async function launch() {
            console.log('\n');
            getTimestamp();
            window.console.log('\nSearching page for the "Select Site" button');
-           const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, true);
+           const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'rapid');
            if (isCampsiteAvailableResult.buttonFound) {
                clickCount = clickCount + 1;
                console.log(`Selected "${isCampsiteAvailableResult.matchedSiteType}" Campsite (click count: ${clickCount})`);
@@ -263,7 +263,7 @@ async function launch() {
                    console.log('availabilityRecord found:', availabilityRecord);
                    console.log('Load updateAvailabilityRecord');
                    //check if the book campsite button is available
-                   const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, );
+                   const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'none');
                    console.log('Is campsite available:', isCampsiteAvailableResult.buttonFound);
                    if (isCampsiteAvailableResult.buttonFound) {
                      console.log(`${isCampsiteAvailableResult.matchedSiteType} Campsite is Available for ${availabilityRecord.ArrivalDate}`);
@@ -419,14 +419,18 @@ async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTi
 
 /**
  * Checks for an available campsite matching one of the desired site types.
- * Optionally clicks the "Select Site" button if found.
+ * Optionally clicks the "Select Site" button based on clickMode.
+ *
+ * @param {Array<string>} scDesiredSiteTypes - Array of preferred site types
+ * @param {'none'|'once'|'rapid'} clickMode - Click behavior: 'none', 'once', or 'rapid'
+ * @returns {{ buttonFound: boolean, matchedSiteType: string|null }}
  */
-function isCampsiteAvailable(scDesiredSiteTypes, clickButton = false) {
+function isCampsiteAvailable(scDesiredSiteTypes, clickMode = 'none') {
     const siteTitles = document.querySelectorAll('.site-title.desktop');
     let buttonFound = false;
     let matchedSiteType = null;
 
-    siteTitles.forEach(title => {
+    for (let title of siteTitles) {
         const text = title.textContent.trim();
 
         for (let desired of scDesiredSiteTypes) {
@@ -437,20 +441,26 @@ function isCampsiteAvailable(scDesiredSiteTypes, clickButton = false) {
                     buttonFound = true;
                     matchedSiteType = desired;
 
-                    if (clickButton) {
+                    if (clickMode === 'once') {
                         selectButton.click();
+                    } else if (clickMode === 'rapid') {
+                        console.log(`Rapid-clicking "${desired}" Select Site button...`);
+                        for (let i = 0; i < 20; i++) {
+                            try {
+                                selectButton.click();
+                            } catch (e) {
+                                console.error(`Click #${i + 1} failed:`, e);
+                            }
+                        }
                     }
 
-                    return;
+                    return { buttonFound, matchedSiteType };
                 }
             }
         }
-    });
+    }
 
-    return {
-        buttonFound,
-        matchedSiteType
-    };
+    return { buttonFound, matchedSiteType };
 }
 
 async function redirectBookingPage() {
