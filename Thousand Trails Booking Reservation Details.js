@@ -113,7 +113,7 @@ async function launch() {
             //console.log('SiteConstant Desired Dates Array: ' + scDesiredDatesArray)
         }
 
-        if (scDesiredDatesArray && scBookingPreference === 'datearray') {
+        if (hasValidDates(scDesiredDatesArray) && scBookingPreference === 'datearray') {
             let desiredDatesInRange = getAllDatesInRangeOrArray(scDesiredDatesArray, null, null);
             //console.log('Desired Dates In Range:', desiredDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(desiredDatesInRange);
@@ -142,7 +142,7 @@ async function launch() {
             //console.log('SiteConstant Booked Dates Array: ' + scBookedDatesArray)
         }
 
-        if (scBookedDatesArray && scBookingPreference === 'datearray') {
+        if (hasValidDates(scBookedDatesArray) && scBookingPreference === 'datearray') {
             let bookedDatesInRange = getAllDatesInRangeOrArray(scBookedDatesArray, null, null);
             //console.log('Booked Dates In Range:', bookedDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
@@ -157,7 +157,7 @@ async function launch() {
             const bookedDateRangeMessage = buildDateRangeMessage('Existing Booked Reservations:', allConsecutiveRanges);
             console.log(bookedDateRangeMessage);
         } else {
-            console.error('SiteConstant Booked Arrival, Departure or Array constant is null, empty, or not found.');
+            console.log('SiteConstant Booked Arrival, Departure or Array constant is null, empty, or not found.');
         }
 
         if (isValidConstant(scAvailableArrivalConstant) && isValidConstant(scAvailableDepartureConstant)) {
@@ -517,6 +517,10 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
     // Return the available dates or null if not found
     return { availableArrivalDate, availableDepartureDate };
+}
+
+function hasValidDates(array) {
+    return Array.isArray(array) && array.some(date => date && !isNaN(new Date(date)));
 }
 
 function addDays(date, days) {
