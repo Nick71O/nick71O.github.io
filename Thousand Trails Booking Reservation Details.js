@@ -540,10 +540,6 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
     return { availableArrivalDate, availableDepartureDate };
 }
 
-function hasValidDates(array) {
-    return Array.isArray(array) && array.some(date => date && !isNaN(new Date(date)));
-}
-
 function addDays(date, days) {
     const result = new Date(date);
     result.setDate(result.getDate() + days);

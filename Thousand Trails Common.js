@@ -282,8 +282,10 @@ function getAllDatesInRangeOrArray(array, start, end) {
 }
 
 function getConsecutiveDateRanges(dateStrArray) {
+    if (!Array.isArray(dateStrArray)) return [];
+
     const dates = dateStrArray
-        .filter(str => str && !isNaN(new Date(str))) // Remove empty or invalid strings
+        .filter(str => str && !isNaN(new Date(str)))
         .map(str => new Date(str));
 
     let currentRange = [];
@@ -366,6 +368,10 @@ async function availabilityCheckIntervalSleep(db) {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function hasValidDates(array) {
+    return Array.isArray(array) && array.some(date => date && !isNaN(new Date(date)));
 }
 
 function isValidDate(dateString) {
