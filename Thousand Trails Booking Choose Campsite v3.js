@@ -10,6 +10,19 @@
    })
    .then(() => {
        // Now you can safely use functions or variables from the loaded scripts here
+       // OPTIONAL: patch datepickers before launch
+       setTimeout(() => {
+           if (typeof $ !== 'undefined' && typeof $('#checkin').datepicker === 'function') {
+                console.log("Resetting datepicker constraints for checkin/checkout fields");
+
+                $('#checkin').datepicker('destroy');
+                $('#checkout').datepicker('destroy');
+
+                $('#checkin').datepicker({ minDate: null, maxDate: null });
+                $('#checkout').datepicker({ minDate: null, maxDate: null });
+            }
+       }, 1000);
+
        launch();
    })
    .catch(error => {
