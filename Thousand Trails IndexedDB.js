@@ -250,9 +250,6 @@ async function deleteAllRecords(db, objectStoreName) {
 
 async function resetAvailabilityTable(db) {
     try {
-        const transaction = db.transaction('Availability', 'readwrite');
-        const availabilityStore = transaction.objectStore('Availability');
-
         const availabilityModeConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
         const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
 
@@ -263,10 +260,13 @@ async function resetAvailabilityTable(db) {
             const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
             resolvedMode = lastUsed === 'single' ? 'double' : 'single';
             await addOrUpdateSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck', resolvedMode);
-            console.log(`LastUsedBookingAvailabilityMapCheck alternated from "${lastUsed}" to "${resolvedMode}"`);
             const daysToAdd = resolvedMode === 'double' ? 2 : 1;
+            console.log(`LastUsedBookingAvailabilityMapCheck alternated from "${lastUsed}" to "${resolvedMode}"`);
             console.log(`Adjusting DepartureDate for all availability records by ${daysToAdd} day${daysToAdd > 1 ? 's' : ''}`);
         }
+
+        const transaction = db.transaction('Availability', 'readwrite');
+        const availabilityStore = transaction.objectStore('Availability');
 
         const cursorRequest = availabilityStore.openCursor();
 
@@ -277,12 +277,14 @@ async function resetAvailabilityTable(db) {
                 record.Available = false;
                 record.Checked = null;
 
-		        if (mode === 'both') {
-	                const arrivalDate = new Date(record.ArrivalDate);
-	                const departureDate = new Date(arrivalDate);
-	                departureDate.setDate(arrivalDate.getDate() + (resolvedMode === 'double' ? 2 : 1));
-	                record.DepartureDate = departureDate.toLocaleDateString('en-us', formatDateOptions);
-		        }
+                if (mode === 'both') {
+                    const arrivalDate = new Date(record.ArrivalDate);
+                    const departureDate = new Date(arrivalDate);
+                    departureDate.setDate(arrivalDate.getDate() + (resolvedMode === 'double' ? 2 : 1));
+                    record.DepartureDate = departureDate.toLocaleDateString('en-us', formatDateOptions);
+                    console.log(`Adjusted DepartureDate for Arrival ${record.ArrivalDate} to ${record.DepartureDate}`);
+                }
+
                 const updateRequest = cursor.update(record);
                 updateRequest.onsuccess = function () {
                     cursor.continue(); // Move to the next record
