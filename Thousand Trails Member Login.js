@@ -7,6 +7,7 @@ function initializeGlobalVariables(globalVariables) {
   console.log("memberNumber: " + globalVariables.memberNumber);
   console.log("PIN: " + globalVariables.PIN);
   console.log('bookingPreference: "' + globalVariables.bookingPreference + '"');
+  console.log('bookingAvailabilityMapCheck: "' + globalVariables.bookingAvailabilityMapCheck + '"');
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("availabilityCheckIntervalMinutes: " + globalVariables.availabilityCheckIntervalMinutes)
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
@@ -173,6 +174,9 @@ async function launch() {
 
     await deleteAllSiteConstants(db);
     await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
+    await addOrUpdateSiteConstant(db, 'BookingAvailabilityMapCheck', globalVariables.bookingAvailabilityMapCheck);
+    let initialLastUsed = globalVariables.bookingAvailabilityMapCheck.toLowerCase() === 'both' ? 'single' : globalVariables.bookingAvailabilityMapCheck.toLowerCase();
+    await addOrUpdateSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck', initialLastUsed);
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'AvailabilityCheckIntervalMinutes', globalVariables.availabilityCheckIntervalMinutes);
     await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);

@@ -2,8 +2,8 @@
 var globalVariables = {
     memberNumber: "",
     PIN: "",
-    //bookingPreference switch: auto | consecutive | leadingtrailing | datearray
-    bookingPreference: "datearray",
+    bookingPreference: "datearray", // options: auto | consecutive | leadingtrailing | datearray
+    bookingAvailabilityMapCheck: "single", // options: single | double | both
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
     desiredSiteTypes: [

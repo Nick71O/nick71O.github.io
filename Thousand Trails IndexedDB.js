@@ -253,6 +253,21 @@ async function resetAvailabilityTable(db) {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
 
+        const availabilityModeConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
+        const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
+
+        const mode = availabilityModeConstant?.value?.toLowerCase();
+        let resolvedMode = mode;
+
+        if (mode === 'both') {
+            const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
+            resolvedMode = lastUsed === 'single' ? 'double' : 'single';
+            await addOrUpdateSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck', resolvedMode);
+            console.log(`LastUsedBookingAvailabilityMapCheck alternated from "${lastUsed}" to "${resolvedMode}"`);
+            const daysToAdd = resolvedMode === 'double' ? 2 : 1;
+            console.log(`Adjusting DepartureDate for all availability records by ${daysToAdd} day${daysToAdd > 1 ? 's' : ''}`);
+        }
+
         const cursorRequest = availabilityStore.openCursor();
 
         cursorRequest.onsuccess = function (event) {
@@ -262,6 +277,12 @@ async function resetAvailabilityTable(db) {
                 record.Available = false;
                 record.Checked = null;
 
+		        if (mode === 'both') {
+	                const arrivalDate = new Date(record.ArrivalDate);
+	                const departureDate = new Date(arrivalDate);
+	                departureDate.setDate(arrivalDate.getDate() + (resolvedMode === 'double' ? 2 : 1));
+	                record.DepartureDate = departureDate.toLocaleDateString('en-us', formatDateOptions);
+		        }
                 const updateRequest = cursor.update(record);
                 updateRequest.onsuccess = function () {
                     cursor.continue(); // Move to the next record
@@ -296,6 +317,12 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
 
+        const scAvailabilityMapCheckConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
+        const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
+        const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
+        const daysToAdd = lastUsed === 'double' ? 2 : 1;
+        console.log(`Adjusting DepartureDate for all availability records by ${daysToAdd} day${daysToAdd > 1 ? 's' : ''} (LastUsedBookingAvailabilityMapCheck: "${lastUsed}")`);
+
         // Convert arrival and departure dates to Date objects
         const desiredArrivalDateObj = new Date(desiredArrivalDate);
         const desiredDepartureDateObj = new Date(desiredDepartureDate);
@@ -312,7 +339,7 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
             currentDate.setDate(currentDate.getDate() + i);
 
             const nextDay = new Date(currentDate);
-            nextDay.setDate(nextDay.getDate() + 1);
+            nextDay.setDate(nextDay.getDate() + daysToAdd);
 
             const newRecord = {
                 ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
@@ -344,10 +371,16 @@ async function insertAvailabilityRecords2(db, desiredDatesArray) {
         const transaction = db.transaction('Availability', 'readwrite');
         const availabilityStore = transaction.objectStore('Availability');
 
+        const scAvailabilityMapCheckConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
+        const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
+        const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
+        const daysToAdd = lastUsed === 'double' ? 2 : 1;
+        console.log(`Adjusting DepartureDate for all availability records by ${daysToAdd} day${daysToAdd > 1 ? 's' : ''} (LastUsedBookingAvailabilityMapCheck: "${lastUsed}")`);
+
         for (const desiredDate of desiredDatesArray) {
             const currentDate = new Date(desiredDate);
             const nextDay = new Date(currentDate);
-            nextDay.setDate(nextDay.getDate() + 1);
+            nextDay.setDate(nextDay.getDate() + daysToAdd);
 
             const newRecord = {
                 ArrivalDate: currentDate.toLocaleDateString('en-us', formatDateOptions),
