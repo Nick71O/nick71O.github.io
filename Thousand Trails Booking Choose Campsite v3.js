@@ -284,10 +284,11 @@ async function launch() {
                     const currentTimeStamp = formatDateTime(Date.now());
                     await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult.buttonFound, currentTimeStamp);
 
-                    // If the booking spans multiple nights, loop through each intermediate arrival date (arrival + 1 to < departure).
-                    // For each, find a record in the Availability table with a matching ArrivalDate (regardless of its DepartureDate).
-                    // If that record has Available = false, mark it true and set Checked = Checked from the original record.
-                    // This ensures we "promote" multi-night bookings in the availability map to maintain consistency.
+                    // For multi-night bookings, this promotes additional rows in the Availability table.
+                    // Starting from the day after the main arrival date up to (but not including) the departure date,
+                    // it finds matching rows by ArrivalDate. If Available is false, it updates the row to:
+                    // Available = true, and Checked = the same timestamp from the primary record.
+                    // This ensures all nights in a multi-day booking are marked appropriately.
 
                     if (parseInt(bookingNumberOfNights) > 1) {
                         const arrival = new Date(availabilityRecord.ArrivalDate);
@@ -295,20 +296,19 @@ async function launch() {
                         const format = (d) => d.toLocaleDateString('en-us', formatDateOptions);
                         const checkedValue = availabilityRecord.Checked;
 
-                        console.log(`\nMulti-night booking detected. Promoting intermediate availability rows.`);
-                        console.log(`Main booking row: Arrival = ${format(arrival)}, Departure = ${format(departure)}, Checked = ${checkedValue}`);
+                        console.log(`\n➡️ Multi-night booking detected: ${format(arrival)} to ${format(departure)}`);
+                        console.log(`   Checking intermediate rows for promotion (Checked = ${checkedValue})`);
 
                         const transaction = db.transaction(['Availability'], 'readwrite');
                         const availabilityStore = transaction.objectStore('Availability');
                         const index = availabilityStore.index('ArrivalDate');
 
-                        // Start from the day after arrival, go up to (but not including) departure
                         let current = new Date(arrival);
-                        current.setDate(current.getDate() + 1);
+                        current.setDate(current.getDate() + 1); // Start at the next day
 
                         while (current < departure) {
                             const currentFormatted = format(current);
-                            console.log(`\n➡️ Checking Availability record for ArrivalDate: ${currentFormatted}`);
+                            console.log(`🔍 Looking for Availability row with ArrivalDate = ${currentFormatted}`);
 
                             await new Promise((resolve, reject) => {
                                 const cursorRequest = index.openCursor(IDBKeyRange.only(currentFormatted));
@@ -319,31 +319,31 @@ async function launch() {
                                         const record = cursor.value;
 
                                         if (record.Available === false) {
-                                            console.log(`🔄 Updating record id ${record.id}: setting Available = true, Checked = ${checkedValue}`);
+                                            console.log(`🔄 Promoting row id ${record.id} (ArrivalDate = ${record.ArrivalDate})`);
                                             record.Available = true;
                                             record.Checked = checkedValue;
 
                                             const updateRequest = cursor.update(record);
                                             updateRequest.onsuccess = () => {
-                                                console.log(`✅ Record id ${record.id} successfully updated.`);
+                                                console.log(`✅ Updated row id ${record.id}`);
                                                 resolve();
                                             };
                                             updateRequest.onerror = (e) => {
-                                                console.error(`❌ Failed to update record id ${record.id}:`, e.target.error);
+                                                console.error(`❌ Failed to update row id ${record.id}:`, e.target.error);
                                                 reject(e.target.error);
                                             };
                                         } else {
-                                            console.log(`✅ Record id ${record.id} is already marked available. No update needed.`);
+                                            console.log(`✔️ Row id ${record.id} already available, no changes made.`);
                                             resolve();
                                         }
                                     } else {
-                                        console.log(`⚠️ No availability record found for ArrivalDate = ${currentFormatted}`);
-                                        resolve(); // Still resolve to continue loop
+                                        console.log(`⚠️ No record found for ArrivalDate = ${currentFormatted}`);
+                                        resolve();
                                     }
                                 };
 
                                 cursorRequest.onerror = function (event) {
-                                    console.error('❌ Cursor error while promoting availability:', event.target.error);
+                                    console.error('❌ Cursor error during update loop:', event.target.error);
                                     reject(event.target.error);
                                 };
                             });
@@ -351,10 +351,8 @@ async function launch() {
                             current.setDate(current.getDate() + 1);
                         }
 
-                        console.log(`\n🎯 Completed promotion of availability rows for multi-night booking.\n`);
+                        console.log('🎯 Finished promoting intermediate availability rows.\n');
                     }
-
-
                 }
                 else {
                     console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
