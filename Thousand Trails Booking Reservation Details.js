@@ -77,7 +77,6 @@ async function launch() {
         const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
         const scDesiredSiteTypesConstant = await getSiteConstant(db, 'DesiredSiteTypes');         
         const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
-        const scAvailabilityMapCheckConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
         const scBookedArrivalConstant = await getSiteConstant(db, 'BookedArrivalDate');
         const scBookedDepartureConstant = await getSiteConstant(db, 'BookedDepartureDate');
         const scBookedDatesArrayConstant = await getSiteConstant(db, 'BookedDatesArray');
@@ -90,7 +89,6 @@ async function launch() {
         let scDesiredDatesArray = null;
         let scDesiredSiteTypes = null;
         let scBookingPreference = null;
-        let scAvailabilityMapCheck = 'single';
         let scBookedArrivalDate = null;
         let scBookedDepartureDate = null;
         let scBookedDatesArray = null;
@@ -108,21 +106,6 @@ async function launch() {
         if (isValidConstant(scBookingPreferenceConstant)) {
             scBookingPreference = scBookingPreferenceConstant.value.toLowerCase();
             console.log('Booking Preference:', scBookingPreference);
-        }
-
-        if (isValidConstant(scAvailabilityMapCheckConstant)) {
-            const mode = scAvailabilityMapCheckConstant.value.toLowerCase();
-          
-            if (mode === 'both') {
-              const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
-              const lastUsed = isValidConstant(lastUsedConstant) ? lastUsedConstant.value.toLowerCase() : 'single';
-              scAvailabilityMapCheck = lastUsed === 'single' ? 'double' : 'single';
-              await addOrUpdateSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck', scAvailabilityMapCheck);
-              console.log('Alternating Map Check Mode:', scAvailabilityMapCheck);
-            } else {
-              scAvailabilityMapCheck = mode;
-              console.log('Booking Availability Map Check Mode:', scAvailabilityMapCheck);
-            }
         }
 
         if (isValidConstant(scDesiredArrivalConstant) && isValidConstant(scDesiredDepartureConstant)) {
