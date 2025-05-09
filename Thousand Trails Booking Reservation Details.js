@@ -589,17 +589,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
 async function inputBookingReservationDetails(arrivalDate, departureDate) {
     // Check if the elements exist before performing actions
-    var checkinInput = document.getElementById("checkin");
-    var checkoutInput = document.getElementById("checkout");
-    var btnStep2 = document.getElementById("btnStep2");
-    var campingTypeSelect = document.getElementById("campingType");
-    var equipmentTypeSelect = document.getElementById("equipmentType");
-    var adultsSelect = document.getElementById("adults");
-    var kidsSelect = document.getElementById("kids");
-    var lengthInput = document.getElementById("length");
-    var slideoutsNoRadio = document.getElementById("slideoutsNo");
+    const checkinInput = document.getElementById("checkin");
+    const checkoutInput = document.getElementById("checkout");
+    const btnStep2 = document.getElementById("btnStep2");
+    const lengthInput = document.getElementById("length");
+    const slideoutsNoRadio = document.getElementById("slideoutsNo");
 
-    if (checkinInput && checkoutInput && btnStep2 && campingTypeSelect && equipmentTypeSelect && adultsSelect && kidsSelect && lengthInput && slideoutsNoRadio) {
+    if (checkinInput && checkoutInput && btnStep2 && lengthInput && slideoutsNoRadio) {
         // Set Arrival/Departure Date
         // Reset both datepickers regardless of current state
         if (typeof $ !== 'undefined') {
@@ -626,37 +622,24 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
             checkoutInput.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
-        // Select RV from the campingType dropdown
-        for (var i = 0; i < campingTypeSelect.options.length; i++) {
-            if (campingTypeSelect.options[i].text === "RV Site") {
-                campingTypeSelect.selectedIndex = i;
-                break;
-            }
-        }
+        // Use SumoSelect to update dropdown values
+        // Site Type: RV Site
+        $('#campingType')[0].sumo.selectItem($('#campingType option').filter(function () {
+            return $(this).text().trim() === 'RV Site';
+        }).index());
 
-        // Select Travel Trailer from the equipmentType dropdown
-        for (var j = 0; j < equipmentTypeSelect.options.length; j++) {
-            if (equipmentTypeSelect.options[j].text === "Travel Trailer") {
-                equipmentTypeSelect.selectedIndex = j;
-                break;
-            }
-        }
+        // Equipment Type: Travel Trailer
+        $('#equipmentType')[0].sumo.selectItem($('#equipmentType option').filter(function () {
+            return $(this).text().trim() === 'Travel Trailer';
+        }).index());
 
-        // Select 2 from the adults dropdown
-        for (var k = 0; k < adultsSelect.options.length; k++) {
-            if (adultsSelect.options[k].text === "2") {
-                adultsSelect.selectedIndex = k;
-                break;
-            }
-        }
-
-        // Select 3 from the kids dropdown
-        for (var l = 0; l < kidsSelect.options.length; l++) {
-            if (kidsSelect.options[l].text === "3") {
-                kidsSelect.selectedIndex = l;
-                break;
-            }
-        }
+        // Adults: 2
+        $('#adults')[0].sumo.selectItem($('#adults option[value="2"]').index());
+        // Kids: 3
+        $('#kids')[0].sumo.selectItem($('#kids option[value="3"]').index());
+	
+	    // Pets: 1
+        //$('#pets')[0].sumo.selectItem($('#pets option[value="1"]').index());
 
         // Set the length to 27
         lengthInput.value = "27";
@@ -664,13 +647,10 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         // Select "No" for With Slideouts
         slideoutsNoRadio.checked = true;
 
+        // Trigger step 2
         btnStep2.click();
-        // btnStep2.addEventListener("click", function() {
-        //     console.log("You clicked the Choose Campsite button!");
-        // });
     } else {
         console.error("Booking input elements not found!");
-
         console.log("Sleeping...30 seconds");
         await sleep(30000);
         redirectLoginPage();
