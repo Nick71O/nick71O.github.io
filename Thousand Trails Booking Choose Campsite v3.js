@@ -284,27 +284,27 @@ async function launch() {
                     const currentTimeStamp = formatDateTime(Date.now());
                     await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult.buttonFound, currentTimeStamp);
 
-                    // For multi-night bookings, this promotes additional rows in the Availability table.
+                    // For multi-night bookings, this promotes additional rows in the Availability table,
+                    // but only if the main record is already marked Available === true.
                     // Starting from the day after the main arrival date up to (but not including) the departure date,
                     // it finds matching rows by ArrivalDate. If Available is false, it updates the row to:
                     // Available = true, and Checked = the same timestamp from the primary record.
-                    // This ensures all nights in a multi-day booking are marked appropriately.
 
-                    if (parseInt(bookingNumberOfNights) > 1) {
+                    if (parseInt(bookingNumberOfNights) > 1 && availabilityRecord.Available === true) {
                         const arrival = new Date(availabilityRecord.ArrivalDate);
                         const departure = new Date(availabilityRecord.DepartureDate);
                         const format = (d) => d.toLocaleDateString('en-us', formatDateOptions);
                         const checkedValue = availabilityRecord.Checked;
 
                         console.log(`\n➡️ Multi-night booking detected: ${format(arrival)} to ${format(departure)}`);
-                        console.log(`   Checking intermediate rows for promotion (Checked = ${checkedValue})`);
+                        console.log(`   Promoting intermediate rows where Available = false (Checked = ${checkedValue})`);
 
                         const transaction = db.transaction(['Availability'], 'readwrite');
                         const availabilityStore = transaction.objectStore('Availability');
                         const index = availabilityStore.index('ArrivalDate');
 
                         let current = new Date(arrival);
-                        current.setDate(current.getDate() + 1); // Start at the next day
+                        current.setDate(current.getDate() + 1); // Start at the day after arrival
 
                         while (current < departure) {
                             const currentFormatted = format(current);
@@ -333,17 +333,17 @@ async function launch() {
                                                 reject(e.target.error);
                                             };
                                         } else {
-                                            console.log(`✔️ Row id ${record.id} already available, no changes made.`);
+                                            console.log(`✔️ Row id ${record.id} already available. No update made.`);
                                             resolve();
                                         }
                                     } else {
-                                        console.log(`⚠️ No record found for ArrivalDate = ${currentFormatted}`);
+                                        console.log(`⚠️ No Availability record found for ${currentFormatted}`);
                                         resolve();
                                     }
                                 };
 
                                 cursorRequest.onerror = function (event) {
-                                    console.error('❌ Cursor error during update loop:', event.target.error);
+                                    console.error(`❌ Cursor error for ${currentFormatted}:`, event.target.error);
                                     reject(event.target.error);
                                 };
                             });
@@ -353,6 +353,7 @@ async function launch() {
 
                         console.log('🎯 Finished promoting intermediate availability rows.\n');
                     }
+
                 }
                 else {
                     console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
