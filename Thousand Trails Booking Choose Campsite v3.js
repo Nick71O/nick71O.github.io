@@ -290,7 +290,7 @@ async function launch() {
                     // Available = true, and Checked = the same timestamp from the primary record.
                     // This ensures all nights in a multi-day booking are marked appropriately.
 
-                    if (parseInt(bookingNumberOfNights) > 100) {
+                    if (parseInt(bookingNumberOfNights) > 1) {
                         const arrival = new Date(availabilityRecord.ArrivalDate);
                         const departure = new Date(availabilityRecord.DepartureDate);
                         const format = (d) => d.toLocaleDateString('en-us', formatDateOptions);
