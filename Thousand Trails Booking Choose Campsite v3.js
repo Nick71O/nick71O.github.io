@@ -246,45 +246,47 @@ async function launch() {
             }
  
        } else {
-           //Gather Available Dates
-           var bookingArrivalDate = (new Date(document.getElementById('cartCheckin').innerHTML));
-           var bookingDepartureDate = (new Date(document.getElementById('cartCheckout').innerHTML));
-           var bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
-           console.log("Booking Page Desired Dates to Book\n   Arrival: " + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + "    Departure: " + bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions) + "    Number of Nights: " + bookingNumberOfNights);
+            // Gather Available Dates
+            const bookingArrivalDate = new Date(document.getElementById('cartCheckin').innerHTML);
+            const bookingDepartureDate = new Date(document.getElementById('cartCheckout').innerHTML);
+            const bookingNumberOfNights = document.getElementById('cartNoOfNights').innerHTML;
 
-           //console.log('If (' + bookingNumberOfNights + ' === 1)');
-           if (bookingNumberOfNights === '1') {
-               console.log('Load getAvailabilityRecord(' + bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions) + ')');
-               const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-               //console.log('Load getAvailabilityRecord(' + bookingArrivalDate + ')');
-               //const availabilityRecord = await getAvailabilityRecord(db, bookingArrivalDate);
+            console.log(`Booking Page Desired Dates to Book\n   Arrival: ${bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions)}    Departure: ${bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions)}    Number of Nights: ${bookingNumberOfNights}`);
 
-               if (availabilityRecord) {
-                   console.log('availabilityRecord found:', availabilityRecord);
-                   console.log('Load updateAvailabilityRecord');
-                   //check if the book campsite button is available
-                   const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'none');
-                   console.log('Is campsite available:', isCampsiteAvailableResult.buttonFound);
-                   if (isCampsiteAvailableResult.buttonFound) {
-                     console.log(`${isCampsiteAvailableResult.matchedSiteType} Campsite is Available for ${availabilityRecord.ArrivalDate}`);
-                   }
+            if (bookingNumberOfNights === '1' || bookingNumberOfNights === '2') {
+                const formattedArrival = bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions);
+                const formattedDeparture = bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions);
 
-                   /*
-                   //Can't use the XPath to find the select campsite button as it moves above/below the handicapped site button and the XPath changes
-                   const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
-                   var campsiteAvailable = false;
-                   if (selectButtonElements.length > 0) {
-                       console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
-                       campsiteAvailable = true;
-                   }
-                   */
+                console.log(`Load getAvailabilityRecord(${formattedArrival}, ${formattedDeparture})`);
 
-                   const currentTimeStamp = formatDateTime(Date.now());
-                   await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult.buttonFound, currentTimeStamp);
-               }
-               else {
-                   console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
-               }
+                const availabilityRecord = await getAvailabilityRecord(db, formattedArrival, formattedDeparture);
+
+                if (availabilityRecord) {
+                    console.log('availabilityRecord found:', availabilityRecord);
+                    console.log('Load updateAvailabilityRecord');
+                    //check if the book campsite button is available
+                    const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'none');
+                    console.log('Is campsite available:', isCampsiteAvailableResult.buttonFound);
+                    if (isCampsiteAvailableResult.buttonFound) {
+                        console.log(`${isCampsiteAvailableResult.matchedSiteType} Campsite is Available for ${availabilityRecord.ArrivalDate}`);
+                    }
+
+                    /*
+                    //Can't use the XPath to find the select campsite button as it moves above/below the handicapped site button and the XPath changes
+                    const selectButtonElements = getElementsByXPath(selectSiteButtonXPath);
+                    var campsiteAvailable = false;
+                    if (selectButtonElements.length > 0) {
+                        console.log('Campsite is Available for ' + availabilityRecord.ArrivalDate);
+                        campsiteAvailable = true;
+                    }
+                    */
+
+                    const currentTimeStamp = formatDateTime(Date.now());
+                    await updateAvailabilityRecord(db, availabilityRecord, isCampsiteAvailableResult.buttonFound, currentTimeStamp);
+                }
+                else {
+                    console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
+                }
            }
 
            redirectBookingPage();
@@ -347,6 +349,28 @@ async function getAvailabilityRecord(db, arrivalDate) {
            reject(event.target.error);
        };
    });
+}
+
+async function getAvailabilityRecord(db, arrivalDate, departureDate) {
+    const transaction = db.transaction('Availability', 'readonly');
+    const availabilityStore = transaction.objectStore('Availability');
+    const index = availabilityStore.index('ArrivalDate');
+
+    return new Promise((resolve, reject) => {
+        const request = index.get(arrivalDate);
+        request.onsuccess = function (event) {
+            const record = event.target.result;
+            if (record && record.DepartureDate === departureDate) {
+                resolve(record);
+            } else {
+                console.log(`No availability record matches both ArrivalDate: ${arrivalDate} and DepartureDate: ${departureDate}`);
+                resolve(null);
+            }
+        };
+        request.onerror = function (event) {
+            reject(event.target.error);
+        };
+    });
 }
 
 
