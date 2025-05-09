@@ -271,45 +271,52 @@ async function launch() {
 }
 
 
-
-//Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
-//Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
-//If there are no more rows returned, but the 'Availability' table has more than 0 rows it is time to process the AvailabilityTable.
+// Open the ThousandTrailsDB 'Availability' table and use the 'ArrivalDate' index to scan records where 'Checked' is null or empty.
+// The cursor will scan in ascending order for "single" mode and descending order for "double" or "both" (alternating).
+// Returns the first matching unprocessed record as { arrivalDate, departureDate }.
+// If no such records are found, returns null.
 async function getNextAvailabilityDate(db) {
     console.log('Hello from getNextAvailabilityDate()');
+
+    // Determine cursor direction based on availability mode
+    const availabilityModeConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
+    const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
+
+    const mode = availabilityModeConstant?.value?.toLowerCase() || 'single';
+    const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
+
+    let resolvedMode = mode;
+    if (mode === 'both') {
+        resolvedMode = lastUsed === 'single' ? 'double' : 'single';
+    }
+
+    const direction = (resolvedMode === 'double') ? 'prev' : 'next';
+    console.log(`Cursor direction for getNextAvailabilityDate(): ${direction} (resolvedMode: ${resolvedMode})`);
 
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['Availability'], 'readonly');
         const availabilityStore = transaction.objectStore('Availability');
-        const request = availabilityStore.index('ArrivalDate').openCursor();
-
-        let lowestArrivalDate = Infinity;
-        let nextAvailability = null;
+        const request = availabilityStore.index('ArrivalDate').openCursor(null, direction);
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
 
             if (cursor) {
                 const record = cursor.value;
-                //console.log('record.Checked === ' + record.Checked + ')');
-                
-                if ((record.Checked === null || record.Checked === '') && new Date(record.ArrivalDate) < lowestArrivalDate) {
-                    console.log("getNextAvailabilityDate() Find Lowest Arrival Date\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
-                    lowestArrivalDate = new Date(record.ArrivalDate);
-                    nextAvailability = {
+                // console.log('record.Checked === ' + record.Checked + ')');
+
+                if (record.Checked === null || record.Checked === '') {
+                    console.log("getNextAvailabilityDate() Candidate\n   Arrival: " + record.ArrivalDate + "    Departure: " + record.DepartureDate);
+                    resolve({
                         arrivalDate: record.ArrivalDate,
                         departureDate: record.DepartureDate
-                    };
+                    });
+                    return;
                 }
                 cursor.continue(); // Move to the next record
             } else {
-                // Resolve with the nextAvailability or null if no suitable record found
-                if (nextAvailability !== null) {
-                    console.log("getNextAvailabilityDate() FOUND Lowest Arrival Date\n   Arrival: " + nextAvailability.arrivalDate + "    Departure: " + nextAvailability.departureDate);
-                    resolve({ arrivalDate: nextAvailability.arrivalDate, departureDate: nextAvailability.departureDate });
-                } else {
-                    resolve(null);
-                }
+                // Resolve with null if no suitable record found
+                resolve(null);
             }
         };
 
