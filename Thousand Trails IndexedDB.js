@@ -249,12 +249,15 @@ async function deleteAllRecords(db, objectStoreName) {
 }
 
 async function resetAvailabilityTable(db) {
+    let resolvedMode = null;
+    let mode = 'single';
+
     try {
+        // Step 1: Run all awaits before opening transaction
         const availabilityModeConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
         const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
 
-        const mode = availabilityModeConstant?.value?.toLowerCase();
-        let resolvedMode = mode;
+        mode = availabilityModeConstant?.value?.toLowerCase() || 'single';
 
         if (mode === 'both') {
             const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
@@ -265,51 +268,55 @@ async function resetAvailabilityTable(db) {
             console.log(`Adjusting DepartureDate for all availability records by ${daysToAdd} day${daysToAdd > 1 ? 's' : ''}`);
         }
 
-        const transaction = db.transaction('Availability', 'readwrite');
-        const availabilityStore = transaction.objectStore('Availability');
+        // Step 2: Now safely start and run the transaction logic
+        await new Promise((resolve, reject) => {
+            const transaction = db.transaction('Availability', 'readwrite');
+            const availabilityStore = transaction.objectStore('Availability');
+            const cursorRequest = availabilityStore.openCursor();
 
-        const cursorRequest = availabilityStore.openCursor();
+            cursorRequest.onsuccess = function (event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const record = cursor.value;
+                    record.Available = false;
+                    record.Checked = null;
 
-        cursorRequest.onsuccess = function (event) {
-            const cursor = event.target.result;
-            if (cursor) {
-                const record = cursor.value;
-                record.Available = false;
-                record.Checked = null;
+                    if (mode === 'both') {
+                        const arrivalDate = new Date(record.ArrivalDate);
+                        const departureDate = new Date(arrivalDate);
+                        departureDate.setDate(arrivalDate.getDate() + (resolvedMode === 'double' ? 2 : 1));
+                        record.DepartureDate = departureDate.toLocaleDateString('en-us', formatDateOptions);
+                        console.log(`Adjusted DepartureDate for Arrival ${record.ArrivalDate} to ${record.DepartureDate}`);
+                    }
 
-                if (mode === 'both') {
-                    const arrivalDate = new Date(record.ArrivalDate);
-                    const departureDate = new Date(arrivalDate);
-                    departureDate.setDate(arrivalDate.getDate() + (resolvedMode === 'double' ? 2 : 1));
-                    record.DepartureDate = departureDate.toLocaleDateString('en-us', formatDateOptions);
-                    console.log(`Adjusted DepartureDate for Arrival ${record.ArrivalDate} to ${record.DepartureDate}`);
+                    const updateRequest = cursor.update(record);
+                    updateRequest.onsuccess = function () {
+                        cursor.continue();
+                    };
+                    updateRequest.onerror = function (event) {
+                        console.error('Error Updating Record:', event.target.error);
+                        reject(event.target.error);
+                    };
+                } else {
+                    console.log('Availability Table Reset Completed.');
+                    resolve();
                 }
+            };
 
-                const updateRequest = cursor.update(record);
-                updateRequest.onsuccess = function () {
-                    cursor.continue(); // Move to the next record
-                };
-                updateRequest.onerror = function (event) {
-                    console.error('Error updating record:', event.target.error);
-                };
-            } else {
-                console.log('Availability table reset completed.');
-            }
-        };
+            cursorRequest.onerror = function (event) {
+                console.error('Error opening cursor:', event.target.error);
+                reject(event.target.error);
+            };
 
-        cursorRequest.onerror = function (event) {
-            console.error('Error opening cursor:', event.target.error);
-        };
+            transaction.onerror = function (event) {
+                console.error('Transaction Error:', event.target.error);
+                reject(event.target.error);
+            };
+        });
 
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
-
-        transaction.onerror = function (event) {
-            console.error('Transaction error:', event.target.error);
-        };
+        console.log('resetAvailabilityTable Complete.');
     } catch (error) {
-        console.error('Error resetting Availability table:', error);
+        console.error('Error Resetting Availability Table:', error);
     }
 }
 
