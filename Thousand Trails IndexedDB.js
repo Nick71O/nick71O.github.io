@@ -314,13 +314,11 @@ async function resetAvailabilityTable(db) {
 async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate) {
     console.log('insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate)');
     try {
-        const transaction = db.transaction('Availability', 'readwrite');
-        const availabilityStore = transaction.objectStore('Availability');
-
         const scAvailabilityMapCheckConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
         const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
         const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
         const daysToAdd = lastUsed === 'double' ? 2 : 1;
+
         console.log(`Adjusting DepartureDate for all availability records by ${daysToAdd} day${daysToAdd > 1 ? 's' : ''} (LastUsedBookingAvailabilityMapCheck: "${lastUsed}")`);
 
         // Convert arrival and departure dates to Date objects
@@ -335,6 +333,9 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
         console.log(`Days Difference: ${daysDifference}`);
 
         for (let i = 0; i < daysDifference; i++) {
+            const transaction = db.transaction('Availability', 'readwrite');
+            const availabilityStore = transaction.objectStore('Availability');
+
             const currentDate = new Date(desiredArrivalDateObj);
             currentDate.setDate(currentDate.getDate() + i);
 
@@ -351,19 +352,22 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
             await new Promise((resolve, reject) => {
                 const request = availabilityStore.add(newRecord);
                 request.onsuccess = () => resolve();
-                request.onerror = (e) => reject(e);
+                request.onerror = (e) => {
+                    console.error('Add record error:', e.target.error);
+                    reject(e);
+                };
+            });
+
+            await new Promise((resolve) => {
+                transaction.oncomplete = () => resolve();
+                transaction.onerror = (e) => {
+                    console.error('Transaction error:', e.target.error);
+                    resolve(); // allow loop to continue
+                };
             });
         }
 
         console.log('Availability records inserted successfully.');
-
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
-
-        transaction.onerror = function (event) {
-            console.error('Transaction error:', event.target.error);
-        };
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
@@ -372,9 +376,6 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
 async function insertAvailabilityRecords2(db, desiredDatesArray) {
     console.log('insertAvailabilityRecords2(db, desiredDatesArray)');
     try {
-        const transaction = db.transaction('Availability', 'readwrite');
-        const availabilityStore = transaction.objectStore('Availability');
-
         const scAvailabilityMapCheckConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
         const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
         const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
@@ -382,6 +383,9 @@ async function insertAvailabilityRecords2(db, desiredDatesArray) {
         console.log(`Adjusting DepartureDate for all availability records by ${daysToAdd} day${daysToAdd > 1 ? 's' : ''} (LastUsedBookingAvailabilityMapCheck: "${lastUsed}")`);
 
         for (const desiredDate of desiredDatesArray) {
+            const transaction = db.transaction('Availability', 'readwrite');
+            const availabilityStore = transaction.objectStore('Availability');
+
             const currentDate = new Date(desiredDate);
             const nextDay = new Date(currentDate);
             nextDay.setDate(nextDay.getDate() + daysToAdd);
@@ -398,17 +402,17 @@ async function insertAvailabilityRecords2(db, desiredDatesArray) {
                 request.onsuccess = () => resolve();
                 request.onerror = (e) => reject(e);
             });
+
+            await new Promise((resolve) => {
+                transaction.oncomplete = () => resolve();
+                transaction.onerror = (e) => {
+                    console.error('Transaction error:', e.target.error);
+                    resolve();
+                };
+            });
         }
 
         console.log('Availability records inserted successfully.');
-
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
-
-        transaction.onerror = function (event) {
-            console.error('Transaction error:', event.target.error);
-        };
     } catch (error) {
         console.error('Error inserting availability records:', error);
     }
