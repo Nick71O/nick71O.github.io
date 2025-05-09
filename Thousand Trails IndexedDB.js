@@ -348,7 +348,11 @@ async function insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartur
                 Checked: null
             };
 
-            availabilityStore.add(newRecord);
+            await new Promise((resolve, reject) => {
+                const request = availabilityStore.add(newRecord);
+                request.onsuccess = () => resolve();
+                request.onerror = (e) => reject(e);
+            });
         }
 
         console.log('Availability records inserted successfully.');
@@ -389,7 +393,11 @@ async function insertAvailabilityRecords2(db, desiredDatesArray) {
                 Checked: null
             };
 
-            availabilityStore.add(newRecord);
+            await new Promise((resolve, reject) => {
+                const request = availabilityStore.add(newRecord);
+                request.onsuccess = () => resolve();
+                request.onerror = (e) => reject(e);
+            });
         }
 
         console.log('Availability records inserted successfully.');
