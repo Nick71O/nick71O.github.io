@@ -428,7 +428,7 @@ async function insertAvailabilityRecords2(db, desiredDatesArray) {
 }
 
 async function insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays) {
-    console.log(`[Availability] insertConsecutiveAvailabilityRecords() called with arrival: ${desiredArrivalDate}, departure: ${desiredDepartureDate}, minimumConsecutiveDays: ${minimumConsecutiveDays}`);
+    //console.log(`[Availability] insertConsecutiveAvailabilityRecords() called with arrival: ${desiredArrivalDate}, departure: ${desiredDepartureDate}, minimumConsecutiveDays: ${minimumConsecutiveDays}`);
     let count = 0;
     let id = 0;
     try {
@@ -476,7 +476,7 @@ async function insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desi
                 request.onerror = () => reject(request.error);
             });
             count++;
-            console.log(`[Availability] Added: ${newRecord.ArrivalDate} - ${newRecord.DepartureDate} (${row.consecutiveDays} nights)`);
+            //console.log(`[Availability] Added: ${newRecord.ArrivalDate} - ${newRecord.DepartureDate} (${row.consecutiveDays} nights)`);
         }
         console.log(`[Availability] Inserted ${count} records for range ${desiredArrivalDate} to ${desiredDepartureDate}, minimum ${minimumConsecutiveDays} nights.`);
     } catch (error) {
