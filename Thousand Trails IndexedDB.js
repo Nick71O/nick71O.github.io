@@ -463,7 +463,7 @@ async function insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desi
 
         for (let row of consecutiveRanges(desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays)) {
             row.id = id++;
-            await addToStore(db, 'Availability', row);
+            await addOrUpdateAvailabilityRecord(db, row);
             count++;
             console.log(`[Availability] Added: ${row.arrivalDate} - ${row.departureDate} (${row.consecutiveDays} nights)`);
         }
