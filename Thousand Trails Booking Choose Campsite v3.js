@@ -446,27 +446,45 @@ async function getAvailabilityRecord(db, arrivalDate) {
 }
 
 async function getAvailabilityRecord(db, arrivalDate, departureDate) {
-    const transaction = db.transaction('Availability', 'readonly');
+    console.log('Searching for record with both ArrivalDate and DepartureDate');
+
+    const transaction = db.transaction(['Availability'], 'readonly');
     const availabilityStore = transaction.objectStore('Availability');
-    const index = availabilityStore.index('ArrivalDate');
 
     return new Promise((resolve, reject) => {
-        const request = index.get(arrivalDate);
+        const request = availabilityStore.openCursor();
+
         request.onsuccess = function (event) {
-            const record = event.target.result;
-            if (record && record.DepartureDate === departureDate) {
-                resolve(record);
+            const cursor = event.target.result;
+            if (cursor) {
+                const record = cursor.value;
+
+                const recordArrival = new Date(record.ArrivalDate).getTime();
+                const recordDeparture = new Date(record.DepartureDate).getTime();
+                const inputArrival = new Date(arrivalDate).getTime();
+                const inputDeparture = new Date(departureDate).getTime();
+
+                console.log(`Checking record: Arrival ${record.ArrivalDate}, Departure ${record.DepartureDate}`);
+
+                if (recordArrival === inputArrival && recordDeparture === inputDeparture) {
+                    console.log('Matching record found:', record);
+                    resolve(record);
+                    return;
+                }
+
+                cursor.continue();
             } else {
-                console.log(`No availability record matches both ArrivalDate: ${arrivalDate} and DepartureDate: ${departureDate}`);
+                console.log('No matching record found.');
                 resolve(null);
             }
         };
+
         request.onerror = function (event) {
+            console.error('Error fetching availability:', event.target.error);
             reject(event.target.error);
         };
     });
 }
-
 
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
 //Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
