@@ -432,13 +432,13 @@ async function insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desi
     let count = 0;
     let id = 0;
     try {
+        const tx = db.transaction('Availability', 'readwrite');
+        const availabilityStore = tx.objectStore('Availability');
+
         function* consecutiveRanges(arrivalStr, departureStr, minDays) {
             function parseDate(str) {
                 const [mm, dd, yyyy] = str.split('/');
                 return new Date(+yyyy, mm - 1, +dd);
-            }
-            function formatDate(date) {
-                return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
             }
             const arrival = parseDate(arrivalStr);
             const departure = parseDate(departureStr);
@@ -450,24 +450,34 @@ async function insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desi
                     let thisDeparture = new Date(thisArrival);
                     thisDeparture.setDate(thisArrival.getDate() + numDays);
                     if (thisDeparture <= departure) {
-                        yield {                       
-                            ArrivalDate: thisArrival.toLocaleDateString('en-us', formatDateOptions),
-                            DepartureDate: thisArrival.toLocaleDateString('en-us', formatDateOptions),
-                            Available: false,
-                            Checked: null
+                        yield {
+                            consecutiveDays: numDays,
+                            arrivalDate: new Date(thisArrival),
+                            departureDate: new Date(thisDeparture)
                         };
                     }
                 }
             }
         }
 
-        for (let row of consecutiveRanges(desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays)) {
-            row.id = id++;
-            await addOrUpdateAvailabilityRecord(db, row);
-            count++;
-            console.log(`[Availability] Added: ${row.arrivalDate} - ${row.departureDate} (${row.consecutiveDays} nights)`);
-        }
+        const formatDateOptions = { year: 'numeric', month: '2-digit', day: '2-digit' };
 
+        for (let row of consecutiveRanges(desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays)) {
+            const newRecord = {
+                ArrivalDate: row.arrivalDate.toLocaleDateString('en-us', formatDateOptions),
+                DepartureDate: row.departureDate.toLocaleDateString('en-us', formatDateOptions),
+                Available: false,
+                Checked: null
+            };
+
+            await new Promise((resolve, reject) => {
+                const request = availabilityStore.add(newRecord);
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+            count++;
+            console.log(`[Availability] Added: ${newRecord.ArrivalDate} - ${newRecord.DepartureDate} (${row.consecutiveDays} nights)`);
+        }
         console.log(`[Availability] Inserted ${count} records for range ${desiredArrivalDate} to ${desiredDepartureDate}, minimum ${minimumConsecutiveDays} nights.`);
     } catch (error) {
         console.error(`[Availability] Error inserting consecutive records:`, error);
