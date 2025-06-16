@@ -278,6 +278,18 @@ async function launch() {
 async function getNextAvailabilityDate(db) {
     console.log('Hello from getNextAvailabilityDate()');
 
+    // Determine booking preference (consecutive or not)
+    const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+    let scBookingPreference = null;
+    let useInsertionOrder = false;
+
+    if (isValidConstant(scBookingPreferenceConstant)) {
+        scBookingPreference = scBookingPreferenceConstant.value.toLowerCase();
+        console.log('Booking Preference:', scBookingPreference);
+
+        useInsertionOrder = (scBookingPreference === 'consecutive');
+    }
+
     // Determine cursor direction based on availability mode
     const availabilityModeConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
     const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
@@ -291,12 +303,15 @@ async function getNextAvailabilityDate(db) {
     }
 
     const direction = (resolvedMode === 'double') ? 'prev' : 'next';
-    console.log(`Cursor direction for getNextAvailabilityDate(): ${direction} (resolvedMode: ${resolvedMode})`);
+    console.log(`Cursor direction: ${direction} | Mode: ${resolvedMode} | Using Insertion Order: ${useInsertionOrder}`);
 
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(['Availability'], 'readonly');
         const availabilityStore = transaction.objectStore('Availability');
-        const request = availabilityStore.index('ArrivalDate').openCursor(null, direction);
+
+        const request = useInsertionOrder
+            ? availabilityStore.openCursor(null, direction) // insertion order
+            : availabilityStore.index('ArrivalDate').openCursor(null, direction); // sorted by ArrivalDate
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
@@ -313,7 +328,8 @@ async function getNextAvailabilityDate(db) {
                     });
                     return;
                 }
-                cursor.continue(); // Move to the next record
+
+                cursor.continue();
             } else {
                 // Resolve with null if no suitable record found
                 resolve(null);

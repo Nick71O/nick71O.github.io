@@ -209,13 +209,6 @@ async function launch() {
                 const formattedArrival = bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions);
                 const formattedDeparture = bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions);
 
-                if (scBookingPreference === 'consecutive'){
-                    console.log(`Load getAvailabilityRecord(${formattedArrival}, ${formattedDeparture}, true)`);
-                    const availabilityRecord = await getAvailabilityRecord(db, formattedArrival, formattedDeparture, true);
-                } else {
-                    console.log(`Load getAvailabilityRecord(${formattedArrival}, ${formattedDeparture}, false)`);
-                    const availabilityRecord = await getAvailabilityRecord(db, formattedArrival, formattedDeparture, false);
-                }
                 console.log(`Load getAvailabilityRecord(${formattedArrival}, ${formattedDeparture})`);
 
                 const availabilityRecord = await getAvailabilityRecord(db, formattedArrival, formattedDeparture);
@@ -452,25 +445,16 @@ async function getAvailabilityRecord(db, arrivalDate) {
    });
 }
 
-/**
- * @param {IDBDatabase} db - The IndexedDB database reference
- * @param {string|Date} arrivalDate - Arrival date to match
- * @param {string|Date} departureDate - Departure date to match
- * @param {Object} options - Optional config
- * @param {boolean} options.useInsertionOrder - If true, use object store insertion order instead of sorting by ArrivalDate index
- */
-async function getAvailabilityRecord(db, arrivalDate, departureDate, options = { useInsertionOrder: false }) {
-    console.log(`Searching for record using ${options.useInsertionOrder ? 'insertion order' : 'ArrivalDate index order'}`);
+async function getAvailabilityRecord(db, arrivalDate, departureDate) {
+    console.log('Searching for record with both ArrivalDate and DepartureDate');
 
     const transaction = db.transaction(['Availability'], 'readonly');
     const availabilityStore = transaction.objectStore('Availability');
 
     return new Promise((resolve, reject) => {
-        const cursorSource = options.useInsertionOrder
-            ? availabilityStore.openCursor() // insertion order
-            : availabilityStore.index('ArrivalDate').openCursor(); // sorted order
+        const request = availabilityStore.openCursor();
 
-        cursorSource.onsuccess = function (event) {
+        request.onsuccess = function (event) {
             const cursor = event.target.result;
             if (cursor) {
                 const record = cursor.value;
@@ -495,14 +479,14 @@ async function getAvailabilityRecord(db, arrivalDate, departureDate, options = {
             }
         };
 
-        cursorSource.onerror = function (event) {
+        request.onerror = function (event) {
             console.error('Error fetching availability:', event.target.error);
             reject(event.target.error);
         };
     });
 }
 
-
+/*
 //Open the ThousandTrailsDB, 'Availability' table, retrieve all the rows that the 'Checked' column is null or empty string, order by 'ArrivalDate' ascending. 
 //Pick the first row and place the values into a string want the following format  "arrivaldate=" + arrivalDate + "&departuredate=" + departureDate.
 //If there are no more rows returned, but the 'Availability' table has more than 0 rows it is time to process the AvailabilityTable.
@@ -548,7 +532,7 @@ async function getNextAvailabilityDate(db) {
        };
    });
 }
-
+*/
 
 async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTimeStamp) {
    const transaction = db.transaction(['Availability'], 'readwrite');
