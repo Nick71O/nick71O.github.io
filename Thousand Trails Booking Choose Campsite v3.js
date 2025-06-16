@@ -82,6 +82,20 @@ async function launch() {
         let scAvailableDepartureDate = null;
         let scAvailableSiteType = null;
  
+        // Determine cursor direction based on availability mode
+        const availabilityModeConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
+        const lastUsedConstant = await getSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck');
+
+        const mode = availabilityModeConstant?.value?.toLowerCase() || 'single';
+        const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
+
+        let resolvedMode = mode;
+        if (mode === 'both') {
+            resolvedMode = lastUsed === 'single' ? 'double' : 'single';
+        }
+
+        console.log(`BookingAvailabilityMapCheck - (resolvedMode: ${resolvedMode})`);
+
         // Check if constants were retrieved successfully and if their values are not null or empty
         const isValidConstant = (constant) =>
             constant &&
@@ -253,7 +267,8 @@ async function launch() {
 
             console.log(`Booking Page Desired Dates to Book\n   Arrival: ${bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions)}    Departure: ${bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions)}    Number of Nights: ${bookingNumberOfNights}`);
 
-            if (bookingNumberOfNights === '1' || bookingNumberOfNights === '2') {
+            // if (bookingNumberOfNights === '1' || bookingNumberOfNights === '2') {
+            if (parseInt(bookingNumberOfNights) >= 1) {
                 const formattedArrival = bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions);
                 const formattedDeparture = bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions);
 
@@ -289,8 +304,7 @@ async function launch() {
                     // Starting from the day after the main arrival date up to (but not including) the departure date,
                     // it finds matching rows by ArrivalDate. If Available is false, it updates the row to:
                     // Available = true, and Checked = the same timestamp from the primary record.
-
-                    if (parseInt(bookingNumberOfNights) > 1 && availabilityRecord.Available === true) {
+                    if (resolvedMode === 'double' && parseInt(bookingNumberOfNights) > 1 && availabilityRecord.Available === true) {
                         const arrival = new Date(availabilityRecord.ArrivalDate);
                         const departure = new Date(availabilityRecord.DepartureDate);
                         const format = (d) => d.toLocaleDateString('en-us', formatDateOptions);
