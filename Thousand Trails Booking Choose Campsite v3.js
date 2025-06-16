@@ -464,7 +464,7 @@ async function getAvailabilityRecord(db, arrivalDate, departureDate) {
                 const inputArrival = new Date(arrivalDate).getTime();
                 const inputDeparture = new Date(departureDate).getTime();
 
-                console.log(`Checking record: Arrival ${record.ArrivalDate}, Departure ${record.DepartureDate}`);
+                //console.log(`Checking record: Arrival ${record.ArrivalDate}, Departure ${record.DepartureDate}`);
 
                 if (recordArrival === inputArrival && recordDeparture === inputDeparture) {
                     console.log('Matching record found:', record);
