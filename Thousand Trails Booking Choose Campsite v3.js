@@ -195,69 +195,6 @@ async function launch() {
         }
       
         if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
-            //check if the book campsite button is available and click it
-            console.log('\n');
-            getTimestamp();
-            window.console.log('\nSearching page for the "Select Site" button');
-            const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'rapid');
-            if (isCampsiteAvailableResult.buttonFound) {
-                clickCount = clickCount + 1;
-                console.log(`Selected "${isCampsiteAvailableResult.matchedSiteType}" Campsite (click count: ${clickCount})`);
- 
-                // Calculate the number of nights
-                var oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-                var dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
-                const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
- 
-                PlayAlert();
-                await sleep(3000);
-                var reservationError = document.getElementById('reservationError').innerText;
-                if (reservationError !== null && reservationError !== undefined) {
-                    reservationError = reservationError.trim(); // Trim whitespace
-                    console.log(`\nError Received: ${reservationError}`);
-                }
- 
-                // Call the sendPushMessage function with the required parameters
-                pushBookSiteMessage(db, composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-                 scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
-                 scBookedSiteType, null, reservationError));
-             
- 
-                if (reservationError == "Unable to process your request.") {
-                    console.log("Sleeping...1 minute");
-                    await sleep(59000);
-                    console.log("Reloading Page");
-                    window.location.reload();
-                }
- 
-                if (clickCount <= 49) {
-                    getTimestamp();
-                    console.log("Sleeping...1 minutes");
-                    await sleep(60000);
-                    var bookingURL = baseURL + "/reserve/step3"
-                    console.log("Redirecting to Step 3 - Enter Payment (Bug that allows booking)");
-                    console.log(bookingURL);
-                    await sleep(500);
-                    window.location.replace(bookingURL);
-                    /*
-                    console.log("Sleeping...3 minutes");
-                    await sleep(177000);
-                    launch();
-                    */
-                }
-                else {
-                    console.log("Reloading Page");
-                    console.log("Sleeping...3 minutes");
-                    await sleep(177000);
-                    window.location.reload();
-                }
-            } else {
-                console.log('\n"Select Site" button was not found on the page; reset and try again.');
-                //sleep, clear database and try again
-                await availabilityCheckIntervalSleep(db);
-                await resetBookingAvailabilityProcess(db);
-                launch();
-            }
  
        } else {
             // Gather Available Dates
@@ -284,6 +221,11 @@ async function launch() {
                     console.log('Is campsite available:', isCampsiteAvailableResult.buttonFound);
                     if (isCampsiteAvailableResult.buttonFound) {
                         console.log(`${isCampsiteAvailableResult.matchedSiteType} Campsite is Available for ${availabilityRecord.ArrivalDate}`);
+
+                        if (hasValidDates(scBookedDatesArray) && scBookingPreference === 'consecutive') {
+                            await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
+                            await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions));
+                        }
                     }
 
                     /*
@@ -373,9 +315,76 @@ async function launch() {
                     console.log('availabilityRecord not found for arrival date:', bookingArrivalDate);
                 }
            }
-
+       }
+       if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
+            //check if the book campsite button is available and click it
+            console.log('\n');
+            getTimestamp();
+            window.console.log('\nSearching page for the "Select Site" button');
+            const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'rapid');
+            if (isCampsiteAvailableResult.buttonFound) {
+                clickCount = clickCount + 1;
+                console.log(`Selected "${isCampsiteAvailableResult.matchedSiteType}" Campsite (click count: ${clickCount})`);
+ 
+                // Calculate the number of nights
+                var oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
+                var dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
+                const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
+ 
+                PlayAlert();
+                await sleep(3000);
+                var reservationError = document.getElementById('reservationError').innerText;
+                if (reservationError !== null && reservationError !== undefined) {
+                    reservationError = reservationError.trim(); // Trim whitespace
+                    console.log(`\nError Received: ${reservationError}`);
+                }
+ 
+                // Call the sendPushMessage function with the required parameters
+                pushBookSiteMessage(db, composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
+                 scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
+                 scBookedSiteType, null, reservationError));
+             
+ 
+                if (reservationError == "Unable to process your request.") {
+                    console.log("Sleeping...1 minute");
+                    await sleep(59000);
+                    console.log("Reloading Page");
+                    window.location.reload();
+                }
+ 
+                if (clickCount <= 49) {
+                    getTimestamp();
+                    console.log("Sleeping...1 minutes");
+                    await sleep(60000);
+                    var bookingURL = baseURL + "/reserve/step3"
+                    console.log("Redirecting to Step 3 - Enter Payment (Bug that allows booking)");
+                    console.log(bookingURL);
+                    await sleep(500);
+                    window.location.replace(bookingURL);
+                    /*
+                    console.log("Sleeping...3 minutes");
+                    await sleep(177000);
+                    launch();
+                    */
+                }
+                else {
+                    console.log("Reloading Page");
+                    console.log("Sleeping...3 minutes");
+                    await sleep(177000);
+                    window.location.reload();
+                }
+            } else {
+                console.log('\n"Select Site" button was not found on the page; reset and try again.');
+                //sleep, clear database and try again
+                await availabilityCheckIntervalSleep(db);
+                await resetBookingAvailabilityProcess(db);
+                launch();
+            }
+ 
+       }else{
            redirectBookingPage();
        }
+
 
    } catch (error) {
        console.error('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
