@@ -280,15 +280,13 @@ async function getNextAvailabilityDate(db) {
 
     // Determine booking preference (consecutive or not)
     const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
-    let scBookingPreference = null;
+    let scBookingPreference = scBookingPreferenceConstant.value;
     let useInsertionOrder = false;
 
-    if (isValidConstant(scBookingPreferenceConstant)) {
-        scBookingPreference = scBookingPreferenceConstant.value.toLowerCase();
-        console.log('Booking Preference:', scBookingPreference);
-
-        useInsertionOrder = (scBookingPreference === 'consecutive');
+    if (scBookingPreference.toLowerCase() === 'consecutive') {
+        useInsertionOrder = true;
     }
+    console.log(`Booking Preference: ${scBookingPreference} | Using Insertion Order: ${useInsertionOrder}`);
 
     // Determine cursor direction based on availability mode
     const availabilityModeConstant = await getSiteConstant(db, 'BookingAvailabilityMapCheck');
