@@ -3,7 +3,7 @@ var globalVariables = {
     memberNumber: "",
     PIN: "",
     bookingPreference: "datearray", // options: auto | consecutive | leadingtrailing | datearray
-    bookingAvailabilityMapCheck: "single", // options: single | double | both
+    bookingAvailabilityMapCheck: "double", // options: single | double | both
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
     desiredSiteTypes: [

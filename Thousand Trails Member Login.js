@@ -201,6 +201,7 @@ async function launch() {
     const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
     const scDesiredSiteTypesConstant = await getSiteConstant(db, 'scDesiredSiteTypes');
     const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
+    const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
     let scBookingPreference = null;
 
     // Check if constants were retrieved successfully and if their values are not null or empty
@@ -222,10 +223,19 @@ async function launch() {
       //override BookingPreference if it was auto to be datearray for identification
       await addOrUpdateSiteConstant(db, 'BookingPreference', 'datearray');
       await insertAvailabilityRecords2(db, scDesiredDatesArray);
+
+    } else if (isValidConstant(scDesiredArrivalConstant) && isValidConstant(scDesiredDepartureConstant) && scBookingPreference === 'consecutive') {
+        //Handle consecutive booking preference
+        console.log('SiteConstant Desired Arrival Date:', scDesiredArrivalConstant.value);
+        console.log('SiteConstant Desired Departure Date:', scDesiredDepartureConstant.value);
+        await insertConsecutiveAvailabilityRecords(db, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scMinimumConsecutiveDaysConstant.value);
+
     } else if (isValidConstant(scDesiredArrivalConstant) && isValidConstant(scDesiredDepartureConstant)) {
-      console.log('SiteConstant Desired Arrival Date:', scDesiredArrivalConstant.value);
-      console.log('SiteConstant Desired Departure Date:', scDesiredDepartureConstant.value)
-      await insertAvailabilityRecords(db, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value);
+        // Fallback: handles generic (non-consecutive) date range
+        console.log('SiteConstant Desired Arrival Date:', scDesiredArrivalConstant.value);
+        console.log('SiteConstant Desired Departure Date:', scDesiredDepartureConstant.value);
+        await insertAvailabilityRecords(db, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value);
+
     } else {
       console.error('SiteConstant Desired Arrival\Departure or Array constant is null, empty, or not found.');
     }

@@ -427,6 +427,54 @@ async function insertAvailabilityRecords2(db, desiredDatesArray) {
     }
 }
 
+async function insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays) {
+    console.log(`[Availability] insertConsecutiveAvailabilityRecords() called with arrival: ${desiredArrivalDate}, departure: ${desiredDepartureDate}, minimumConsecutiveDays: ${minimumConsecutiveDays}`);
+    let count = 0;
+    let id = 0;
+    try {
+        function* consecutiveRanges(arrivalStr, departureStr, minDays) {
+            function parseDate(str) {
+                const [mm, dd, yyyy] = str.split('/');
+                return new Date(+yyyy, mm - 1, +dd);
+            }
+            function formatDate(date) {
+                return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${date.getFullYear()}`;
+            }
+            const arrival = parseDate(arrivalStr);
+            const departure = parseDate(departureStr);
+            const totalDays = Math.round((departure - arrival) / (1000 * 60 * 60 * 24));
+            for (let numDays = totalDays; numDays >= minDays; numDays--) {
+                for (let start = 0; start <= totalDays - numDays; start++) {
+                    let thisArrival = new Date(arrival);
+                    thisArrival.setDate(arrival.getDate() + start);
+                    let thisDeparture = new Date(thisArrival);
+                    thisDeparture.setDate(thisArrival.getDate() + numDays);
+                    if (thisDeparture <= departure) {
+                        yield {                       
+                            ArrivalDate: thisArrival.toLocaleDateString('en-us', formatDateOptions),
+                            DepartureDate: thisArrival.toLocaleDateString('en-us', formatDateOptions),
+                            Available: false,
+                            Checked: null
+                        };
+                    }
+                }
+            }
+        }
+
+        for (let row of consecutiveRanges(desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays)) {
+            row.id = id++;
+            await addToStore(db, 'Availability', row);
+            count++;
+            console.log(`[Availability] Added: ${row.arrivalDate} - ${row.departureDate} (${row.consecutiveDays} nights)`);
+        }
+
+        console.log(`[Availability] Inserted ${count} records for range ${desiredArrivalDate} to ${desiredDepartureDate}, minimum ${minimumConsecutiveDays} nights.`);
+    } catch (error) {
+        console.error(`[Availability] Error inserting consecutive records:`, error);
+        throw error;
+    }
+}
+
 async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate) {
     console.log('removeBookedDatesFromAvailability(db, arrivalDate, departureDate)')
     try {
