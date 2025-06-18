@@ -382,16 +382,18 @@ async function launch() {
             }
  
        }else{
-           redirectBookingPage();
+            console.log("Throttling...5 seconds");
+            await sleep(5000);
+            redirectBookingPage();
        }
 
 
    } catch (error) {
-       console.error('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
-       console.log("Sleeping...30 seconds");
-       await sleep(30000);
-       console.log("Reloading Page");
-       window.location.reload();
+        console.error('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
+        console.log("Sleeping...30 seconds");
+        await sleep(30000);
+        console.log("Reloading Page");
+        window.location.reload();
    }
 }
 
