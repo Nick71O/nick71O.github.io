@@ -380,7 +380,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             */
 
             let availableDatesInRange = [];
-            if (bookingPreference.toLowerCase() === 'datearray') {
+            if (bookingPreference.toLowerCase() === 'datearray' || bookingPreference.toLowerCase() === 'consecutive') {
                 availableDatesInRange = getAllDatesInRangeOrArray(availableDates, null, null);
             } else {
                 availableDatesInRange = getDatesInRange(availableDates, arrivalDate, departureDate);
