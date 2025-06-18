@@ -532,8 +532,7 @@ async function getProcessAvailabilityElapseTime(db) {
     return elapseTime;
 }
 
-async function getOnlyAvailableSiteRecords(db) {
-    //console.log('Hello from getOnlyAvailableSiteRecords()');
+async function getOnlyAvailableSiteRecords(db, firstRecordOnly = false) {
     const transaction = db.transaction(['Availability'], 'readonly');
     const objectStore = transaction.objectStore('Availability');
 
@@ -542,28 +541,51 @@ async function getOnlyAvailableSiteRecords(db) {
     let latestCheckedTime = null;
 
     return new Promise((resolve, reject) => {
-        const request = objectStore.openCursor();
+        const request = objectStore.openCursor(); // insertion order
 
         request.onsuccess = function (event) {
             const cursor = event.target.result;
 
             if (cursor) {
-                if (cursor.value.Available === true) {
-                    availableDates.push(cursor.value.ArrivalDate);
-                }
-                //calculate elaspe time
-                const checkedTime = cursor.value.Checked ? new Date(cursor.value.Checked).getTime() : null;
+                const record = cursor.value;
+
+                // Track checked timestamps
+                const checkedTime = record.Checked ? new Date(record.Checked).getTime() : null;
                 if (checkedTime !== null) {
                     oldestCheckedTime = oldestCheckedTime !== null ? Math.min(oldestCheckedTime, checkedTime) : checkedTime;
                     latestCheckedTime = latestCheckedTime !== null ? Math.max(latestCheckedTime, checkedTime) : checkedTime;
                 }
 
+                if (firstRecordOnly === true) {
+                    // First available record only — expand the range like a hotel stay
+                    if (record.Available === true) {
+                        const start = new Date(record.ArrivalDate);
+                        const end = new Date(record.DepartureDate);
+
+                        for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
+                            availableDates.push(d.toLocaleDateString('en-US'));
+                        }
+
+                        const elapseTime = (oldestCheckedTime !== null && latestCheckedTime !== null)
+                            ? Math.floor((latestCheckedTime - oldestCheckedTime) / 1000)
+                            : 0;
+
+                        resolve({ availableDates, elapseTime });
+                        return;
+                    }
+                } else {
+                    // ORIGINAL BEHAVIOR: Just push ArrivalDate for all Available === true
+                    if (record.Available === true) {
+                        availableDates.push(record.ArrivalDate);
+                    }
+                }
+
                 cursor.continue();
             } else {
-                let elapseTime = 0;
-                if (oldestCheckedTime !== null && latestCheckedTime !== null) {
-                    elapseTime = Math.floor((latestCheckedTime - oldestCheckedTime) / 1000);
-                }
+                const elapseTime = (oldestCheckedTime !== null && latestCheckedTime !== null)
+                    ? Math.floor((latestCheckedTime - oldestCheckedTime) / 1000)
+                    : 0;
+
                 resolve({ availableDates, elapseTime });
             }
         };
@@ -573,7 +595,6 @@ async function getOnlyAvailableSiteRecords(db) {
         };
     });
 }
-
 
 // Retrieve all entries from the SiteConstant table and log them to the console
 async function logSiteConstants(db) {

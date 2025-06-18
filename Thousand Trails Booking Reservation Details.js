@@ -212,8 +212,7 @@ async function launch() {
 
             //console.log('Goto Step 2');
 
-            console.log('Load getOnlyAvailableSiteRecords');
-            const { availableDates, elapseTime } = await getOnlyAvailableSiteRecords(db)
+            const { availableDates, elapseTime } = await getOnlyAvailableSiteRecords(db, scBookingPreference === 'consecutive')
             console.log('All Available Dates:', availableDates);
 
             // Call the sendMessage function with the required parameters
