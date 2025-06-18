@@ -354,6 +354,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
     switch (bookingPreference.toLowerCase()) {
         case "datearray":
+        case "consecutive":
             console.log(`AvailableBooking - ${bookingPreference}`);
             console.log('Minimum Consecutive Days: ', minimumConsecutiveDays);
             console.log('Available Dates: ', availableDates);
@@ -442,7 +443,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
             break;
 
-        case "consecutive":
+        case "consecutiveOld":
             console.log(`AvailableBooking - ${bookingPreference}`);
             console.log('Minimum Consecutive Days: ', minimumConsecutiveDays);
             console.log('Available Dates: ', availableDates);
