@@ -322,6 +322,20 @@ async function launch() {
            }
        }
        if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
+            const cartCheckinElement = document.getElementById('cartCheckin');
+            const cartCheckoutElement = document.getElementById('cartCheckout');
+            const pageArrivalDate = cartCheckinElement ? new Date(cartCheckinElement.textContent.trim()) : null;
+            const pageDepartureDate = cartCheckoutElement ? new Date(cartCheckoutElement.textContent.trim()) : null;
+            const pageArrival = pageArrivalDate && !isNaN(pageArrivalDate.getTime()) ? pageArrivalDate.toLocaleDateString('en-us', formatDateOptions) : null;
+            const pageDeparture = pageDepartureDate && !isNaN(pageDepartureDate.getTime()) ? pageDepartureDate.toLocaleDateString('en-us', formatDateOptions) : null;
+
+            if (pageArrival !== scAvailableArrivalDate || pageDeparture !== scAvailableDepartureDate) {
+                console.error(`Available date mismatch. Stored: ${scAvailableArrivalDate} - ${scAvailableDepartureDate}; page: ${pageArrival || 'unknown'} - ${pageDeparture || 'unknown'}. Resetting before selecting a site.`);
+                await resetBookingAvailabilityProcess(db);
+                await redirectBookingPage();
+                return;
+            }
+
             //check if the book campsite button is available and click it
             console.log('\n');
             getTimestamp();
@@ -339,7 +353,8 @@ async function launch() {
                 PlayAlert();
                 await sleep(3000);
                 var reservationErrorElement = document.getElementById('reservationError');
-                var reservationError = reservationErrorElement ? reservationErrorElement.innerText.trim() : '';
+                var reservationErrorText = reservationErrorElement ? reservationErrorElement.innerText.trim() : '';
+                var reservationError = reservationErrorText || null;
                 if (reservationError) {
                     console.log(`\nError Received: ${reservationError}`);
                 }
@@ -359,6 +374,7 @@ async function launch() {
                     await sleep(59000);
                     console.log("Reloading Page");
                     window.location.reload();
+                    return;
                 }
  
                 if (clickCount <= 49) {
@@ -370,6 +386,7 @@ async function launch() {
                     console.log(bookingURL);
                     await sleep(500);
                     window.location.replace(bookingURL);
+                    return;
                     /*
                     console.log("Sleeping...3 minutes");
                     await sleep(177000);
@@ -381,6 +398,7 @@ async function launch() {
                     console.log("Sleeping...3 minutes");
                     await sleep(177000);
                     window.location.reload();
+                    return;
                 }
             } else {
                 console.log('\n"Select Site" button was not found on the page; reset and try again.');
@@ -404,56 +422,6 @@ async function launch() {
         console.log("Reloading Page");
         window.location.reload();
    }
-}
-
-
-async function getSiteConstants(db) {
-   const transaction = db.transaction(['SiteConstants'], 'readonly');
-   const siteConstantsStore = transaction.objectStore('SiteConstants');
-
-   return new Promise((resolve, reject) => {
-       const request = siteConstantsStore.get('SiteConstants');
-
-       request.onsuccess = function (event) {
-           resolve(event.target.result);
-       };
-
-       request.onerror = function (event) {
-           reject(event.target.error);
-       };
-   });
-}
-
-
-async function getAvailabilityRecord(db, arrivalDate) {
-   console.log('Hello from getAvailabilityRecord()');
-   const transaction = db.transaction(['Availability'], 'readwrite');
-   const availabilityStore = transaction.objectStore('Availability');
-
-   return new Promise((resolve, reject) => {
-       const request = availabilityStore.openCursor();
-
-       request.onsuccess = function (event) {
-           const cursor = event.target.result;
-           if (cursor) {
-               const record = cursor.value;
-               console.log('If (' + new Date(record.ArrivalDate).getTime() + ' === ' + new Date(arrivalDate).getTime() + ')');
-               if (new Date(record.ArrivalDate).getTime() === new Date(arrivalDate).getTime()) {
-                   console.log('Record:', record);
-                   resolve(record); // Resolve with the matched record
-                   return;
-               }
-               cursor.continue();
-           } else {
-               resolve(null); // Resolve with null if no match found
-           }
-       };
-
-       request.onerror = function (event) {
-           console.error('Error fetching records:', event.target.error); // Log the error
-           reject(event.target.error);
-       };
-   });
 }
 
 async function getAvailabilityRecord(db, arrivalDate, departureDate) {
@@ -578,12 +546,23 @@ function isCampsiteAvailable(scDesiredSiteTypes, clickMode = 'none') {
     let buttonFound = false;
     let matchedSiteType = null;
 
+    if (!Array.isArray(scDesiredSiteTypes) || scDesiredSiteTypes.length === 0) {
+        console.warn('Desired site types are missing or empty. Cannot match campsite availability.');
+        return { buttonFound, matchedSiteType };
+    }
+
     for (let title of siteTitles) {
         const text = title.textContent.trim();
 
         for (let desired of scDesiredSiteTypes) {
             if (text.startsWith(desired)) {
-                const selectButton = title.closest('.site').querySelector('.select-site');
+                const site = title.closest('.site');
+                if (!site) {
+                    console.warn(`Matched "${desired}" title, but no parent .site container was found.`);
+                    continue;
+                }
+
+                const selectButton = site.querySelector('.select-site');
 
                 if (selectButton) {
                     buttonFound = true;
