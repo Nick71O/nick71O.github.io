@@ -527,7 +527,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let currentTrailingDate = bookedDepartureDate;
             let currentTrailingCount = 0;
 
-            while (currentIndex < availableDates.length - 1 && availableDates[currentIndex] === currentTrailingDate) {
+            while (currentIndex >= 0 && currentIndex < availableDates.length && availableDates[currentIndex] === currentTrailingDate) {
                 //console.log("Current Index:", currentIndex, "Available Date:", availableDates[currentIndex], "Current Trailing Date:", currentTrailingDate);
                 currentTrailingDate = addDays(currentTrailingDate, 1);
                 currentTrailingCount++;
@@ -690,7 +690,8 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
             console.error("Booking select elements not found or not ready!");
             console.log("Sleeping...30 seconds");
             await sleep(30000);
-            await redirectLoginPage();
+            console.log("Reloading Page");
+            window.location.reload();
             return;
         }
 			
