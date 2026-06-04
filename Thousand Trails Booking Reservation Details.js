@@ -204,8 +204,6 @@ async function launch() {
         if (nextAvailabilityDate) {
             console.log('Next Availability Date:', nextAvailabilityDate);
 
-            //openTabs(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
-
             await inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
         }
         else {
@@ -243,7 +241,7 @@ async function launch() {
                 }
                 */
 
-                const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scBookedArrivalConstant.value, scBookedDepartureConstant.value, bookingPreference, minimumConsecutiveDays);
+                const { availableArrivalDate, availableDepartureDate } = await AvailableBooking(db, availableDates, scDesiredArrivalDate, scDesiredDepartureDate, scBookedArrivalDate, scBookedDepartureDate, bookingPreference, minimumConsecutiveDays);
                 if (availableArrivalDate && availableDepartureDate) {
                     console.log("\nAvailable Arrival Date:", availableArrivalDate);
                     console.log("Available Departure Date:", availableDepartureDate);
@@ -585,14 +583,6 @@ function addDays(date, days) {
     return result.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
 }
 
-function getDates(start, end) {
-    var arr = [];
-    for (var dt = new Date(start); dt <= new Date(end); dt.setDate(dt.getDate() + 1)) {
-        arr.push(new Date(dt));
-    }
-    return arr;
-}
-
 function getDatesInRange(array, start, end) {
     var inRange = [];
     //console.log('Start Date:', start);
@@ -731,27 +721,4 @@ async function redirectLoginPage() {
     console.log(loginURL);
     await sleep(500);
     window.location.replace(loginURL);
-}
-
-async function redirectBookingPage() {
-    var bookingQueryString = "?robot=78"
-    var bookingURL = baseURL + "/reserve/index" + bookingQueryString
-
-    console.log("Redirecting to the Campgrounds Booking Page");
-    console.log(bookingURL);
-    await sleep(500);
-    window.location.replace(bookingURL);
-}
-
-async function openTabs(arrivalDate, departureDate) {
-    arrivalDate = arrivalDate.replace(/\//g, "%2F");
-    departureDate = departureDate.replace(/\//g, "%2F");
-    var loginURL = baseURL + "/login/index"
-    var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
-    var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
-
-    console.log("Redirecting to the Campgrounds Booking Page");
-    console.log(bookingURL);
-    await sleep(500);
-    window.location.replace(bookingURL);
 }
