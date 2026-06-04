@@ -53,6 +53,7 @@ async function launch() {
         await sleep(180000);
         console.log("Reloading Page");
         window.location.reload();
+        return;
     }
 
     //if the page loses its login credentials it loads a login screen at the same url
@@ -63,7 +64,8 @@ async function launch() {
 
         console.log("Sleeping...30 seconds");
         await sleep(30000);
-        redirectLoginPage();
+        await redirectLoginPage();
+        return;
     }
 
     try {
@@ -216,9 +218,13 @@ async function launch() {
             console.log('All Available Dates:', availableDates);
 
             // Call the sendMessage function with the required parameters
-            pushSiteAvailabilityMessage(db, composeMessageToSend('step2', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-                scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
-                scBookedSiteType, availableDates, null));
+            try {
+                await pushSiteAvailabilityMessage(db, composeMessageToSend('step2', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
+                    scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray,
+                    scBookedSiteType, availableDates, null));
+            } catch (error) {
+                console.error('Error sending site availability push message:', error);
+            }
 
             const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
             const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
@@ -242,7 +248,8 @@ async function launch() {
                     console.log("\nAvailable Arrival Date:", availableArrivalDate);
                     console.log("Available Departure Date:", availableDepartureDate);
 
-                    inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
+                    await inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
+                    return;
                 } else {
                     console.log("\nNo available dates found.");
                     //console.log("Available Arrival Date:", availableArrivalDate);
@@ -266,6 +273,7 @@ async function launch() {
         await sleep(5000);
         console.log("Reloading Page");
         window.location.reload();
+        return;
     }
 }
 
@@ -279,10 +287,10 @@ async function getNextAvailabilityDate(db) {
 
     // Determine booking preference (consecutive or not)
     const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
-    let scBookingPreference = scBookingPreferenceConstant.value;
+    let scBookingPreference = scBookingPreferenceConstant?.value?.toLowerCase() || 'auto';
     let useInsertionOrder = false;
 
-    if (scBookingPreference.toLowerCase() === 'consecutive') {
+    if (scBookingPreference === 'consecutive') {
         useInsertionOrder = true;
     }
     console.log(`Booking Preference: ${scBookingPreference} | Using Insertion Order: ${useInsertionOrder}`);
@@ -494,6 +502,7 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
             let trailingDepartureDate = null;
             let trailingArrivalDate = null;
             let trailingNumberOfNights = 0;
+            let availableNumberOfNights = 0;
 
             // Finding leading dates
             let currentLeadingDate = addDays(bookedArrivalDate, -1);
@@ -617,6 +626,29 @@ document.addEventListener("DOMContentLoaded", function () {
     setupEventListener();
 });
 
+function selectBookingOption(selector, optionMatches, description) {
+    const selectElement = document.querySelector(selector);
+    if (!selectElement) {
+        console.error(`Booking select element not found for ${description}: ${selector}`);
+        return false;
+    }
+
+    const options = Array.from(selectElement.options || []);
+    const optionIndex = options.findIndex(optionMatches);
+    if (optionIndex === -1) {
+        console.error(`Booking select option not found for ${description}.`);
+        return false;
+    }
+
+    if (!selectElement.sumo || typeof selectElement.sumo.selectItem !== 'function') {
+        console.error(`SumoSelect is not ready for ${description}.`);
+        return false;
+    }
+
+    selectElement.sumo.selectItem(optionIndex);
+    return true;
+}
+
 async function inputBookingReservationDetails(arrivalDate, departureDate) {
     // Check if the elements exist before performing actions
     const checkinInput = document.getElementById("checkin");
@@ -628,7 +660,11 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
     if (checkinInput && checkoutInput && btnStep2 && lengthInput && slideoutsNoRadio) {
         // Set Arrival/Departure Date
         // Reset both datepickers regardless of current state
-        if (typeof $ !== 'undefined') {
+        const datepickerAvailable = typeof $ !== 'undefined' &&
+            typeof $(checkinInput).datepicker === 'function' &&
+            typeof $(checkoutInput).datepicker === 'function';
+
+        if (datepickerAvailable) {
             if ($(checkinInput).hasClass("hasDatepicker")) {
                 console.log('Destroying checkin datepicker to override constraints...');
                 $(checkinInput).datepicker('destroy');
@@ -653,21 +689,21 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         }
 
         // Use SumoSelect to update dropdown values
-        // Site Type: RV Site
-        $('#campingType')[0].sumo.selectItem($('#campingType option').filter(function () {
-            return $(this).text().trim() === 'RV Site';
-        }).index());
+        const bookingOptionsSelected = [
+            selectBookingOption('#campingType', option => option.textContent.trim() === 'RV Site', 'Site Type: RV Site'),
+            selectBookingOption('#equipmentType', option => option.textContent.trim() === 'Travel Trailer', 'Equipment Type: Travel Trailer'),
+            selectBookingOption('#adults', option => option.value === '2', 'Adults: 2'),
+            selectBookingOption('#kids', option => option.value === '3', 'Kids: 3')
+        ].every(Boolean);
 
-        // Equipment Type: Travel Trailer
-        $('#equipmentType')[0].sumo.selectItem($('#equipmentType option').filter(function () {
-            return $(this).text().trim() === 'Travel Trailer';
-        }).index());
-
-        // Adults: 2
-        $('#adults')[0].sumo.selectItem($('#adults option[value="2"]').index());
-        // Kids: 3
-        $('#kids')[0].sumo.selectItem($('#kids option[value="3"]').index());
-	
+        if (!bookingOptionsSelected) {
+            console.error("Booking select elements not found or not ready!");
+            console.log("Sleeping...30 seconds");
+            await sleep(30000);
+            await redirectLoginPage();
+            return;
+        }
+			
 	    // Pets: 1
         //$('#pets')[0].sumo.selectItem($('#pets option[value="1"]').index());
 
@@ -683,7 +719,8 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         console.error("Booking input elements not found!");
         console.log("Sleeping...30 seconds");
         await sleep(30000);
-        redirectLoginPage();
+        await redirectLoginPage();
+        return;
     }
 }
 
