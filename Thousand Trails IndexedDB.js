@@ -120,37 +120,36 @@ async function getSiteConstant(db, name) {
 async function addOrUpdateSiteConstant(db, name, value) {
     try {
         const existingConstant = await getSiteConstant(db, name);
-        const transaction = db.transaction('SiteConstant', 'readwrite');
-        const siteConstantsStore = transaction.objectStore('SiteConstant');
 
         if (existingConstant) {
-            if (existingConstant.value !== value) {
-                existingConstant.value = value;
-                const updateRequest = siteConstantsStore.put(existingConstant);
-                updateRequest.onsuccess = () => {
-                    console.log(`SiteConstant '${name}' updated successfully.`);
-                    transaction.commit(); // Commit the transaction after successful update
-                };
-                updateRequest.onerror = (event) => {
-                    console.error('Error updating SiteConstant:', event.target.error);
-                    transaction.abort(); // Abort transaction on error
-                };
-            } else {
+            if (existingConstant.value === value) {
                 console.log(`SiteConstant '${name}' already contains the same value. No update needed.`);
-                transaction.commit(); // Commit the transaction since no update is needed
+                return;
             }
-        } else {
-            const newConstant = { name, value };
-            const addRequest = siteConstantsStore.add(newConstant);
-            addRequest.onsuccess = () => {
-                console.log(`SiteConstant '${name}' added successfully.`);
-                transaction.commit(); // Commit the transaction after successful addition
-            };
-            addRequest.onerror = (event) => {
-                console.error('Error adding SiteConstant:', event.target.error);
-                transaction.abort(); // Abort transaction on error
-            };
         }
+
+        const transaction = db.transaction('SiteConstant', 'readwrite');
+        const siteConstantsStore = transaction.objectStore('SiteConstant');
+        const constant = existingConstant ? { ...existingConstant, value } : { name, value };
+
+        await new Promise((resolve, reject) => {
+            const request = existingConstant
+                ? siteConstantsStore.put(constant)
+                : siteConstantsStore.add(constant);
+
+            request.onsuccess = () => {
+                console.log(`SiteConstant '${name}' ${existingConstant ? 'updated' : 'added'} successfully.`);
+            };
+
+            request.onerror = (event) => {
+                console.error(`Error ${existingConstant ? 'updating' : 'adding'} SiteConstant:`, event.target.error);
+                reject(event.target.error);
+            };
+
+            transaction.oncomplete = () => resolve();
+            transaction.onerror = (event) => reject(event.target.error);
+            transaction.onabort = (event) => reject(event.target.error || transaction.error);
+        });
     } catch (error) {
         console.error(`Error adding or updating SiteConstant '${name}':`, error);
         console.error('Error stack trace:', error.stack);
@@ -208,12 +207,12 @@ async function updateSiteConstantsDates(db, newArrivalDate, newDepartureDate) {
 
 // Delete all records from the SiteConstant object store
 async function deleteAllSiteConstants(db) {
-    deleteAllRecords(db, 'SiteConstant');
+    await deleteAllRecords(db, 'SiteConstant');
 }
 
 // Delete all records from the Availability object store
 async function deleteAllAvailabilityRecords(db) {
-    deleteAllRecords(db, 'Availability');
+    await deleteAllRecords(db, 'Availability');
 }
 
 async function deleteAllRecords(db, objectStoreName) {
@@ -223,28 +222,39 @@ async function deleteAllRecords(db, objectStoreName) {
             const transaction = db.transaction([objectStoreName], 'readwrite');
             const objectStore = transaction.objectStore(objectStoreName);
 
-            const request = objectStore.clear();
+            await new Promise((resolve, reject) => {
+                const request = objectStore.clear();
 
-            request.onsuccess = function () {
-                console.log(`All records deleted from the ${objectStoreName} table.`);
-            };
+                request.onsuccess = function () {
+                    console.log(`All records deleted from the ${objectStoreName} table.`);
+                };
 
-            request.onerror = function (event) {
-                logError('Delete Records', event.target.error);
-            };
+                request.onerror = function (event) {
+                    logError('Delete Records', event.target.error);
+                    reject(event.target.error);
+                };
 
-            transaction.oncomplete = function () {
-                console.log('Transaction completed.');
-            };
+                transaction.oncomplete = function () {
+                    console.log('Transaction completed.');
+                    resolve();
+                };
 
-            transaction.onerror = function (event) {
-                logError('Transaction', event.target.error);
-            };
+                transaction.onerror = function (event) {
+                    logError('Transaction', event.target.error);
+                    reject(event.target.error);
+                };
+
+                transaction.onabort = function (event) {
+                    logError('Transaction Abort', event.target.error || transaction.error);
+                    reject(event.target.error || transaction.error);
+                };
+            });
         } else {
-            console.error(`Object store '${objectStoreName}' not found.`);
+            throw new Error(`Object store '${objectStoreName}' not found.`);
         }
     } catch (error) {
         console.error(`Error deleting records from ${objectStoreName}:`, error);
+        throw error;
     }
 }
 

@@ -222,9 +222,14 @@ async function launch() {
                     if (isCampsiteAvailableResult.buttonFound) {
                         console.log(`${isCampsiteAvailableResult.matchedSiteType} Campsite is Available for ${availabilityRecord.ArrivalDate}`);
 
-                        if (hasValidDates(scBookedDatesArray) && scBookingPreference === 'consecutive') {
-                            await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', bookingArrivalDate.toLocaleDateString('en-us', formatDateOptions));
-                            await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', bookingDepartureDate.toLocaleDateString('en-us', formatDateOptions));
+                        if (scBookingPreference === 'consecutive') {
+                            scAvailableArrivalDate = formattedArrival;
+                            scAvailableDepartureDate = formattedDeparture;
+                            scAvailableSiteType = isCampsiteAvailableResult.matchedSiteType;
+
+                            await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', scAvailableArrivalDate);
+                            await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', scAvailableDepartureDate);
+                            await addOrUpdateSiteConstant(db, 'AvailableSiteType', scAvailableSiteType);
                         }
                     }
 
@@ -333,16 +338,20 @@ async function launch() {
  
                 PlayAlert();
                 await sleep(3000);
-                var reservationError = document.getElementById('reservationError').innerText;
-                if (reservationError !== null && reservationError !== undefined) {
-                    reservationError = reservationError.trim(); // Trim whitespace
+                var reservationErrorElement = document.getElementById('reservationError');
+                var reservationError = reservationErrorElement ? reservationErrorElement.innerText.trim() : '';
+                if (reservationError) {
                     console.log(`\nError Received: ${reservationError}`);
                 }
  
                 // Call the sendPushMessage function with the required parameters
-                pushBookSiteMessage(db, composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
-                 scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
-                 scBookedSiteType, null, reservationError));
+                try {
+                    await pushBookSiteMessage(db, composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
+                     scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
+                     scBookedSiteType, null, reservationError));
+                } catch (error) {
+                    console.error('Error sending booking push message:', error);
+                }
              
  
                 if (reservationError == "Unable to process your request.") {
