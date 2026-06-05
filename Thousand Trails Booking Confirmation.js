@@ -174,6 +174,11 @@ async function launch() {
            console.log('SiteConstant Available Site Type: ' + scAvailableSiteType);
        }
 
+        if (!isValidDate(scAvailableArrivalDate) || !isValidDate(scAvailableDepartureDate)) {
+            console.error('Available arrival/departure dates are missing or invalid. Stopping confirmation processing to avoid restarting with stale booking state.');
+            return;
+        }
+
         // Remove the booked dates from the availability table so they are not booked a 2nd time
         await removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
 
@@ -238,13 +243,22 @@ async function launch() {
             }
         }
 
+        const hasRemainingDesiredDates = hasRemainingDesiredDatesToBook(scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray);
+        console.log(`Remaining desired dates after confirmed booking: ${hasRemainingDesiredDates}`);
+
         // Call the sendPushMessage function with the required parameters
-        pushSiteBookedMessage(db, composeMessageToSend('step4', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
+        await pushSiteBookedMessage(db, composeMessageToSend('step4', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
             scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
             scBookedSiteType, null, null));
 
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
+
+        if (!hasRemainingDesiredDates) {
+            console.log("\nNo desired dates remain after confirmed booking. Clearing availability state and stopping booking flow.");
+            await resetBookingAvailabilityProcess(db);
+            return;
+        }
 
         //clear database, sleep and start looking for the next booking
         console.log("\nSleeping...2 minutes");
@@ -252,7 +266,8 @@ async function launch() {
         await resetBookingAvailabilityProcess(db);
 
         //you do need to change the type of searching...
-        redirectBookingPage();
+        await redirectBookingPage();
+        return;
 
     } catch (error) {
         console.error("An error occurred during form submission:", error);
@@ -333,6 +348,18 @@ function combineBookingDates(existingArrivalDate, existingDepartureDate, newArri
     }
 }
 
+
+function hasRemainingDesiredDatesToBook(bookingPreference, desiredArrivalDate, desiredDepartureDate, desiredDatesArray) {
+    if (bookingPreference === 'datearray') {
+        return hasValidDates(desiredDatesArray);
+    }
+
+    if (!isValidDate(desiredArrivalDate) || !isValidDate(desiredDepartureDate)) {
+        return false;
+    }
+
+    return new Date(desiredArrivalDate).getTime() < new Date(desiredDepartureDate).getTime();
+}
 
 async function removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate) {
     console.log('removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate)');

@@ -498,40 +498,58 @@ async function insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desi
 async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate) {
     console.log('removeBookedDatesFromAvailability(db, arrivalDate, departureDate)')
     try {
-        const transaction = db.transaction('Availability', 'readwrite');
-        const availabilityStore = transaction.objectStore('Availability');
-
         const arrivalDateObj = new Date(arrivalDate);
         const departureDateObj = new Date(departureDate);
 
-        const request = availabilityStore.index('ArrivalDate').openCursor();
+        if (isNaN(arrivalDateObj.getTime()) || isNaN(departureDateObj.getTime())) {
+            throw new Error(`Invalid booked date range: ${arrivalDate} - ${departureDate}`);
+        }
 
-        request.onsuccess = function (event) {
-            const cursor = event.target.result;
-            if (cursor) {
-                const currentDate = new Date(cursor.value.ArrivalDate);
-                if (currentDate >= arrivalDateObj && currentDate < departureDateObj) {
-                    cursor.delete(); // Delete the record
+        await new Promise((resolve, reject) => {
+            const transaction = db.transaction('Availability', 'readwrite');
+            const availabilityStore = transaction.objectStore('Availability');
+            const request = availabilityStore.index('ArrivalDate').openCursor();
+            let removedCount = 0;
+
+            request.onsuccess = function (event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const currentDate = new Date(cursor.value.ArrivalDate);
+                    if (currentDate >= arrivalDateObj && currentDate < departureDateObj) {
+                        const deleteRequest = cursor.delete();
+                        deleteRequest.onsuccess = function () {
+                            removedCount++;
+                            cursor.continue();
+                        };
+                        deleteRequest.onerror = function (event) {
+                            reject(event.target.error);
+                        };
+                    } else {
+                        cursor.continue();
+                    }
                 }
-                cursor.continue(); // Move to the next record
-            } else {
-                console.log('Booked dates removed from Availability.');
-            }
-        };
+            };
 
-        request.onerror = function (event) {
-            console.error('Error removing booked dates from Availability:', event.target.error);
-        };
+            request.onerror = function (event) {
+                reject(event.target.error);
+            };
 
-        transaction.oncomplete = function () {
-            console.log('Transaction completed.');
-        };
+            transaction.oncomplete = function () {
+                console.log(`Booked dates removed from Availability. Rows removed: ${removedCount}`);
+                resolve();
+            };
 
-        transaction.onerror = function (event) {
-            console.error('Transaction error:', event.target.error);
-        };
+            transaction.onerror = function (event) {
+                reject(event.target.error || transaction.error);
+            };
+
+            transaction.onabort = function (event) {
+                reject(event.target.error || transaction.error);
+            };
+        });
     } catch (error) {
         console.error('Error removing booked dates from Availability:', error);
+        throw error;
     }
 }
 

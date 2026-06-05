@@ -230,6 +230,11 @@ async function pushSiteAvailabilityMessage(db, message) {
         console.log('Skipping duplicate site availability notification. No new availability checks since the last notification.');
         return;
     }
+    if (lastSignature === notificationState.rawSignature) {
+        console.log('Skipping duplicate site availability notification. Migrating stored notification signature to hash.');
+        await addOrUpdateSiteConstant(db, availabilitySummaryNotificationSignatureConstant, notificationState.signature);
+        return;
+    }
 
     const pushoverKeys = await getPushoverKeys(db);
     if (pushoverKeys) {
@@ -281,12 +286,18 @@ async function getAvailabilitySummaryNotificationState(db) {
 
                 cursor.continue();
             } else {
-                resolve({
-                    isComplete: totalCount > 0 && checkedCount === totalCount,
-                    totalCount,
-                    checkedCount,
-                    signature: signatureParts.join('||')
-                });
+                const rawSignature = signatureParts.join('||');
+                hashAvailabilitySummarySignature(rawSignature)
+                    .then(signature => {
+                        resolve({
+                            isComplete: totalCount > 0 && checkedCount === totalCount,
+                            totalCount,
+                            checkedCount,
+                            signature,
+                            rawSignature
+                        });
+                    })
+                    .catch(reject);
             }
         };
 
@@ -294,6 +305,38 @@ async function getAvailabilitySummaryNotificationState(db) {
             reject(event.target.error);
         };
     });
+}
+
+async function hashAvailabilitySummarySignature(rawSignature) {
+    if (!rawSignature) {
+        return '';
+    }
+
+    if (typeof window !== 'undefined' && window.crypto && window.crypto.subtle && typeof TextEncoder !== 'undefined') {
+        try {
+            const encodedSignature = new TextEncoder().encode(rawSignature);
+            const digest = await window.crypto.subtle.digest('SHA-256', encodedSignature);
+            const hash = Array.from(new Uint8Array(digest))
+                .map(byte => byte.toString(16).padStart(2, '0'))
+                .join('');
+            return `sha256:${hash}`;
+        } catch (error) {
+            console.error('Error hashing availability notification signature with SHA-256:', error);
+        }
+    }
+
+    return `fnv1a:${hashStringFNV1a(rawSignature)}`;
+}
+
+function hashStringFNV1a(value) {
+    let hash = 0x811c9dc5;
+
+    for (let i = 0; i < value.length; i++) {
+        hash ^= value.charCodeAt(i);
+        hash = Math.imul(hash, 0x01000193);
+    }
+
+    return (hash >>> 0).toString(16).padStart(8, '0');
 }
 
 // Function to push book site message
