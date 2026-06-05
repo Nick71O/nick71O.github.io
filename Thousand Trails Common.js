@@ -150,12 +150,12 @@ function injectThousandTrailsAutomationOverlayStyles() {
         #ttAutomationOverlay {
             position: fixed;
             top: 65px;
-            right: 25px;
+            left: 35px;
             z-index: 5000;
             width: 154px;
             padding: 8px;
             box-sizing: border-box;
-            background-color: rgba(245, 245, 245, 0.85);
+            background-color: rgba(245, 245, 245, 0.84);
             border: 1px solid darkgray;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
