@@ -10,7 +10,7 @@ loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
     })
     .then(() => {
         // Now you can safely use functions or variables from the loaded scripts here
-        launch();
+        startThousandTrailsAutomation(launch);
     })
     .catch(error => {
         // Handle errors if any script fails to load
@@ -51,6 +51,10 @@ async function launch() {
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
 
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before submitting the payment form.')) {
+            return;
+        }
+
         var errorMessage = await inputEnterPaymentFormAndSubmit();
 
         if (errorMessage) {
@@ -87,6 +91,10 @@ function inputEnterPaymentFormAndSubmit() {
                 console.log("Payment form submitted successfully!");
             }
         });
+
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking the payment confirmation button.')) {
+            return null;
+        }
 
         // Click the Book Reservation button
         btnConfirm.click();

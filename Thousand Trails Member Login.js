@@ -44,7 +44,7 @@ loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
   })
   .then(() => {
     // Now you can safely use functions or variables from the loaded scripts here
-    launch();
+    startThousandTrailsAutomation(launch);
   })
   .catch(error => {
     // Handle errors if any script fails to load
@@ -135,8 +135,12 @@ async function launch() {
     console.log("ERROR: " + document.title);
     console.log("Sleeping for 3 minutes...");
     await sleep(180000);
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the login page.')) {
+      return;
+    }
     console.log("Reloading Page");
     window.location.reload();
+    return;
   }
   //newer CloudFront errors
   if (document.title.toLowerCase() === "error: the request could not be satisfied") {
@@ -151,12 +155,19 @@ async function launch() {
       //});
       console.log("Sleeping...5 minute");
       await sleep(300000);
+      if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the login page.')) {
+        return;
+      }
       //console.log("Reloading Page");
       //window.location.reload();
-      redirectLoginPage();
+      await redirectLoginPage();
+      return;
     }
     console.log("Sleeping...5 minute");
     await sleep(300000);
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the login page.')) {
+      return;
+    }
     console.log("Reloading Page");
     window.location.reload();
   }
@@ -259,6 +270,9 @@ async function launch() {
   }
 
   await sleep(500);
+  if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before submitting the login form.')) {
+    return;
+  }
   click();
 }
 
@@ -268,5 +282,8 @@ async function redirectLoginPage() {
   console.log("Redirecting to the Login Page");
   console.log(loginURL);
   await sleep(500);
+  if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the login page.')) {
+    return;
+  }
   window.location.replace(loginURL);
 }

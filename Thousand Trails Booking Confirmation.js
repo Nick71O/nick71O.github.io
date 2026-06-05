@@ -10,7 +10,7 @@ loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
     })
     .then(() => {
         // Now you can safely use functions or variables from the loaded scripts here
-        launch();
+        startThousandTrailsAutomation(launch);
     })
     .catch(error => {
         // Handle errors if any script fails to load
@@ -38,12 +38,21 @@ function loadScript(src) {
     });
 }
 
-
 async function launch() {
     try {
+        if (!isThousandTrailsAutomationRunning()) {
+            return;
+        }
+
         console.log('Hello from Thousand Trails Booking Confirmation');
         const db = await initializeDB();
         console.log('DB initialized successfully.');
+
+        if (!isThousandTrailsAutomationRunning()) {
+            console.log('Booking confirmation automation stopped before processing reservation state.');
+            return;
+        }
+
         if (await handleHumanVerificationIfPresent(db)) {
             return;
         }
@@ -179,6 +188,11 @@ async function launch() {
             return;
         }
 
+        if (!isThousandTrailsAutomationRunning()) {
+            console.log('Booking confirmation automation stopped before processing reservation state.');
+            return;
+        }
+
         // Remove the booked dates from the availability table so they are not booked a 2nd time
         await removeBookedDatesFromAvailability(db, scAvailableArrivalDate, scAvailableDepartureDate);
 
@@ -262,8 +276,13 @@ async function launch() {
 
         //clear database, sleep and start looking for the next booking
         console.log("\nSleeping...2 minutes");
-        await sleep(120000);
+        const sleepCompleted = await sleep(120000);
         await resetBookingAvailabilityProcess(db);
+
+        if (!sleepCompleted || !isThousandTrailsAutomationRunning()) {
+            console.log('Booking confirmation automation stopped before redirecting to the booking page.');
+            return;
+        }
 
         //you do need to change the type of searching...
         await redirectBookingPage();
@@ -442,8 +461,19 @@ async function redirectBookingPage() {
     var bookingQueryString = "?robot=78"
     var bookingURL = baseURL + "/reserve/index" + bookingQueryString
 
+    if (!isThousandTrailsAutomationRunning()) {
+        console.log('Booking confirmation automation stopped before redirecting to the booking page.');
+        return;
+    }
+
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
     await sleep(500);
+
+    if (!isThousandTrailsAutomationRunning()) {
+        console.log('Booking confirmation automation stopped before redirecting to the booking page.');
+        return;
+    }
+
     window.location.replace(bookingURL);
 }

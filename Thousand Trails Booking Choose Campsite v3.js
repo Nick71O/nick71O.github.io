@@ -10,7 +10,7 @@
    })
    .then(() => {
        // Now you can safely use functions or variables from the loaded scripts here
-       launch();
+       startThousandTrailsAutomation(launch);
    })
    .catch(error => {
        // Handle errors if any script fails to load
@@ -356,6 +356,9 @@ async function launch() {
  
                 PlayAlert();
                 await sleep(3000);
+                if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before checking the reservation result.')) {
+                    return;
+                }
                 var reservationErrorElement = document.getElementById('reservationError');
                 var reservationErrorText = reservationErrorElement ? reservationErrorElement.innerText.trim() : '';
                 var reservationError = reservationErrorText || null;
@@ -376,6 +379,9 @@ async function launch() {
                 if (reservationError == "Unable to process your request.") {
                     console.log("Sleeping...1 minute");
                     await sleep(59000);
+                    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the campsite page.')) {
+                        return;
+                    }
                     console.log("Reloading Page");
                     window.location.reload();
                     return;
@@ -385,10 +391,16 @@ async function launch() {
                     getTimestamp();
                     console.log("Sleeping...1 minutes");
                     await sleep(60000);
+                    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to payment.')) {
+                        return;
+                    }
                     var bookingURL = baseURL + "/reserve/step3"
                     console.log("Redirecting to Step 3 - Enter Payment (Bug that allows booking)");
                     console.log(bookingURL);
                     await sleep(500);
+                    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to payment.')) {
+                        return;
+                    }
                     window.location.replace(bookingURL);
                     return;
                     /*
@@ -401,21 +413,30 @@ async function launch() {
                     console.log("Reloading Page");
                     console.log("Sleeping...3 minutes");
                     await sleep(177000);
+                    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the campsite page.')) {
+                        return;
+                    }
                     window.location.reload();
                     return;
                 }
             } else {
                 console.log('\n"Select Site" button was not found on the page; reset and try again.');
                 //sleep, clear database and try again
-                await availabilityCheckIntervalSleep(db);
+                const sleepCompleted = await availabilityCheckIntervalSleep(db);
+                if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before restarting campsite selection.')) {
+                    return;
+                }
                 await resetBookingAvailabilityProcess(db);
-                launch();
+                restartThousandTrailsAutomation(launch);
             }
  
        }else{
             console.log("Throttling...5 seconds");
             await sleep(5000);
-            redirectBookingPage();
+            if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
+                return;
+            }
+            await redirectBookingPage();
        }
 
 
@@ -423,6 +444,9 @@ async function launch() {
         console.error('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
         console.log("Sleeping...30 seconds");
         await sleep(30000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the campsite page.')) {
+            return;
+        }
         console.log("Reloading Page");
         window.location.reload();
    }
@@ -601,6 +625,9 @@ async function redirectBookingPage() {
    console.log("Redirecting to the Campgrounds Booking Page");
    console.log(bookingURL);
    await sleep(500);
+   if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
+       return;
+   }
    window.location.replace(bookingURL);
 }
 
@@ -614,6 +641,9 @@ async function openTabs(arrivalDate, departureDate) {
    console.log("Redirecting to the Campgrounds Booking Page");
    console.log(bookingURL);
    await sleep(500);
+   if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
+       return;
+   }
    window.location.replace(bookingURL);
 }
 

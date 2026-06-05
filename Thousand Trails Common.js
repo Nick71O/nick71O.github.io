@@ -13,6 +13,261 @@ const pushoverUrl = 'https://api.pushover.net/1/messages.json';
 const humanVerificationDefaultReloadMinutes = 60;
 const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerificationLastNotification';
 const availabilitySummaryNotificationSignatureConstant = 'LastAvailabilitySummaryNotificationSignature';
+const thousandTrailsAutomationStorageKey = 'ThousandTrailsAutomationRunState';
+const thousandTrailsAutomationControl = window.thousandTrailsAutomationControl || {
+    isInitialized: false,
+    isRunning: true,
+    launchInProgress: false,
+    launchFunction: null,
+    activeSleep: null
+};
+window.thousandTrailsAutomationControl = thousandTrailsAutomationControl;
+
+function initializeThousandTrailsAutomationControl() {
+    thousandTrailsAutomationControl.isRunning = getStoredThousandTrailsAutomationRunState();
+    injectThousandTrailsAutomationOverlayStyles();
+    ensureThousandTrailsAutomationOverlay();
+    updateThousandTrailsAutomationOverlay();
+    thousandTrailsAutomationControl.isInitialized = true;
+}
+
+function startThousandTrailsAutomation(launchFunction) {
+    initializeThousandTrailsAutomationControl();
+
+    if (typeof launchFunction === 'function') {
+        thousandTrailsAutomationControl.launchFunction = launchFunction;
+    }
+
+    if (!isThousandTrailsAutomationRunning() || thousandTrailsAutomationControl.launchInProgress) {
+        updateThousandTrailsAutomationOverlay();
+        return;
+    }
+
+    const functionToLaunch = launchFunction || thousandTrailsAutomationControl.launchFunction;
+
+    if (typeof functionToLaunch !== 'function') {
+        console.error('Unable to start Thousand Trails automation. Launch function is missing.');
+        return;
+    }
+
+    thousandTrailsAutomationControl.launchInProgress = true;
+    Promise.resolve(functionToLaunch())
+        .catch(error => {
+            console.error('An error occurred while launching Thousand Trails automation:', error);
+        })
+        .finally(() => {
+            thousandTrailsAutomationControl.launchInProgress = false;
+            if (!thousandTrailsAutomationControl.activeSleep) {
+                setThousandTrailsAutomationMessage('');
+            }
+        });
+}
+
+function restartThousandTrailsAutomation(launchFunction) {
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before restarting.')) {
+        return;
+    }
+
+    window.setTimeout(() => startThousandTrailsAutomation(launchFunction), 0);
+}
+
+function isThousandTrailsAutomationRunning() {
+    initializeThousandTrailsAutomationControlIfNeeded();
+    return thousandTrailsAutomationControl.isRunning;
+}
+
+function canContinueThousandTrailsAutomation(message = 'Thousand Trails automation stopped.') {
+    if (isThousandTrailsAutomationRunning()) {
+        return true;
+    }
+
+    if (message) {
+        console.log(message);
+    }
+    setThousandTrailsAutomationMessage('');
+    return false;
+}
+
+function setThousandTrailsAutomationRunning(isRunning) {
+    thousandTrailsAutomationControl.isRunning = isRunning;
+    persistThousandTrailsAutomationRunState(isRunning);
+    updateThousandTrailsAutomationOverlay();
+}
+
+function toggleThousandTrailsAutomationRunStop() {
+    const shouldRun = !isThousandTrailsAutomationRunning();
+    setThousandTrailsAutomationRunning(shouldRun);
+
+    if (shouldRun) {
+        setThousandTrailsAutomationMessage('');
+        startThousandTrailsAutomation(thousandTrailsAutomationControl.launchFunction);
+        return;
+    }
+
+    cancelActiveThousandTrailsAutomationSleep();
+    setThousandTrailsAutomationMessage('');
+    console.log('Thousand Trails automation stopped.');
+}
+
+function initializeThousandTrailsAutomationControlIfNeeded() {
+    if (!thousandTrailsAutomationControl.isInitialized) {
+        initializeThousandTrailsAutomationControl();
+    }
+}
+
+function ensureThousandTrailsAutomationOverlay() {
+    let overlay = document.getElementById('ttAutomationOverlay');
+    if (overlay) {
+        return overlay;
+    }
+
+    overlay = document.createElement('div');
+    overlay.id = 'ttAutomationOverlay';
+
+    const runStopButton = document.createElement('button');
+    runStopButton.id = 'ttAutomationRunStopButton';
+    runStopButton.type = 'button';
+    runStopButton.addEventListener('click', toggleThousandTrailsAutomationRunStop);
+
+    const messageReadout = document.createElement('div');
+    messageReadout.id = 'ttAutomationMessage';
+    messageReadout.setAttribute('aria-live', 'polite');
+
+    overlay.appendChild(runStopButton);
+    overlay.appendChild(messageReadout);
+
+    const parent = document.body || document.documentElement;
+    parent.appendChild(overlay);
+    return overlay;
+}
+
+function injectThousandTrailsAutomationOverlayStyles() {
+    if (document.getElementById('ttAutomationOverlayStyles')) {
+        return;
+    }
+
+    const css = `
+        #ttAutomationOverlay {
+            position: fixed;
+            top: 12px;
+            left: 12px;
+            z-index: 2147483647;
+            width: 154px;
+            padding: 8px;
+            box-sizing: border-box;
+            background-color: rgba(245, 245, 245, 0.92);
+            border: 1px solid darkgray;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+            color: #111;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+        #ttAutomationRunStopButton {
+            display: block;
+            width: 100%;
+            height: 34px;
+            padding: 0 10px;
+            background-color: #dd1d1d;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+        }
+        #ttAutomationRunStopButton.run {
+            background-color: #007bff;
+        }
+        #ttAutomationRunStopButton:hover {
+            filter: brightness(0.92);
+        }
+        #ttAutomationMessage {
+            min-height: 18px;
+            margin-top: 6px;
+            color: #111;
+            text-align: center;
+            white-space: pre-line;
+        }
+    `;
+    const style = document.createElement('style');
+    style.id = 'ttAutomationOverlayStyles';
+    style.type = 'text/css';
+    style.appendChild(document.createTextNode(css));
+    document.head.appendChild(style);
+}
+
+function getStoredThousandTrailsAutomationRunState() {
+    try {
+        const storedState = localStorage.getItem(thousandTrailsAutomationStorageKey);
+        if (storedState === null) {
+            localStorage.setItem(thousandTrailsAutomationStorageKey, 'running');
+            return true;
+        }
+
+        return storedState !== 'stopped' && storedState !== 'false';
+    } catch (error) {
+        console.error('Unable to read Thousand Trails automation run state:', error);
+        return true;
+    }
+}
+
+function persistThousandTrailsAutomationRunState(isRunning) {
+    try {
+        localStorage.setItem(thousandTrailsAutomationStorageKey, isRunning ? 'running' : 'stopped');
+    } catch (error) {
+        console.error('Unable to save Thousand Trails automation run state:', error);
+    }
+}
+
+function updateThousandTrailsAutomationOverlay() {
+    const runStopButton = document.getElementById('ttAutomationRunStopButton');
+    if (!runStopButton) {
+        return;
+    }
+
+    if (thousandTrailsAutomationControl.isRunning) {
+        runStopButton.textContent = 'Stop';
+        runStopButton.classList.remove('run');
+        runStopButton.setAttribute('aria-pressed', 'true');
+    } else {
+        runStopButton.textContent = 'Run';
+        runStopButton.classList.add('run');
+        runStopButton.setAttribute('aria-pressed', 'false');
+    }
+}
+
+function setThousandTrailsAutomationMessage(message) {
+    const messageReadout = document.getElementById('ttAutomationMessage');
+    if (messageReadout) {
+        messageReadout.textContent = message || '';
+    }
+}
+
+function cancelActiveThousandTrailsAutomationSleep() {
+    if (thousandTrailsAutomationControl.activeSleep) {
+        thousandTrailsAutomationControl.activeSleep.cancel();
+    }
+}
+
+function formatThousandTrailsAutomationCountdown(ms) {
+    const totalSeconds = Math.ceil(ms / 1000);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+    if (minutes > 0) {
+        return `${minutes}m ${seconds.toString().padStart(2, '0')}s`;
+    }
+
+    return `${seconds}s`;
+}
 
 function isHumanVerificationPage() {
     const titleText = (document.title || '').trim().toLowerCase();
@@ -171,7 +426,7 @@ function scheduleHumanVerificationReload(reloadMinutes, reloadMillis) {
     }
 
     window.thousandTrailsHumanVerificationReloadTimer = window.setTimeout(() => {
-        if (isHumanVerificationPage()) {
+        if (isHumanVerificationPage() && isThousandTrailsAutomationRunning()) {
             console.warn(`Human verification fallback reached after ${reloadMinutes} minute(s). Reloading page.`);
             window.location.reload();
         }
@@ -657,11 +912,69 @@ async function availabilityCheckIntervalSleep(db) {
     }
     console.log(message);
 
-    await sleep(remainingTimeInMillis);
+    return await sleep(remainingTimeInMillis);
 }
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    initializeThousandTrailsAutomationControlIfNeeded();
+
+    if (ms <= 0) {
+        return Promise.resolve(true);
+    }
+
+    if (!isThousandTrailsAutomationRunning()) {
+        setThousandTrailsAutomationMessage('');
+        return Promise.resolve(false);
+    }
+
+    return new Promise(resolve => {
+        const endTime = Date.now() + ms;
+        const showCountdown = ms >= 1000;
+        let intervalId = null;
+        let timeoutId = null;
+        let resolved = false;
+
+        const finish = completed => {
+            if (resolved) {
+                return;
+            }
+
+            resolved = true;
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
+            thousandTrailsAutomationControl.activeSleep = null;
+            setThousandTrailsAutomationMessage('');
+            resolve(completed);
+        };
+
+        const updateCountdown = () => {
+            if (!isThousandTrailsAutomationRunning()) {
+                finish(false);
+                return;
+            }
+
+            if (!showCountdown) {
+                return;
+            }
+
+            const remainingMilliseconds = Math.max(0, endTime - Date.now());
+            setThousandTrailsAutomationMessage(`Sleeping: ${formatThousandTrailsAutomationCountdown(remainingMilliseconds)}`);
+
+            if (remainingMilliseconds <= 0) {
+                finish(true);
+            }
+        };
+
+        thousandTrailsAutomationControl.activeSleep = {
+            cancel: () => finish(false)
+        };
+
+        updateCountdown();
+        if (showCountdown) {
+            intervalId = window.setInterval(updateCountdown, 1000);
+        }
+        timeoutId = window.setTimeout(() => finish(true), ms);
+    });
 }
 
 function hasValidDates(array) {

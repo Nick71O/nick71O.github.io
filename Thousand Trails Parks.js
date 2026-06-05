@@ -10,7 +10,7 @@ loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
     })
     .then(() => {
         // Now you can safely use functions or variables from the loaded scripts here
-        launch();
+        startThousandTrailsAutomation(launch);
     })
     .catch(error => {
         // Handle errors if any script fails to load
@@ -50,10 +50,13 @@ async function launch() {
 
         await logSiteConstants(db);
 
-        redirectBookingPage();
+        await redirectBookingPage();
     } catch (error) {
         console.error('FAILED to redirect to the Campgrounds Booking Page. siteConstants in the IndexedDB was not loaded or blank', error);
         await sleep(5000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the parks page.')) {
+            return;
+        }
         console.log("Reloading Page");
         window.location.reload();
     }
@@ -67,5 +70,8 @@ async function redirectBookingPage() {
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
     await sleep(500);
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
+        return;
+    }
     window.location.replace(bookingURL);
 }

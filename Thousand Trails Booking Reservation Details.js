@@ -10,7 +10,7 @@ loadScript('https://nick71o.github.io/Thousand%20Trails%20IndexedDB.js')
     })
     .then(() => {
         // Now you can safely use functions or variables from the loaded scripts here
-        launch();
+        startThousandTrailsAutomation(launch);
     })
     .catch(error => {
         // Handle errors if any script fails to load
@@ -51,6 +51,9 @@ async function launch() {
         console.log("ERROR: " + document.title);
         console.log("Sleeping...3 minute");
         await sleep(180000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
+            return;
+        }
         console.log("Reloading Page");
         window.location.reload();
         return;
@@ -64,6 +67,9 @@ async function launch() {
 
         console.log("Sleeping...30 seconds");
         await sleep(30000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the login page.')) {
+            return;
+        }
         await redirectLoginPage();
         return;
     }
@@ -259,9 +265,12 @@ async function launch() {
                 }
 
                 //sleep, clear database and try again
-                await availabilityCheckIntervalSleep(db);
+                const sleepCompleted = await availabilityCheckIntervalSleep(db);
+                if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before restarting reservation details.')) {
+                    return;
+                }
                 await resetBookingAvailabilityProcess(db);
-                launch();
+                restartThousandTrailsAutomation(launch);
 
             } else {
                 console.error('SiteConstant BookingPreference or MinimumConsecutiveDays constant not found.');
@@ -273,6 +282,9 @@ async function launch() {
     } catch (error) {
         console.error('ERROR: In Thousand Trails Booking Reservation Details', error);
         await sleep(5000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
+            return;
+        }
         console.log("Reloading Page");
         window.location.reload();
         return;
@@ -694,6 +706,9 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
             console.error("Booking select elements not found or not ready!");
             console.log("Sleeping...30 seconds");
             await sleep(30000);
+            if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
+                return;
+            }
             console.log("Reloading Page");
             window.location.reload();
             return;
@@ -714,6 +729,9 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
         console.error("Booking input elements not found!");
         console.log("Sleeping...30 seconds");
         await sleep(30000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the login page.')) {
+            return;
+        }
         await redirectLoginPage();
         return;
     }
@@ -725,5 +743,8 @@ async function redirectLoginPage() {
     console.log("Redirecting to the Login Page");
     console.log(loginURL);
     await sleep(500);
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the login page.')) {
+        return;
+    }
     window.location.replace(loginURL);
 }
