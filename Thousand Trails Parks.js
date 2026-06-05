@@ -44,6 +44,10 @@ async function launch() {
         console.log('Hello from Thousand Trails Parks');
         const db = await initializeDB();
         console.log('IndexedDB initialized successfully.');
+        if (await handleHumanVerificationIfPresent(db)) {
+            return;
+        }
+
         await logSiteConstants(db);
 
         redirectBookingPage();

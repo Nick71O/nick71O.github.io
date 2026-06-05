@@ -10,6 +10,7 @@ function initializeGlobalVariables(globalVariables) {
   console.log('bookingAvailabilityMapCheck: "' + globalVariables.bookingAvailabilityMapCheck + '"');
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("availabilityCheckIntervalMinutes: " + globalVariables.availabilityCheckIntervalMinutes)
+  console.log("humanVerificationReloadMinutes: " + globalVariables.humanVerificationReloadMinutes)
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
   console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
   console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
@@ -172,6 +173,10 @@ async function launch() {
     const db = await initializeDB();
     console.log('DB initialized successfully.');
 
+    if (await handleHumanVerificationIfPresent(db)) {
+      return;
+    }
+
     await deleteAllSiteConstants(db);
     await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
     await addOrUpdateSiteConstant(db, 'BookingAvailabilityMapCheck', globalVariables.bookingAvailabilityMapCheck);
@@ -179,6 +184,7 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'LastUsedBookingAvailabilityMapCheck', initialLastUsed);
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'AvailabilityCheckIntervalMinutes', globalVariables.availabilityCheckIntervalMinutes);
+    await addOrUpdateSiteConstant(db, 'HumanVerificationReloadMinutes', globalVariables.humanVerificationReloadMinutes || humanVerificationDefaultReloadMinutes);
     await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);
     await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', globalVariables.desiredDepartureDate);
     await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(globalVariables.desiredDatesArray));
@@ -264,4 +270,3 @@ async function redirectLoginPage() {
   await sleep(500);
   window.location.replace(loginURL);
 }
-

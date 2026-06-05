@@ -6,6 +6,7 @@ var globalVariables = {
     bookingAvailabilityMapCheck: "double", // options: single | double | both
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
+    humanVerificationReloadMinutes: 60,
     desiredSiteTypes: [
         'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In',
         'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through',
@@ -68,4 +69,3 @@ if (typeof initializeGlobalVariables === 'function') {
     console.log(msg);
     console.error(msg);
 }
-

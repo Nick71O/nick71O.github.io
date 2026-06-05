@@ -54,6 +54,10 @@ async function launch() {
  
         const db = await initializeDB();
         console.log('DB initialized successfully.');
+        if (await handleHumanVerificationIfPresent(db)) {
+            return;
+        }
+
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
   

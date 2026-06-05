@@ -10,6 +10,179 @@ const callCenterHours = {
 const baseURL = "https://members.thousandtrails.com"
 // Pushover API endpoint for sending messages
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
+const humanVerificationDefaultReloadMinutes = 60;
+const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerificationLastNotification';
+
+function isHumanVerificationPage() {
+    const titleText = (document.title || '').trim().toLowerCase();
+    const bodyText = document.body && document.body.innerText ? document.body.innerText.toLowerCase() : '';
+    const hasHumanVerificationTitle = titleText === 'human verification';
+    const hasHumanVerificationCopy =
+        bodyText.includes("let's confirm you are human") ||
+        bodyText.includes('complete the security check before continuing') ||
+        bodyText.includes('before proceeding to your request') ||
+        bodyText.includes('you need to solve a puzzle');
+    const hasCaptchaElements = Boolean(document.querySelector(
+        '#captcha-container, #amzn-captcha-verify-button, #amzn-btn-verify-internal, .amzn-captcha-verify-button, .amzn-captcha-modal'
+    ));
+    const hasAwsWafState =
+        typeof window.gokuProps !== 'undefined' ||
+        typeof window.CaptchaScript !== 'undefined' ||
+        typeof window.ChallengeScript !== 'undefined' ||
+        Array.from(document.scripts).some(script => {
+            const src = (script.src || '').toLowerCase();
+            return src.includes('.awswaf.com') &&
+                (src.includes('/challenge.js') || src.includes('/captcha.js') ||
+                    src.includes('token.awswaf.com') || src.includes('captcha.awswaf.com'));
+        });
+
+    return hasHumanVerificationTitle ||
+        (hasHumanVerificationCopy && (hasCaptchaElements || hasAwsWafState)) ||
+        (hasCaptchaElements && hasAwsWafState);
+}
+
+async function handleHumanVerificationIfPresent(db, options = {}) {
+    if (!isHumanVerificationPage()) {
+        return false;
+    }
+
+    const reloadMinutes = await getHumanVerificationReloadMinutes(db, options);
+    const reloadMillis = reloadMinutes * 60 * 1000;
+    console.warn(`Human verification detected. Waiting for manual input. Fallback reload in ${reloadMinutes} minute(s).`);
+
+    await pushHumanVerificationMessage(db, reloadMinutes, reloadMillis);
+    scheduleHumanVerificationReload(reloadMinutes, reloadMillis);
+    return true;
+}
+
+async function getHumanVerificationReloadMinutes(db, options = {}) {
+    const configuredMinutes =
+        parsePositiveNumber(options.reloadMinutes) ||
+        parsePositiveNumber(options.reloadAfterMinutes) ||
+        parsePositiveNumber(getGlobalVariableValue('humanVerificationReloadMinutes')) ||
+        parsePositiveNumber(getGlobalVariableValue('humanVerificationTimeoutMinutes')) ||
+        parsePositiveNumber(getGlobalVariableValue('humanVerificationReloadAfterMinutes'));
+
+    if (configuredMinutes) {
+        return configuredMinutes;
+    }
+
+    const storedMinutes = parsePositiveNumber(await getSiteConstantValue(db, 'HumanVerificationReloadMinutes'));
+    return storedMinutes || humanVerificationDefaultReloadMinutes;
+}
+
+async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
+    if (wasHumanVerificationNotificationSentRecently(reloadMillis)) {
+        console.log('Human verification Pushover notification already sent recently.');
+        return;
+    }
+
+    const pushoverKeys = await getHumanVerificationPushoverKeys(db);
+    if (!pushoverKeys) {
+        console.error('Human verification detected, but Pushover keys are not available.');
+        return;
+    }
+
+    const message = [
+        'Thousand Trails - Lake & Shore',
+        '<b>Human verification required.</b>',
+        'Waiting for manual input.',
+        `Fallback reload in ${reloadMinutes} minute(s).`,
+        escapeHtml(window.location.href)
+    ].join('\n');
+
+    await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiToken, pushoverUrl, message, 'echo', 1);
+    markHumanVerificationNotificationSent();
+}
+
+async function getHumanVerificationPushoverKeys(db) {
+    const userKey = await getPushoverValue(db, 'PushoverUserKey', 'pushoverUserKey');
+    const apiTokenReservation = await getPushoverValue(db, 'PushoverApiTokenReservation', 'pushoverApiTokenReservation');
+    const apiTokenAvailability = await getPushoverValue(db, 'PushoverApiTokenAvailability', 'pushoverApiTokenAvailability');
+    const apiToken = apiTokenReservation || apiTokenAvailability;
+
+    if (!userKey || !apiToken) {
+        return null;
+    }
+
+    return { userKey, apiToken };
+}
+
+async function getPushoverValue(db, siteConstantName, globalVariableName) {
+    const globalValue = getGlobalVariableValue(globalVariableName);
+    if (globalValue) {
+        return globalValue;
+    }
+
+    return await getSiteConstantValue(db, siteConstantName);
+}
+
+async function getSiteConstantValue(db, name) {
+    if (!db || typeof getSiteConstant !== 'function') {
+        return '';
+    }
+
+    const constant = await getSiteConstant(db, name);
+    if (!constant || constant.value === null || constant.value === undefined) {
+        return '';
+    }
+
+    return String(constant.value).trim();
+}
+
+function getGlobalVariableValue(name) {
+    if (typeof globalVariables === 'undefined' || !globalVariables || globalVariables[name] === null || globalVariables[name] === undefined) {
+        return '';
+    }
+
+    return String(globalVariables[name]).trim();
+}
+
+function parsePositiveNumber(value) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function wasHumanVerificationNotificationSentRecently(reloadMillis) {
+    try {
+        const now = Date.now();
+        const lastNotification = Number(localStorage.getItem(humanVerificationNotificationStorageKey));
+        return Boolean(lastNotification && now - lastNotification < reloadMillis);
+    } catch (error) {
+        console.error('Unable to read human verification notification state:', error);
+        return false;
+    }
+}
+
+function markHumanVerificationNotificationSent() {
+    try {
+        localStorage.setItem(humanVerificationNotificationStorageKey, String(Date.now()));
+    } catch (error) {
+        console.error('Unable to write human verification notification state:', error);
+    }
+}
+
+function scheduleHumanVerificationReload(reloadMinutes, reloadMillis) {
+    if (window.thousandTrailsHumanVerificationReloadTimer) {
+        return;
+    }
+
+    window.thousandTrailsHumanVerificationReloadTimer = window.setTimeout(() => {
+        if (isHumanVerificationPage()) {
+            console.warn(`Human verification fallback reached after ${reloadMinutes} minute(s). Reloading page.`);
+            window.location.reload();
+        }
+    }, reloadMillis);
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 
 async function getPushoverKeys(db) {
@@ -130,7 +303,8 @@ async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = 
         const response = await axios.post(pushoverUrl, messageData);
         console.log('Message sent:', response.data);
     } catch (error) {
-        console.error('Error sending message:', error.response.data || error.message);
+        const errorMessage = error.response && error.response.data ? error.response.data : error.message;
+        console.error('Error sending message:', errorMessage);
     }
 }
 

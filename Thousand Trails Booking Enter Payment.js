@@ -44,6 +44,10 @@ async function launch() {
         console.log('Hello from Thousand Trails Booking Enter Payments');
         const db = await initializeDB();
         console.log('DB initialized successfully.');
+        if (await handleHumanVerificationIfPresent(db)) {
+            return;
+        }
+
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
 
