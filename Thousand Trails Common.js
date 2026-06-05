@@ -12,6 +12,7 @@ const baseURL = "https://members.thousandtrails.com"
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
 const humanVerificationDefaultReloadMinutes = 60;
 const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerificationLastNotification';
+const availabilitySummaryNotificationSignatureConstant = 'LastAvailabilitySummaryNotificationSignature';
 
 function isHumanVerificationPage() {
     const titleText = (document.title || '').trim().toLowerCase();
@@ -91,8 +92,10 @@ async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
         escapeHtml(window.location.href)
     ].join('\n');
 
-    await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiToken, pushoverUrl, message, 'echo', 1);
-    markHumanVerificationNotificationSent();
+    const sent = await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiToken, pushoverUrl, message, 'echo', 1);
+    if (sent) {
+        markHumanVerificationNotificationSent();
+    }
 }
 
 async function getHumanVerificationPushoverKeys(db) {
@@ -216,10 +219,81 @@ async function getPushoverKeys(db) {
 
 // Function to push site availability message
 async function pushSiteAvailabilityMessage(db, message) {
+    const notificationState = await getAvailabilitySummaryNotificationState(db);
+    if (!notificationState.isComplete) {
+        console.log(`Skipping site availability notification. Checked ${notificationState.checkedCount} of ${notificationState.totalCount} availability record(s).`);
+        return;
+    }
+
+    const lastSignature = await getSiteConstantValue(db, availabilitySummaryNotificationSignatureConstant);
+    if (lastSignature === notificationState.signature) {
+        console.log('Skipping duplicate site availability notification. No new availability checks since the last notification.');
+        return;
+    }
+
     const pushoverKeys = await getPushoverKeys(db);
     if (pushoverKeys) {
-        await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiTokenAvailability, pushoverUrl, message, '', -1);
+        const sent = await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiTokenAvailability, pushoverUrl, message, '', -1);
+        if (sent) {
+            await addOrUpdateSiteConstant(db, availabilitySummaryNotificationSignatureConstant, notificationState.signature);
+        }
     }
+}
+
+async function getAvailabilitySummaryNotificationState(db) {
+    if (!db) {
+        return {
+            isComplete: false,
+            totalCount: 0,
+            checkedCount: 0,
+            signature: ''
+        };
+    }
+
+    const transaction = db.transaction(['Availability'], 'readonly');
+    const availabilityStore = transaction.objectStore('Availability');
+    const signatureParts = [];
+    let totalCount = 0;
+    let checkedCount = 0;
+
+    return new Promise((resolve, reject) => {
+        const request = availabilityStore.openCursor();
+
+        request.onsuccess = function (event) {
+            const cursor = event.target.result;
+
+            if (cursor) {
+                const record = cursor.value;
+                const checked = record.Checked !== null && record.Checked !== undefined && String(record.Checked).trim() !== '';
+
+                totalCount++;
+                if (checked) {
+                    checkedCount++;
+                }
+
+                signatureParts.push([
+                    record.id,
+                    record.ArrivalDate || '',
+                    record.DepartureDate || '',
+                    record.Available === true ? 'available' : 'unavailable',
+                    checked ? String(record.Checked).trim() : ''
+                ].join('|'));
+
+                cursor.continue();
+            } else {
+                resolve({
+                    isComplete: totalCount > 0 && checkedCount === totalCount,
+                    totalCount,
+                    checkedCount,
+                    signature: signatureParts.join('||')
+                });
+            }
+        };
+
+        request.onerror = function (event) {
+            reject(event.target.error);
+        };
+    });
 }
 
 // Function to push book site message
@@ -302,9 +376,11 @@ async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = 
         // Send a POST request to Pushover API using Axios
         const response = await axios.post(pushoverUrl, messageData);
         console.log('Message sent:', response.data);
+        return true;
     } catch (error) {
         const errorMessage = error.response && error.response.data ? error.response.data : error.message;
         console.error('Error sending message:', errorMessage);
+        return false;
     }
 }
 
