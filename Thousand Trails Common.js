@@ -442,9 +442,8 @@ async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
     const message = [
         'Thousand Trails - Lake & Shore',
         '<b>Human verification required.</b>',
-        'Waiting for manual input.',
-        `Fallback reload in ${reloadMinutes} minute(s).`,
-        escapeHtml(window.location.href)
+        '\nWaiting for manual input.',
+        `\nFallback reload in ${reloadMinutes} minute(s).`
     ].join('\n');
 
     const sent = await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiToken, pushoverUrl, message, 'echo', 1);
