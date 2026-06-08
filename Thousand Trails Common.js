@@ -443,7 +443,7 @@ async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
         'Thousand Trails - Lake & Shore',
         '<b>Human verification required.</b>',
         '\nWaiting for manual input.',
-        `\nFallback reload in ${reloadMinutes} minute(s).`
+        `\nFallback reload in ${reloadMinutes} minutes.`
     ].join('\n');
 
     const sent = await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiToken, pushoverUrl, message, 'echo', 1);
