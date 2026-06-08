@@ -455,9 +455,9 @@ async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
 
 async function getHumanVerificationPushoverKeys(db) {
     const userKey = await getPushoverValue(db, 'PushoverUserKey', 'pushoverUserKey');
-    const apiTokenReservation = await getPushoverValue(db, 'PushoverApiTokenReservation', 'pushoverApiTokenReservation');
     const apiTokenAvailability = await getPushoverValue(db, 'PushoverApiTokenAvailability', 'pushoverApiTokenAvailability');
-    const apiToken = apiTokenReservation || apiTokenAvailability;
+    const apiTokenReservation = await getPushoverValue(db, 'PushoverApiTokenReservation', 'pushoverApiTokenReservation');
+    const apiToken = apiTokenAvailability || apiTokenReservation;
 
     if (!userKey || !apiToken) {
         return null;
