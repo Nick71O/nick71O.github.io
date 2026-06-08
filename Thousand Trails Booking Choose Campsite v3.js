@@ -51,6 +51,10 @@ async function launch() {
     try {
         console.log('Hello from Thousand Trails Booking Choose Campsite');
         getTimestamp();
+
+        if (await handleUnexpectedLoginPageIfPresent({ reason: 'Member login page detected while choosing a campsite.' })) {
+            return;
+        }
  
         const db = await initializeDB();
         console.log('DB initialized successfully.');

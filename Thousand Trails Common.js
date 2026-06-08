@@ -355,6 +355,62 @@ async function handleHumanVerificationIfPresent(db, options = {}) {
     return true;
 }
 
+function isThousandTrailsMemberLoginPage() {
+    const loginForm = document.querySelector('#profile-form');
+    const memberInput = document.querySelector('#memberid');
+    const pinInput = document.querySelector('#pin');
+    const submitButton = loginForm && loginForm.querySelector('button, input[type="submit"]');
+    const bodyText = document.body && document.body.innerText ? document.body.innerText.toLowerCase() : '';
+
+    return Boolean(
+        loginForm &&
+        memberInput &&
+        pinInput &&
+        submitButton &&
+        (bodyText.includes('member login') || bodyText.includes('member no:') || bodyText.includes('reset or create pin'))
+    );
+}
+
+function isThousandTrailsLoginUrl() {
+    try {
+        const currentUrl = new URL(window.location.href);
+        return currentUrl.origin === baseURL && currentUrl.pathname.replace(/\/+$/, '').toLowerCase() === '/login/index';
+    } catch (error) {
+        console.error('Unable to parse current URL while checking login page:', error);
+        return false;
+    }
+}
+
+async function handleUnexpectedLoginPageIfPresent(options = {}) {
+    if (!isThousandTrailsMemberLoginPage()) {
+        return false;
+    }
+
+    const reason = options.reason || 'Member login page detected outside the login URL.';
+    console.warn(`${reason} Current URL: ${window.location.href}`);
+    setThousandTrailsAutomationMessage('Login');
+
+    if (isThousandTrailsLoginUrl() && !options.redirectEvenOnLoginUrl) {
+        console.log('Already on the Login Page. Waiting for login automation.');
+        return true;
+    }
+
+    const delayMilliseconds = Number.isFinite(Number(options.delayMilliseconds)) ? Number(options.delayMilliseconds) : 500;
+    if (delayMilliseconds > 0) {
+        await sleep(delayMilliseconds);
+    }
+
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the login page.')) {
+        return true;
+    }
+
+    const loginURL = baseURL + '/login/index';
+    console.log('Redirecting to the Login Page');
+    console.log(loginURL);
+    window.location.replace(loginURL);
+    return true;
+}
+
 async function getHumanVerificationReloadMinutes(db, options = {}) {
     const configuredMinutes =
         parsePositiveNumber(options.reloadMinutes) ||

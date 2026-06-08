@@ -59,6 +59,10 @@ async function launch() {
         return;
     }
 
+    if (await handleUnexpectedLoginPageIfPresent({ reason: 'Member login page detected while loading reservation details.' })) {
+        return;
+    }
+
     //if the page loses its login credentials it loads a login screen at the same url
     const invalidLoginDiv = document.getElementById('invalidLogin');
     if (invalidLoginDiv && invalidLoginDiv.textContent.trim() === 'Invalid Login Parameters Entered.') {

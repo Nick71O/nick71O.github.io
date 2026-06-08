@@ -89,29 +89,43 @@ function getElementsByXPath(xpath, parent) {
 }
 
 
-async function click() {
-  var foundButton = false;
-  //window.console.log('searching page for the "Select Site" button');
+function getLoginSubmitButtons() {
+  const buttons = getElementsByXPath(buttonXPath);
+  const fallbackButtons = Array.from(document.querySelectorAll(
+    '#profile-form button[type="submit"], #profile-form button.g-recaptcha, #profile-form button'
+  ));
 
-  var memberid = document.getElementById('memberid');
-  var pin = document.getElementById('pin');
+  fallbackButtons.forEach(button => {
+    if (!buttons.includes(button)) {
+      buttons.push(button);
+    }
+  });
+
+  return buttons;
+}
+
+async function click() {
+  const memberid = document.getElementById('memberid');
+  const pin = document.getElementById('pin');
+
+  if (!memberid || !pin) {
+    console.error('Login form fields were not found.');
+    return false;
+  }
+
   memberid.value = globalVariables.memberNumber;
   pin.value = globalVariables.PIN;
 
-  $elements = getElementsByXPath(buttonXPath);
-  $elements.forEach(($element) => {
-    var evt = new MouseEvent("click", {
-      view: window,
-      bubbles: true,
-      cancelable: true,
-      clientX: 20,
-    });
-    $element.dispatchEvent(evt);
-    foundButton = true;
-    console.log('clicked the "Submit" button');
-  })
+  $elements = getLoginSubmitButtons();
+  if (!$elements.length) {
+    console.error('Login submit button was not found.');
+    return false;
+  }
 
+  $elements[0].click();
+  console.log('clicked the "Submit" button');
   getTimestamp();
+  return true;
 }
 
 function extractDatesFromQueryString(queryString) {
@@ -273,7 +287,16 @@ async function launch() {
   if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before submitting the login form.')) {
     return;
   }
-  click();
+  const submitted = await click();
+  if (!submitted) {
+    console.log("Sleeping...30 seconds");
+    await sleep(30000);
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the login page.')) {
+      return;
+    }
+    console.log("Reloading Page");
+    window.location.reload();
+  }
 }
 
 async function redirectLoginPage() {

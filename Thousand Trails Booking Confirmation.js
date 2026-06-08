@@ -45,6 +45,11 @@ async function launch() {
         }
 
         console.log('Hello from Thousand Trails Booking Confirmation');
+
+        if (await handleUnexpectedLoginPageIfPresent({ reason: 'Member login page detected while processing booking confirmation.' })) {
+            return;
+        }
+
         const db = await initializeDB();
         console.log('DB initialized successfully.');
 

@@ -42,6 +42,11 @@ function loadScript(src) {
 async function launch() {
     try {
         console.log('Hello from Thousand Trails Booking Enter Payments');
+
+        if (await handleUnexpectedLoginPageIfPresent({ reason: 'Member login page detected while entering payment.' })) {
+            return;
+        }
+
         const db = await initializeDB();
         console.log('DB initialized successfully.');
         if (await handleHumanVerificationIfPresent(db)) {

@@ -42,6 +42,11 @@ async function launch() {
     getTimestamp();
     try {
         console.log('Hello from Thousand Trails Parks');
+
+        if (await handleUnexpectedLoginPageIfPresent({ reason: 'Member login page detected while loading parks.' })) {
+            return;
+        }
+
         const db = await initializeDB();
         console.log('IndexedDB initialized successfully.');
         if (await handleHumanVerificationIfPresent(db)) {
