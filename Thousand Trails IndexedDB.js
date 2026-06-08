@@ -514,8 +514,17 @@ async function removeBookedDatesFromAvailability(db, arrivalDate, departureDate)
             request.onsuccess = function (event) {
                 const cursor = event.target.result;
                 if (cursor) {
-                    const currentDate = new Date(cursor.value.ArrivalDate);
-                    if (currentDate >= arrivalDateObj && currentDate < departureDateObj) {
+                    const recordArrivalDate = new Date(cursor.value.ArrivalDate);
+                    const recordDepartureDate = cursor.value.DepartureDate
+                        ? new Date(cursor.value.DepartureDate)
+                        : new Date(recordArrivalDate);
+
+                    if (!cursor.value.DepartureDate) {
+                        recordDepartureDate.setDate(recordArrivalDate.getDate() + 1);
+                    }
+
+                    const overlapsBookedDates = recordArrivalDate < departureDateObj && recordDepartureDate > arrivalDateObj;
+                    if (overlapsBookedDates) {
                         const deleteRequest = cursor.delete();
                         deleteRequest.onsuccess = function () {
                             removedCount++;

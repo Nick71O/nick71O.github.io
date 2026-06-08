@@ -16,12 +16,12 @@ async function openThousandTrailsDB() {
 
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
-        const scAvailabileArrivalConstant = await getSiteConstant(db, 'AvailabileArrivalDate');
-        const scAvailabileDepartureConstant = await getSiteConstant(db, 'AvailabileDepartureDate');
+        const scAvailableArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
+        const scAvailableDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate');
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
-        let scAvailabileArrivalDate = null;
-        let scAvailabileDepartureDate = null;
+        let scAvailableArrivalDate = null;
+        let scAvailableDepartureDate = null;
 
         // Check if constants were retrieved successfully and if their values are not null or empty
         if (scDesiredArrivalConstant && scDesiredDepartureConstant &&
@@ -41,25 +41,25 @@ async function openThousandTrailsDB() {
             console.error('SiteConstant Desired Arrival or Departure constant is null, empty, or not found.');
         }
 
-        if (scAvailabileArrivalConstant && scAvailabileDepartureConstant &&
-            scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null &&
-            scAvailabileArrivalConstant.value.trim() !== '' && scAvailabileDepartureConstant.value.trim() !== '') {
+        if (scAvailableArrivalConstant && scAvailableDepartureConstant &&
+            scAvailableArrivalConstant.value !== null && scAvailableDepartureConstant.value !== null &&
+            scAvailableArrivalConstant.value.trim() !== '' && scAvailableDepartureConstant.value.trim() !== '') {
 
-            scAvailabileArrivalDate = scAvailabileArrivalConstant.value;
-            scAvailabileDepartureDate = scAvailabileDepartureConstant.value;
+            scAvailableArrivalDate = scAvailableArrivalConstant.value;
+            scAvailableDepartureDate = scAvailableDepartureConstant.value;
 
             // Calculate the number of nights
             const oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
-            const dateDifference = Math.abs(new Date(scAvailabileDepartureDate).getTime() - new Date(scAvailabileArrivalDate).getTime());
-            const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
+            const dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
+            const scAvailableNumberOfNights = Math.round(dateDifference / oneDay);
 
-            console.log("SiteConstants Availabile Dates to Book\n   Arrival: " + scAvailabileArrivalDate + "    Departure: " + scAvailabileDepartureDate + "    Number of Nights: " + scAvailabileNumberOfNights);
+            console.log("SiteConstants Available Dates to Book\n   Arrival: " + scAvailableArrivalDate + "    Departure: " + scAvailableDepartureDate + "    Number of Nights: " + scAvailableNumberOfNights);
         } else {
-            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
+            console.log('SiteConstant Available Arrival or Departure constant is null, empty, or not found.');
         }
 
 
-        if (scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null) {
+        if (scAvailableArrivalDate !== null && scAvailableDepartureDate !== null) {
             //check if the book campsite button is available and click it
             window.console.log('searching page for the "Select Site" button');
             const isCampsiteAvailableResult = isCampsiteAvailable(true);
@@ -332,8 +332,8 @@ async function resetBookingAvailabilityProcess(db, sleepMilliseconds = 0) {
     // Clear database and reset availability
     await sleep(sleepMilliseconds);
 
-    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', null);
-    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', null);
+    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', null);
     await resetAvailabilityTable(db);
 
     openThousandTrailsDB();
@@ -508,8 +508,8 @@ async function AvailableBooking(db, availableDates, arrivalDate, departureDate, 
 
                     console.log("\nLongest Consecutive Date Range with Minimum of", minimumConsecutiveDays, "Nights:");
                     console.log("   Arrival:", arrivalDate, "Departure:", departureDate, "Number of Nights:", numberOfNights);
-                    await addOrUpdateSiteConstant(db, 'AvailabileArrivalDate', arrivalDate);
-                    await addOrUpdateSiteConstant(db, 'AvailabileDepartureDate', departureDate);
+                    await addOrUpdateSiteConstant(db, 'AvailableArrivalDate', arrivalDate);
+                    await addOrUpdateSiteConstant(db, 'AvailableDepartureDate', departureDate);
                     openTabs(arrivalDate, departureDate);
                 } else {
                     console.log("No consecutive dates found with a minimum of", minimumConsecutiveDays, "nights.");

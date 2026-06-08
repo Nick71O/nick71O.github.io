@@ -4,8 +4,10 @@
  */
 function initializeGlobalVariables(globalVariables) {
   // Process the received globalVariables object
-  console.log("memberNumber: " + globalVariables.memberNumber);
-  console.log("PIN: " + globalVariables.PIN);
+  const hasConfiguredValue = (value) => value !== null && value !== undefined && String(value).trim() !== '';
+
+  console.log("memberNumber configured: " + hasConfiguredValue(globalVariables.memberNumber));
+  console.log("PIN configured: " + hasConfiguredValue(globalVariables.PIN));
   console.log('bookingPreference: "' + globalVariables.bookingPreference + '"');
   console.log('bookingAvailabilityMapCheck: "' + globalVariables.bookingAvailabilityMapCheck + '"');
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
@@ -19,9 +21,9 @@ function initializeGlobalVariables(globalVariables) {
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
   console.log("bookedDatesArray: " + globalVariables.bookedDatesArray.join(", "));
   console.log("bookedSiteType: " + globalVariables.bookedSiteType);
-  console.log("pushoverUserKey: " + globalVariables.pushoverUserKey);
-  console.log("pushoverApiTokenAvailability: " + globalVariables.pushoverApiTokenAvailability);
-  console.log("pushoverApiTokenReservation: " + globalVariables.pushoverApiTokenReservation)
+  console.log("pushoverUserKey configured: " + hasConfiguredValue(globalVariables.pushoverUserKey));
+  console.log("pushoverApiTokenAvailability configured: " + hasConfiguredValue(globalVariables.pushoverApiTokenAvailability));
+  console.log("pushoverApiTokenReservation configured: " + hasConfiguredValue(globalVariables.pushoverApiTokenReservation))
 }
 
 // Call initializeGlobalVariables function in "Thousand Trails Member Login (Browser).js"
@@ -230,7 +232,7 @@ async function launch() {
     const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
     const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
     const scDesiredDatesArrayConstant = await getSiteConstant(db, 'DesiredDatesArray');
-    const scDesiredSiteTypesConstant = await getSiteConstant(db, 'scDesiredSiteTypes');
+    const scDesiredSiteTypesConstant = await getSiteConstant(db, 'DesiredSiteTypes');
     const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
     const scMinimumConsecutiveDaysConstant = await getSiteConstant(db, 'MinimumConsecutiveDays');
     let scBookingPreference = null;

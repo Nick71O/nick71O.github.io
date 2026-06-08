@@ -97,10 +97,7 @@ async function launch() {
         const mode = availabilityModeConstant?.value?.toLowerCase() || 'single';
         const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
 
-        let resolvedMode = mode;
-        if (mode === 'both') {
-            resolvedMode = lastUsed === 'single' ? 'double' : 'single';
-        }
+        const resolvedMode = mode === 'both' ? lastUsed : mode;
 
         console.log(`BookingAvailabilityMapCheck - (resolvedMode: ${resolvedMode})`);
 

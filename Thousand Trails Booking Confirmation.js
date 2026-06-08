@@ -177,10 +177,10 @@ async function launch() {
             //console.log('Booked Dates In Range:', bookedDatesInRange);
             let allConsecutiveRanges = getConsecutiveDateRanges(bookedDatesInRange);
             //console.log('allConsecutiveRanges: ', allConsecutiveRanges);
-            const bookedDateRangeMessage = buildDateRangeMessage('Availabile Dates to Book:', allConsecutiveRanges);
+            const bookedDateRangeMessage = buildDateRangeMessage('Available Dates to Book:', allConsecutiveRanges);
             console.log(bookedDateRangeMessage);
         } else {
-            console.log('SiteConstant Availabile Arrival or Departure constant is null, empty, or not found.');
+            console.log('SiteConstant Available Arrival or Departure constant is null, empty, or not found.');
         }
 
        if (isValidConstant(scAvailableSiteTypeConstant)) {
@@ -211,7 +211,10 @@ async function launch() {
             }
 
             // Add the booked dates to the booked dates array so they can be displayed in the notification
-            await addBookedDatesToBookedDatesArray(db, scBookedDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
+            const updatedBookedDatesArray = await addBookedDatesToBookedDatesArray(db, scBookedDatesArrayConstant, scAvailableArrivalDate, scAvailableDepartureDate);
+            if (Array.isArray(updatedBookedDatesArray)) {
+                scBookedDatesArray = updatedBookedDatesArray;
+            }
 
         } else {
             const result = removeBookedDatesFromExistingDates(scDesiredArrivalDate, scDesiredDepartureDate, scAvailableArrivalDate, scAvailableDepartureDate);
@@ -224,8 +227,16 @@ async function launch() {
             } else if (Array.isArray(result)) {
                 console.log('Split date ranges:');
                 result.forEach(range => {
-                    console.log(`Arrival: ${range.arrivalDate}, Departure: ${range.departureDate}`);
+                    console.log(`Arrival: ${formatDateForSiteConstant(range.arrivalDate)}, Departure: ${formatDateForSiteConstant(range.departureDate)}`);
                 });
+                scBookingPreference = 'datearray';
+                scDesiredArrivalDate = null;
+                scDesiredDepartureDate = null;
+                scDesiredDatesArray = getDateArrayFromDateRanges(result);
+                await addOrUpdateSiteConstant(db, 'BookingPreference', scBookingPreference);
+                await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', scDesiredArrivalDate);
+                await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', scDesiredDepartureDate);
+                await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(scDesiredDatesArray));
             } else {
                 console.log(`Updated Existing Dates:\nArrival: ${result.existingArrivalDate}\nDeparture: ${result.existingDepartureDate}`);
                 scDesiredArrivalDate = result.existingArrivalDate;
@@ -385,6 +396,25 @@ function hasRemainingDesiredDatesToBook(bookingPreference, desiredArrivalDate, d
     return new Date(desiredArrivalDate).getTime() < new Date(desiredDepartureDate).getTime();
 }
 
+function getDateArrayFromDateRanges(dateRanges) {
+    const dates = [];
+
+    dateRanges.forEach(range => {
+        const arrivalDate = new Date(range.arrivalDate);
+        const departureDate = new Date(range.departureDate);
+
+        for (let date = new Date(arrivalDate); date < departureDate; date.setDate(date.getDate() + 1)) {
+            dates.push(formatDateForSiteConstant(date));
+        }
+    });
+
+    return Array.from(new Set(dates)).sort((a, b) => new Date(a) - new Date(b));
+}
+
+function formatDateForSiteConstant(date) {
+    return new Date(date).toLocaleDateString('en-US', formatDateOptions);
+}
+
 async function removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate) {
     console.log('removeBookedDatesFromDesiredDatesArray(db, scDesiredDatesArrayConstant, bookedArrivalDate, bookedDepartureDate)');
     try {
@@ -424,14 +454,14 @@ async function addBookedDatesToBookedDatesArray(db, bookedDatesArrayConstant, bo
     try {
         if (!bookedDatesArrayConstant || !bookedDatesArrayConstant.value) {
             console.error('Booked dates array constant not found or empty.');
-            return;
+            return null;
         }
 
         const bookedDatesArray = JSON.parse(bookedDatesArrayConstant.value);
 
         if (!Array.isArray(bookedDatesArray)) {
             console.error('Booked dates array is not an array.');
-            return;
+            return null;
         }
 
         const arrivalDate = new Date(bookedArrivalDate);
@@ -457,8 +487,10 @@ async function addBookedDatesToBookedDatesArray(db, bookedDatesArrayConstant, bo
 
         // Update the site constant with the filtered and sorted array
         await addOrUpdateSiteConstant(db, 'BookedDatesArray', JSON.stringify(updatedDatesArray));
+        return updatedDatesArray;
     } catch (error) {
         console.error('Error adding booked dates to booked dates array:', error);
+        return null;
     }
 }
 

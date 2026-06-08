@@ -320,10 +320,7 @@ async function getNextAvailabilityDate(db) {
     const mode = availabilityModeConstant?.value?.toLowerCase() || 'single';
     const lastUsed = lastUsedConstant?.value?.toLowerCase() || 'single';
 
-    let resolvedMode = mode;
-    if (mode === 'both') {
-        resolvedMode = lastUsed === 'single' ? 'double' : 'single';
-    }
+    const resolvedMode = mode === 'both' ? lastUsed : mode;
 
     const direction = (resolvedMode === 'double') ? 'prev' : 'next';
     console.log(`Cursor direction: ${direction} | Mode: ${resolvedMode} | Using Insertion Order: ${useInsertionOrder}`);
