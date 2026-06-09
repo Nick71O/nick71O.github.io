@@ -67,8 +67,6 @@ async function openThousandTrailsDB() {
                 clickCount = clickCount + 1;
                 console.log('clicked the "Select Site" button ' + clickCount + ' times');
 
-                PlayAlert();
-                await sleep(3000);
                 var reservationError = document.getElementById('reservationError').innerText;
                 if (reservationError != undefined) {
                     console.log('ERROR:\n' + reservationError);
@@ -572,11 +570,6 @@ function getDatesInRange(array, start, end) {
     }
     //console.log('Dates in Range:', inRange);
     return inRange;
-}
-
-function PlayAlert() {
-    var alertsound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
-    alertsound.play();
 }
 
 async function sleep(ms) {

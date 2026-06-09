@@ -312,7 +312,7 @@ function formatThousandTrailsAutomationCountdown(ms) {
     return `${seconds}s`;
 }
 
-function isHumanVerificationPage() {
+function getHumanVerificationDetectionDetails() {
     const titleText = (document.title || '').trim().toLowerCase();
     const bodyText = document.body && document.body.innerText ? document.body.innerText.toLowerCase() : '';
     const hasHumanVerificationTitle = titleText === 'human verification';
@@ -335,19 +335,41 @@ function isHumanVerificationPage() {
                     src.includes('token.awswaf.com') || src.includes('captcha.awswaf.com'));
         });
 
-    return hasHumanVerificationTitle ||
+    const isDetected = hasHumanVerificationTitle ||
         (hasHumanVerificationCopy && (hasCaptchaElements || hasAwsWafState)) ||
         (hasCaptchaElements && hasAwsWafState);
+
+    const matchedSignals = [
+        hasHumanVerificationTitle ? 'title' : null,
+        hasHumanVerificationCopy ? 'page copy' : null,
+        hasCaptchaElements ? 'captcha elements' : null,
+        hasAwsWafState ? 'AWS WAF state' : null
+    ].filter(Boolean);
+
+    return {
+        isDetected,
+        matchedSignals
+    };
+}
+
+function isHumanVerificationPage() {
+    return getHumanVerificationDetectionDetails().isDetected;
 }
 
 async function handleHumanVerificationIfPresent(db, options = {}) {
-    if (!isHumanVerificationPage()) {
+    const detectionDetails = getHumanVerificationDetectionDetails();
+    if (!detectionDetails.isDetected) {
         return false;
     }
 
     const reloadMinutes = await getHumanVerificationReloadMinutes(db, options);
     const reloadMillis = reloadMinutes * 60 * 1000;
-    console.warn(`Human verification detected. Waiting for manual input. Fallback reload in ${reloadMinutes} minute(s).`);
+    console.warn(`Human verification required detected. Waiting for manual input. Fallback reload in ${reloadMinutes} minute(s).`);
+    console.log('Human verification detection details:', {
+        url: window.location.href,
+        title: document.title || '',
+        matchedSignals: detectionDetails.matchedSignals
+    });
 
     setThousandTrailsAutomationMessage('Human check');
     await pushHumanVerificationMessage(db, reloadMinutes, reloadMillis);

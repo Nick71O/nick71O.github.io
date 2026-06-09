@@ -25,7 +25,6 @@ function loadScript(src) {
        script.defer = true;
 
        script.onload = () => {
-           console.log(`Script loaded: ${src}`);
            resolve();
        };
 
@@ -355,8 +354,6 @@ async function launch() {
                 var dateDifference = Math.abs(new Date(scAvailableDepartureDate).getTime() - new Date(scAvailableArrivalDate).getTime());
                 const scAvailabileNumberOfNights = Math.round(dateDifference / oneDay);
  
-                PlayAlert();
-                await sleep(3000);
                 if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before checking the reservation result.')) {
                     return;
                 }
@@ -659,36 +656,6 @@ function getElementsByXPath(xpath, parent) {
    return results;
 }
 
-
-// Function to play the alert sound in response to a user click
-function PlayAlert() {
-   // Log a message to indicate that the function is being executed
-   console.log('PlayAlert function is being executed.');
-
-   // Attempt to get the element with ID 'playButton'
-   var playButton = document.getElementById('playButton');
-
-   // Check if the element exists and log its status
-   if (playButton) {
-       console.log('playButton element found:', playButton);
-
-       // Create an Audio object for the alert sound
-       var alertSound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
-
-       // Add a click event listener to the playButton element
-       playButton.addEventListener('click', function () {
-           try {
-               // Attempt to play the alert sound
-               alertSound.play();
-           } catch (error) {
-               // Handle any errors that occur during playback
-               console.error('Error playing alert sound:', error);
-           }
-       });
-   } else {
-       console.error('playButton element not found.');
-   }
-}
 
 // Function to format date and time
 function formatDateTime(date) {

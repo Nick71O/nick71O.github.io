@@ -61,7 +61,6 @@ function loadScript(src) {
     script.defer = true;
 
     script.onload = () => {
-      console.log(`Script loaded: ${src}`);
       resolve();
     };
 

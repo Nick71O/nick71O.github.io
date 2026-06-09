@@ -93,11 +93,6 @@ function isInArray(strArray, str) {
     return strArray.includes(str)
 }
 
-function PlayAlert() {
-    var alertsound = new Audio('https://www.soundjay.com/misc/wind-chime-1.mp3');
-    alertsound.play();
-}
-
 function openTabs(arrivalDate, departureDate) {
     if (arrivalDate != "Invalid Date" && departureDate != "Invalid Date") {
         arrivalDate = arrivalDate.toLocaleDateString('en-us', formatDateOptions)
@@ -289,8 +284,6 @@ async function click() {
         window.location.reload();
     }
     else {
-        PlayAlert();
-        await sleep(3000);
         var reservationError = document.getElementById('reservationError').innerText;
         if (reservationError != undefined) {
             console.log('ERROR:\n' + reservationError);
