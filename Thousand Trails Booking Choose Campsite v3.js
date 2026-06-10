@@ -61,6 +61,10 @@ async function launch() {
             return;
         }
 
+        if (await handleMissingBookingDatabaseState(db, 'choosing a campsite')) {
+            return;
+        }
+
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
   
@@ -439,7 +443,7 @@ async function launch() {
 
 
    } catch (error) {
-        console.error('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
+        logDetailedError('ERROR: In Thousand Trails Start Booking v3 that uses IndexedDB.', error);
         console.log("Sleeping...30 seconds");
         await sleep(30000);
         if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the campsite page.')) {

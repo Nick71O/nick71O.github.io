@@ -84,6 +84,10 @@ async function launch() {
             return;
         }
 
+        if (await handleMissingBookingDatabaseState(db, 'loading reservation details')) {
+            return;
+        }
+
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
 
@@ -283,7 +287,7 @@ async function launch() {
         //}
 
     } catch (error) {
-        console.error('ERROR: In Thousand Trails Booking Reservation Details', error);
+        logDetailedError('ERROR: In Thousand Trails Booking Reservation Details', error);
         await sleep(5000);
         if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
             return;

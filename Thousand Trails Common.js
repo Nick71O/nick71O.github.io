@@ -433,6 +433,55 @@ async function handleUnexpectedLoginPageIfPresent(options = {}) {
     return true;
 }
 
+async function getObjectStoreRecordCount(db, objectStoreName) {
+    return new Promise((resolve, reject) => {
+        try {
+            const transaction = db.transaction(objectStoreName, 'readonly');
+            const store = transaction.objectStore(objectStoreName);
+            const request = store.count();
+
+            request.onsuccess = event => resolve(event.target.result || 0);
+            request.onerror = event => reject(event.target.error);
+        } catch (error) {
+            reject(error);
+        }
+    });
+}
+
+async function handleMissingBookingDatabaseState(db, context = 'booking automation') {
+    const siteConstantCount = await getObjectStoreRecordCount(db, 'SiteConstant');
+    const availabilityCount = await getObjectStoreRecordCount(db, 'Availability');
+
+    if (siteConstantCount > 0 && availabilityCount > 0) {
+        return false;
+    }
+
+    console.error(`Booking database state is missing while ${context}. SiteConstant rows: ${siteConstantCount}; Availability rows: ${availabilityCount}.`);
+    console.log('Redirecting to the Login Page to rebuild booking state.');
+    setThousandTrailsAutomationMessage('DB reset');
+
+    await sleep(500);
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to rebuild booking state.')) {
+        return true;
+    }
+
+    window.location.replace(baseURL + '/login/index');
+    return true;
+}
+
+function logDetailedError(message, error) {
+    console.error(message, error);
+
+    if (error && error.stack) {
+        console.error(error.stack);
+        return;
+    }
+
+    if (error && error.message) {
+        console.error(error.message);
+    }
+}
+
 async function getHumanVerificationReloadMinutes(db, options = {}) {
     const configuredMinutes =
         parsePositiveNumber(options.reloadMinutes) ||
