@@ -38,7 +38,7 @@ function loadScript(src) {
 }
 
 var clickCount = 0;
-const reservationDetailsChooseCampsiteDelayMilliseconds = 2500;
+const reservationDetailsChooseCampsiteDelayMilliseconds = 5000;
 
 // IndexedDB library functions
 async function launch() {
@@ -836,7 +836,7 @@ async function inputBookingReservationDetails(arrivalDate, departureDate, reserv
         console.log('Applied reservation details input:', bookingInput);
 
         // Trigger step 2
-        console.log("Throttling...2.5 seconds");
+        console.log("Throttling...5 seconds");
         const sleepCompleted = await sleep(reservationDetailsChooseCampsiteDelayMilliseconds);
         if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before choosing a campsite.')) {
             return;
