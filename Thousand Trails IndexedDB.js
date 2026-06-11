@@ -646,7 +646,7 @@ async function logSiteConstants(db) {
             if (constants && constants.length > 0) {
                 console.log('SiteConstant records:');
                 constants.forEach(constant => {
-                    console.log(constant);
+                    console.log(redactSiteConstantForLogging(constant));
                 });
                 //constants.forEach((constant) => {
                 //    console.log(`Name: "${constant.name}", Value: "${constant.value}"`);
@@ -662,6 +662,39 @@ async function logSiteConstants(db) {
     } catch (error) {
         console.error('Error retrieving SiteConstant records:', error);
     }
+}
+
+function redactSiteConstantForLogging(constant) {
+    if (!constant || !isSensitiveSiteConstantName(constant.name)) {
+        return constant;
+    }
+
+    return {
+        ...constant,
+        value: maskSensitiveValue(constant.value)
+    };
+}
+
+function isSensitiveSiteConstantName(name) {
+    const normalizedName = String(name || '').toLowerCase();
+    return normalizedName.includes('token') ||
+        normalizedName.includes('secret') ||
+        normalizedName.includes('password') ||
+        normalizedName.includes('userkey') ||
+        normalizedName.includes('apikey');
+}
+
+function maskSensitiveValue(value) {
+    if (value === null || value === undefined || value === '') {
+        return value;
+    }
+
+    const stringValue = String(value);
+    if (stringValue.length <= 8) {
+        return '********';
+    }
+
+    return `${stringValue.slice(0, 4)}...${stringValue.slice(-4)}`;
 }
 
 
