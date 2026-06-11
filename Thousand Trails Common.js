@@ -458,6 +458,16 @@ async function handleMissingBookingDatabaseState(db, context = 'booking automati
         return false;
     }
 
+    if (siteConstantCount > 0 && availabilityCount === 0) {
+        console.warn(`Availability table is empty while ${context}. Rebuilding from current SiteConstant booking state.`);
+        const rebuiltAvailability = await rebuildAvailabilityFromCurrentBookingState(db);
+        if (rebuiltAvailability) {
+            return false;
+        }
+
+        console.warn('Availability table could not be rebuilt from current SiteConstant booking state.');
+    }
+
     console.error(`Booking database state is missing while ${context}. SiteConstant rows: ${siteConstantCount}; Availability rows: ${availabilityCount}.`);
     console.log('Redirecting to the Login Page to rebuild booking state.');
     setThousandTrailsAutomationMessage('DB reset');
@@ -469,6 +479,58 @@ async function handleMissingBookingDatabaseState(db, context = 'booking automati
 
     window.location.replace(baseURL + '/login/index');
     return true;
+}
+
+async function rebuildAvailabilityFromCurrentBookingState(db) {
+    const bookingPreference = (await getSiteConstantValue(db, 'BookingPreference')).toLowerCase();
+    const desiredArrivalDate = await getSiteConstantValue(db, 'DesiredArrivalDate');
+    const desiredDepartureDate = await getSiteConstantValue(db, 'DesiredDepartureDate');
+    const desiredDatesArrayValue = await getSiteConstantValue(db, 'DesiredDatesArray');
+    const minimumConsecutiveDays = parsePositiveNumber(await getSiteConstantValue(db, 'MinimumConsecutiveDays')) || 1;
+    let desiredDatesArray = [];
+
+    if (desiredDatesArrayValue) {
+        try {
+            desiredDatesArray = JSON.parse(desiredDatesArrayValue);
+        } catch (error) {
+            console.error('Unable to parse DesiredDatesArray while rebuilding availability:', error);
+        }
+    }
+
+    if ((bookingPreference === 'auto' || bookingPreference === 'datearray') && hasValidDates(desiredDatesArray)) {
+        if (typeof insertAvailabilityRecords2 !== 'function') {
+            console.error('Unable to rebuild availability. insertAvailabilityRecords2 is not available.');
+            return false;
+        }
+
+        await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', 1);
+        await addOrUpdateSiteConstant(db, 'BookingPreference', 'datearray');
+        await insertAvailabilityRecords2(db, desiredDatesArray);
+        return await getObjectStoreRecordCount(db, 'Availability') > 0;
+    }
+
+    if (bookingPreference === 'consecutive' && isValidDate(desiredArrivalDate) && isValidDate(desiredDepartureDate)) {
+        if (typeof insertConsecutiveAvailabilityRecords !== 'function') {
+            console.error('Unable to rebuild availability. insertConsecutiveAvailabilityRecords is not available.');
+            return false;
+        }
+
+        await insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays);
+        return await getObjectStoreRecordCount(db, 'Availability') > 0;
+    }
+
+    if (isValidDate(desiredArrivalDate) && isValidDate(desiredDepartureDate)) {
+        if (typeof insertAvailabilityRecords !== 'function') {
+            console.error('Unable to rebuild availability. insertAvailabilityRecords is not available.');
+            return false;
+        }
+
+        await insertAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate);
+        return await getObjectStoreRecordCount(db, 'Availability') > 0;
+    }
+
+    console.error('Unable to rebuild availability. Desired date state is empty or invalid.');
+    return false;
 }
 
 function logDetailedError(message, error) {
