@@ -71,40 +71,139 @@ async function launch() {
     }
 }
 
-function inputEnterPaymentFormAndSubmit() {
-    var cbMobileOptIn = document.getElementById("cbMobileOptIn");
-    var policyAgreement = document.getElementById("policyAgreement");
-    var btnConfirm = document.getElementById("btnConfirm");
-    var errorMsgDiv = document.getElementById("errorMsg");
+async function inputEnterPaymentFormAndSubmit() {
+    const formReady = await waitForPaymentFormReady();
+    if (!formReady) {
+        return "Error: Required payment form elements not found!";
+    }
 
-    if (cbMobileOptIn && policyAgreement && btnConfirm && errorMsgDiv) {
-        // Check the SMS Opt-In checkbox
-        cbMobileOptIn.checked = true;
+    const cbMobileOptIn = document.getElementById("cbMobileOptIn");
+    const policyAgreement = document.getElementById("policyAgreement");
+    const btnConfirm = document.getElementById("btnConfirm");
 
-        // Check the Policy Agreement checkbox
-        policyAgreement.checked = true;
+    checkOptionalCheckbox(cbMobileOptIn, "SMS Opt-In");
+    checkRequiredCheckbox(policyAgreement, "policy agreement");
 
-        // Add event listener for the click event of the Book Reservation button
-        btnConfirm.addEventListener("click", function() {
-            // Check if the error message is displayed after clicking the button
-            if (errorMsgDiv.style.display !== "none") {
-                // Extract and log the error message
-                var errorMessage = document.getElementById("divError").textContent.trim();
-                console.error(errorMessage);
-            } else {
-                console.log("Payment form submitted successfully!");
-            }
-        });
+    if (!policyAgreement.checked) {
+        return "Error: Policy agreement checkbox could not be checked.";
+    }
 
-        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking the payment confirmation button.')) {
-            return null;
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking the payment confirmation button.')) {
+        return null;
+    }
+
+    btnConfirm.disabled = false;
+    console.log("Clicking Book Reservation button.");
+    btnConfirm.click();
+
+    const responseState = await waitForBookReservationResponse(10000);
+    if (responseState === "no-response" && typeof window.confirmReservation === "function") {
+        console.warn("Book Reservation click did not trigger a visible response. Calling confirmReservation() directly.");
+        window.confirmReservation();
+    } else if (responseState === "payment-error") {
+        console.error(getPaymentErrorText());
+    } else {
+        console.log(`Book Reservation response detected: ${responseState}.`);
+    }
+
+    return null;
+}
+
+async function waitForPaymentFormReady(timeoutMillis = 10000) {
+    const startTime = Date.now();
+
+    while (Date.now() - startTime < timeoutMillis) {
+        const policyAgreement = document.getElementById("policyAgreement");
+        const btnConfirm = document.getElementById("btnConfirm");
+
+        if (policyAgreement && btnConfirm && typeof window.confirmReservation === "function") {
+            return true;
         }
 
-        // Click the Book Reservation button
-        btnConfirm.click();
-
-        return null; // No need to return anything immediately
-    } else {
-        return "Error: Required elements not found!";
+        const sleepCompleted = await sleep(250);
+        if (!sleepCompleted) {
+            return false;
+        }
     }
+
+    return Boolean(document.getElementById("policyAgreement") && document.getElementById("btnConfirm"));
+}
+
+function checkOptionalCheckbox(checkbox, label) {
+    if (!checkbox) {
+        console.log(`${label} checkbox was not found; continuing without it.`);
+        return;
+    }
+
+    checkRequiredCheckbox(checkbox, label);
+}
+
+function checkRequiredCheckbox(checkbox, label) {
+    if (!checkbox.checked) {
+        console.log(`Checking ${label} checkbox.`);
+        checkbox.click();
+    }
+
+    if (!checkbox.checked) {
+        checkbox.checked = true;
+    }
+
+    checkbox.dispatchEvent(new Event("input", { bubbles: true }));
+    checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+async function waitForBookReservationResponse(timeoutMillis) {
+    const startTime = Date.now();
+    const startUrl = window.location.href;
+    let sawLoadingSpinner = false;
+
+    while (Date.now() - startTime < timeoutMillis) {
+        if (!isThousandTrailsAutomationRunning()) {
+            return "stopped";
+        }
+
+        if (isHumanVerificationPage()) {
+            return "human-verification";
+        }
+
+        if (window.location.href !== startUrl) {
+            return "navigation";
+        }
+
+        if (getPaymentErrorText()) {
+            return "payment-error";
+        }
+
+        if (isPaymentRequestInProgress()) {
+            sawLoadingSpinner = true;
+        } else if (sawLoadingSpinner) {
+            return "request-complete";
+        }
+
+        const sleepCompleted = await sleep(250);
+        if (!sleepCompleted) {
+            return "stopped";
+        }
+    }
+
+    return sawLoadingSpinner ? "request-pending" : "no-response";
+}
+
+function isPaymentRequestInProgress() {
+    const loadingElement = document.getElementById("loading1");
+    return Boolean(loadingElement && loadingElement.classList.contains("open"));
+}
+
+function getPaymentErrorText() {
+    const reservationErrorsElement = document.getElementById("reservationErrors");
+    if (!reservationErrorsElement) {
+        return "";
+    }
+
+    const style = window.getComputedStyle ? window.getComputedStyle(reservationErrorsElement) : null;
+    if (style && (style.display === "none" || style.visibility === "hidden")) {
+        return "";
+    }
+
+    return reservationErrorsElement.textContent.replace(/\s+/g, " ").replace(/^×\s*/, "").trim();
 }
