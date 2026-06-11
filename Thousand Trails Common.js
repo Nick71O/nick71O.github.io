@@ -15,6 +15,10 @@ const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerification
 const humanVerificationResumePollMillis = 3000;
 const availabilitySummaryNotificationSignatureConstant = 'LastAvailabilitySummaryNotificationSignature';
 const thousandTrailsAutomationStorageKey = 'ThousandTrailsAutomationRunState';
+const humanVerificationNotificationControl = window.thousandTrailsHumanVerificationNotificationControl || {
+    sentForPage: false,
+    sendInProgress: false
+};
 const thousandTrailsAutomationControl = window.thousandTrailsAutomationControl || {
     isInitialized: false,
     isRunning: true,
@@ -22,6 +26,7 @@ const thousandTrailsAutomationControl = window.thousandTrailsAutomationControl |
     launchFunction: null,
     activeSleep: null
 };
+window.thousandTrailsHumanVerificationNotificationControl = humanVerificationNotificationControl;
 window.thousandTrailsAutomationControl = thousandTrailsAutomationControl;
 
 function isSensitiveLogName(name) {
@@ -668,28 +673,39 @@ async function getHumanVerificationReloadMinutes(db, options = {}) {
 }
 
 async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
-    if (wasHumanVerificationNotificationSentRecently(reloadMillis)) {
-        console.log('Human verification Pushover notification already sent recently.');
+    if (wasHumanVerificationNotificationSentForCurrentPage()) {
+        console.log('Human verification Pushover notification already sent for this page.');
         return;
     }
 
-    const pushoverKeys = await getHumanVerificationPushoverKeys(db);
-    if (!pushoverKeys) {
-        console.error('Human verification detected, but Pushover keys are not available.');
+    if (humanVerificationNotificationControl.sendInProgress) {
+        console.log('Human verification Pushover notification send is already in progress.');
         return;
     }
 
-    const message = [
-        'Thousand Trails - Lake & Shore',
-        '<b>Human verification required.</b>',
-        '\nWaiting for manual input.',
-        '\nAutomation will resume after verification clears.',
-        `\nFallback reload in ${reloadMinutes} minutes.`
-    ].join('\n');
+    humanVerificationNotificationControl.sendInProgress = true;
 
-    const sent = await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiToken, pushoverUrl, message, 'echo', 1);
-    if (sent) {
-        markHumanVerificationNotificationSent();
+    try {
+        const pushoverKeys = await getHumanVerificationPushoverKeys(db);
+        if (!pushoverKeys) {
+            console.error('Human verification detected, but Pushover keys are not available.');
+            return;
+        }
+
+        const message = [
+            'Thousand Trails - Lake & Shore',
+            '<b>Human verification required.</b>',
+            '\nWaiting for manual input.',
+            '\nAutomation will resume after verification clears.',
+            `\nFallback reload in ${reloadMinutes} minutes.`
+        ].join('\n');
+
+        const sent = await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiToken, pushoverUrl, message, 'echo', 1);
+        if (sent) {
+            markHumanVerificationNotificationSent();
+        }
+    } finally {
+        humanVerificationNotificationControl.sendInProgress = false;
     }
 }
 
@@ -741,31 +757,27 @@ function parsePositiveNumber(value) {
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-function wasHumanVerificationNotificationSentRecently(reloadMillis) {
+function wasHumanVerificationNotificationSentForCurrentPage() {
+    return humanVerificationNotificationControl.sentForPage === true;
+}
+
+function clearLegacyHumanVerificationNotificationSent() {
     try {
-        const now = Date.now();
-        const lastNotification = Number(localStorage.getItem(humanVerificationNotificationStorageKey));
-        return Boolean(lastNotification && now - lastNotification < reloadMillis);
+        localStorage.removeItem(humanVerificationNotificationStorageKey);
     } catch (error) {
-        console.error('Unable to read human verification notification state:', error);
-        return false;
+        console.error('Unable to clear legacy human verification notification state:', error);
     }
 }
 
 function markHumanVerificationNotificationSent() {
-    try {
-        localStorage.setItem(humanVerificationNotificationStorageKey, String(Date.now()));
-    } catch (error) {
-        console.error('Unable to write human verification notification state:', error);
-    }
+    humanVerificationNotificationControl.sentForPage = true;
+    clearLegacyHumanVerificationNotificationSent();
 }
 
 function clearHumanVerificationNotificationSent() {
-    try {
-        localStorage.removeItem(humanVerificationNotificationStorageKey);
-    } catch (error) {
-        console.error('Unable to clear human verification notification state:', error);
-    }
+    humanVerificationNotificationControl.sentForPage = false;
+    humanVerificationNotificationControl.sendInProgress = false;
+    clearLegacyHumanVerificationNotificationSent();
 }
 
 function scheduleHumanVerificationReload(reloadMinutes, reloadMillis) {
