@@ -12,6 +12,7 @@ const baseURL = "https://members.thousandtrails.com"
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
 const humanVerificationDefaultReloadMinutes = 60;
 const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerificationLastNotification';
+const humanVerificationResumePollMillis = 3000;
 const availabilitySummaryNotificationSignatureConstant = 'LastAvailabilitySummaryNotificationSignature';
 const thousandTrailsAutomationStorageKey = 'ThousandTrailsAutomationRunState';
 const thousandTrailsAutomationControl = window.thousandTrailsAutomationControl || {
@@ -374,6 +375,7 @@ async function handleHumanVerificationIfPresent(db, options = {}) {
     setThousandTrailsAutomationMessage('Human check');
     await pushHumanVerificationMessage(db, reloadMinutes, reloadMillis);
     scheduleHumanVerificationReload(reloadMinutes, reloadMillis);
+    scheduleHumanVerificationResumeWatcher();
     return true;
 }
 
@@ -514,6 +516,7 @@ async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
         'Thousand Trails - Lake & Shore',
         '<b>Human verification required.</b>',
         '\nWaiting for manual input.',
+        '\nAutomation will resume after verification clears.',
         `\nFallback reload in ${reloadMinutes} minutes.`
     ].join('\n');
 
@@ -596,11 +599,54 @@ function scheduleHumanVerificationReload(reloadMinutes, reloadMillis) {
     }
 
     window.thousandTrailsHumanVerificationReloadTimer = window.setTimeout(() => {
+        window.thousandTrailsHumanVerificationReloadTimer = null;
         if (isHumanVerificationPage() && isThousandTrailsAutomationRunning()) {
             console.warn(`Human verification fallback reached after ${reloadMinutes} minute(s). Reloading page.`);
             window.location.reload();
         }
     }, reloadMillis);
+}
+
+function scheduleHumanVerificationResumeWatcher() {
+    if (window.thousandTrailsHumanVerificationResumeTimer) {
+        return;
+    }
+
+    window.thousandTrailsHumanVerificationResumeTimer = window.setInterval(() => {
+        if (!isThousandTrailsAutomationRunning()) {
+            clearHumanVerificationResumeWatcher();
+            return;
+        }
+
+        if (isHumanVerificationPage()) {
+            setThousandTrailsAutomationMessage('Human check');
+            return;
+        }
+
+        clearHumanVerificationResumeWatcher();
+        clearHumanVerificationReloadTimer();
+        setThousandTrailsAutomationMessage('');
+        console.log('Human verification cleared. Resuming Thousand Trails automation.');
+        window.setTimeout(() => startThousandTrailsAutomation(thousandTrailsAutomationControl.launchFunction), 0);
+    }, humanVerificationResumePollMillis);
+}
+
+function clearHumanVerificationResumeWatcher() {
+    if (!window.thousandTrailsHumanVerificationResumeTimer) {
+        return;
+    }
+
+    window.clearInterval(window.thousandTrailsHumanVerificationResumeTimer);
+    window.thousandTrailsHumanVerificationResumeTimer = null;
+}
+
+function clearHumanVerificationReloadTimer() {
+    if (!window.thousandTrailsHumanVerificationReloadTimer) {
+        return;
+    }
+
+    window.clearTimeout(window.thousandTrailsHumanVerificationReloadTimer);
+    window.thousandTrailsHumanVerificationReloadTimer = null;
 }
 
 function escapeHtml(value) {

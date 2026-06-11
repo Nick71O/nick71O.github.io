@@ -348,8 +348,31 @@ async function launch() {
             console.log('\n');
             getTimestamp();
             window.console.log('\nSearching page for the "Select Site" button');
-            const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'rapid');
+            const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'none');
             if (isCampsiteAvailableResult.buttonFound) {
+                const selectSiteClickResult = await clickSelectSiteButtonWithRetry(
+                    isCampsiteAvailableResult.selectButton,
+                    isCampsiteAvailableResult.matchedSiteType
+                );
+
+                if (selectSiteClickResult === 'stopped') {
+                    return;
+                }
+
+                if (selectSiteClickResult === 'human-verification' || await handleHumanVerificationIfPresent(db)) {
+                    return;
+                }
+
+                if (selectSiteClickResult !== 'accepted') {
+                    console.warn('Select Site button did not respond after retries. Reloading the campsite page for a clean retry.');
+                    await sleep(5000);
+                    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the campsite page.')) {
+                        return;
+                    }
+                    window.location.reload();
+                    return;
+                }
+
                 clickCount = clickCount + 1;
                 console.log(`Selected "${isCampsiteAvailableResult.matchedSiteType}" Campsite (click count: ${clickCount})`);
  
@@ -361,9 +384,7 @@ async function launch() {
                 if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before checking the reservation result.')) {
                     return;
                 }
-                var reservationErrorElement = document.getElementById('reservationError');
-                var reservationErrorText = reservationErrorElement ? reservationErrorElement.innerText.trim() : '';
-                var reservationError = reservationErrorText || null;
+                var reservationError = getReservationErrorText() || null;
                 if (reservationError) {
                     console.log(`\nError Received: ${reservationError}`);
                 }
@@ -569,16 +590,17 @@ async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTi
  *
  * @param {Array<string>} scDesiredSiteTypes - Array of preferred site types
  * @param {'none'|'once'|'rapid'} clickMode - Click behavior: 'none', 'once', or 'rapid'
- * @returns {{ buttonFound: boolean, matchedSiteType: string|null }}
+ * @returns {{ buttonFound: boolean, matchedSiteType: string|null, selectButton: Element|null }}
  */
 function isCampsiteAvailable(scDesiredSiteTypes, clickMode = 'none') {
     const siteTitles = document.querySelectorAll('.site-title.desktop');
     let buttonFound = false;
     let matchedSiteType = null;
+    let selectButton = null;
 
     if (!Array.isArray(scDesiredSiteTypes) || scDesiredSiteTypes.length === 0) {
         console.warn('Desired site types are missing or empty. Cannot match campsite availability.');
-        return { buttonFound, matchedSiteType };
+        return { buttonFound, matchedSiteType, selectButton };
     }
 
     for (let title of siteTitles) {
@@ -592,13 +614,14 @@ function isCampsiteAvailable(scDesiredSiteTypes, clickMode = 'none') {
                     continue;
                 }
 
-                const selectButton = site.querySelector('.select-site');
+                selectButton = site.querySelector('.select-site');
 
                 if (selectButton) {
                     buttonFound = true;
                     matchedSiteType = desired;
 
                     if (clickMode === 'once') {
+                        console.log(`Clicking "${desired}" Select Site button...`);
                         selectButton.click();
                     } else if (clickMode === 'rapid') {
                         console.log(`Rapid-clicking "${desired}" Select Site button...`);
@@ -611,13 +634,128 @@ function isCampsiteAvailable(scDesiredSiteTypes, clickMode = 'none') {
                         }
                     }
 
-                    return { buttonFound, matchedSiteType };
+                    return { buttonFound, matchedSiteType, selectButton };
                 }
             }
         }
     }
 
-    return { buttonFound, matchedSiteType };
+    return { buttonFound, matchedSiteType, selectButton };
+}
+
+async function clickSelectSiteButtonWithRetry(selectButton, matchedSiteType) {
+    const maxAttempts = 5;
+    const responseTimeoutMillis = 10000;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking the campsite selection button.')) {
+            return 'stopped';
+        }
+
+        if (isHumanVerificationPage()) {
+            console.warn('Human verification appeared before clicking Select Site.');
+            return 'human-verification';
+        }
+
+        if (!isSelectSiteButtonUsable(selectButton)) {
+            console.log('Select Site button is no longer usable. Assuming the page accepted the prior click.');
+            return 'accepted';
+        }
+
+        console.log(`Clicking "${matchedSiteType}" Select Site button (attempt ${attempt}/${maxAttempts})...`);
+        selectButton.click();
+
+        const responseState = await waitForSelectSiteClickResponse(selectButton, responseTimeoutMillis);
+        if (responseState === 'stopped') {
+            return 'stopped';
+        }
+
+        if (responseState === 'human-verification') {
+            return 'human-verification';
+        }
+
+        if (responseState !== 'no-response') {
+            console.log(`Select Site click response detected: ${responseState}.`);
+            return 'accepted';
+        }
+
+        if (attempt < maxAttempts) {
+            console.log('Select Site click did not trigger the page handler yet. Retrying after a short pause.');
+        }
+    }
+
+    console.warn('Select Site click did not produce a visible response after the retry limit.');
+    return 'no-response';
+}
+
+async function waitForSelectSiteClickResponse(selectButton, timeoutMillis) {
+    const startTime = Date.now();
+    const startUrl = window.location.href;
+    let sawLoadingSpinner = false;
+
+    while (Date.now() - startTime < timeoutMillis) {
+        if (!isThousandTrailsAutomationRunning()) {
+            return 'stopped';
+        }
+
+        if (isHumanVerificationPage()) {
+            return 'human-verification';
+        }
+
+        if (window.location.href !== startUrl) {
+            return 'navigation';
+        }
+
+        if (getReservationErrorText()) {
+            return 'reservation-error';
+        }
+
+        if (isSelectSiteRequestInProgress()) {
+            sawLoadingSpinner = true;
+        } else if (sawLoadingSpinner) {
+            return 'request-complete';
+        }
+
+        if (!document.contains(selectButton)) {
+            return 'button-removed';
+        }
+
+        const sleepCompleted = await sleep(250);
+        if (!sleepCompleted) {
+            return 'stopped';
+        }
+    }
+
+    return sawLoadingSpinner ? 'request-pending' : 'no-response';
+}
+
+function isSelectSiteRequestInProgress() {
+    const loadingElement = document.getElementById('loading1');
+    return Boolean(loadingElement && loadingElement.classList.contains('open'));
+}
+
+function isSelectSiteButtonUsable(selectButton) {
+    return Boolean(
+        selectButton &&
+        document.contains(selectButton) &&
+        !selectButton.disabled &&
+        selectButton.getAttribute('aria-disabled') !== 'true' &&
+        !selectButton.classList.contains('disabled')
+    );
+}
+
+function getReservationErrorText() {
+    const reservationErrorElement = document.getElementById('reservationError');
+    if (!reservationErrorElement) {
+        return '';
+    }
+
+    const style = window.getComputedStyle ? window.getComputedStyle(reservationErrorElement) : null;
+    if (style && (style.display === 'none' || style.visibility === 'hidden')) {
+        return '';
+    }
+
+    return reservationErrorElement.textContent.replace(/\s+/g, ' ').replace(/^×\s*/, '').trim();
 }
 
 async function redirectBookingPage() {
