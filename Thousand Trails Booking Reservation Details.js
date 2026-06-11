@@ -38,12 +38,13 @@ function loadScript(src) {
 }
 
 var clickCount = 0;
-const reservationDetailsChooseCampsiteDelayMilliseconds = 1500;
+const reservationDetailsChooseCampsiteDelayMilliseconds = 2500;
 
 // IndexedDB library functions
 async function launch() {
     console.log('Hello from Thousand Trails Booking Reservation Details');
     getTimestamp();
+    let db = null;
 
     //check for fatal site error
     //502 Bad Gateway, 504 Gateway Time-out
@@ -79,7 +80,7 @@ async function launch() {
     }
 
     try {
-        const db = await initializeDB();
+        db = await initializeDB();
         console.log('DB initialized successfully.');
         if (await handleHumanVerificationIfPresent(db)) {
             return;
@@ -307,6 +308,11 @@ async function launch() {
 
     } catch (error) {
         logDetailedError('ERROR: In Thousand Trails Booking Reservation Details', error);
+        if (isHumanVerificationPage()) {
+            console.warn('Human verification detected after reservation details error. Pausing instead of reloading.');
+            await handleHumanVerificationIfPresent(db);
+            return;
+        }
         await sleep(5000);
         if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
             return;
@@ -830,7 +836,7 @@ async function inputBookingReservationDetails(arrivalDate, departureDate, reserv
         console.log('Applied reservation details input:', bookingInput);
 
         // Trigger step 2
-        console.log("Throttling...1.5 seconds");
+        console.log("Throttling...2.5 seconds");
         const sleepCompleted = await sleep(reservationDetailsChooseCampsiteDelayMilliseconds);
         if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before choosing a campsite.')) {
             return;

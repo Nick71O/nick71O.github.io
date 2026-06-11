@@ -760,6 +760,14 @@ function markHumanVerificationNotificationSent() {
     }
 }
 
+function clearHumanVerificationNotificationSent() {
+    try {
+        localStorage.removeItem(humanVerificationNotificationStorageKey);
+    } catch (error) {
+        console.error('Unable to clear human verification notification state:', error);
+    }
+}
+
 function scheduleHumanVerificationReload(reloadMinutes, reloadMillis) {
     if (!window.thousandTrailsHumanVerificationReloadAt) {
         window.thousandTrailsHumanVerificationReloadAt = Date.now() + reloadMillis;
@@ -811,6 +819,7 @@ function scheduleHumanVerificationResumeWatcher() {
 
         clearHumanVerificationResumeWatcher();
         clearHumanVerificationReloadTimer();
+        clearHumanVerificationNotificationSent();
         setThousandTrailsAutomationMessage('');
         console.log('Human verification cleared. Resuming Thousand Trails automation.');
         window.setTimeout(() => startThousandTrailsAutomation(thousandTrailsAutomationControl.launchFunction), 0);
