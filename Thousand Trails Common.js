@@ -117,19 +117,32 @@ function setThousandTrailsAutomationRunning(isRunning) {
     updateThousandTrailsAutomationOverlay();
 }
 
+function stopThousandTrailsAutomation(message = 'Stopped', logMessage = 'Thousand Trails automation stopped.') {
+    initializeThousandTrailsAutomationControlIfNeeded();
+    setThousandTrailsAutomationRunning(false);
+    cancelActiveThousandTrailsAutomationSleep();
+    setThousandTrailsAutomationMessage(message);
+
+    if (logMessage) {
+        console.log(logMessage);
+    }
+}
+
+function completeThousandTrailsAutomation(message = 'No Dates Remain') {
+    stopThousandTrailsAutomation(message, 'Thousand Trails automation complete. No desired dates remain.');
+}
+
 function toggleThousandTrailsAutomationRunStop() {
     const shouldRun = !isThousandTrailsAutomationRunning();
-    setThousandTrailsAutomationRunning(shouldRun);
 
     if (shouldRun) {
+        setThousandTrailsAutomationRunning(true);
         setThousandTrailsAutomationMessage('');
         startThousandTrailsAutomation(thousandTrailsAutomationControl.launchFunction);
         return;
     }
 
-    cancelActiveThousandTrailsAutomationSleep();
-    setThousandTrailsAutomationMessage('Stopped');
-    console.log('Thousand Trails automation stopped.');
+    stopThousandTrailsAutomation();
 }
 
 function initializeThousandTrailsAutomationControlIfNeeded() {
@@ -265,7 +278,9 @@ function updateThousandTrailsAutomationOverlay() {
         runStopButton.textContent = 'Run';
         runStopButton.classList.add('run');
         runStopButton.setAttribute('aria-pressed', 'false');
-        setThousandTrailsAutomationMessage('Stopped');
+        if (!getThousandTrailsAutomationMessage()) {
+            setThousandTrailsAutomationMessage('Stopped');
+        }
     }
 }
 
@@ -279,7 +294,9 @@ function setThousandTrailsAutomationMessage(message) {
 
 function clearThousandTrailsAutomationMessage() {
     if (!isThousandTrailsAutomationRunning()) {
-        setThousandTrailsAutomationMessage('Stopped');
+        if (!getThousandTrailsAutomationMessage()) {
+            setThousandTrailsAutomationMessage('Stopped');
+        }
         return;
     }
 

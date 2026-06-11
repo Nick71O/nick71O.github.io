@@ -286,6 +286,7 @@ async function launch() {
         if (!hasRemainingDesiredDates) {
             console.log("\nNo desired dates remain after confirmed booking. Clearing availability state and stopping booking flow.");
             await resetBookingAvailabilityProcess(db);
+            completeThousandTrailsAutomation();
             return;
         }
 
