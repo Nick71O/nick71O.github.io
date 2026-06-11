@@ -2,12 +2,31 @@
  * Receives and processes global variables from another script (e.g., "Thousand Trails Member Login (Browser).js").
  * @param {Object} globalVariables - Object containing global variables.
  */
+function fallbackMaskSensitiveGlobalValue(value) {
+  if (value === null || value === undefined || value === '') {
+    return value;
+  }
+
+  const stringValue = String(value);
+  if (stringValue.length <= 8) {
+    return '********';
+  }
+
+  return `${stringValue.slice(0, 4)}...${stringValue.slice(-4)}`;
+}
+
+function maskSensitiveGlobalValue(value) {
+  if (typeof maskSensitiveValue === 'function') {
+    return maskSensitiveValue(value);
+  }
+
+  return fallbackMaskSensitiveGlobalValue(value);
+}
+
 function initializeGlobalVariables(globalVariables) {
   // Process the received globalVariables object
-  const hasConfiguredValue = (value) => value !== null && value !== undefined && String(value).trim() !== '';
-
-  console.log("memberNumber configured: " + hasConfiguredValue(globalVariables.memberNumber));
-  console.log("PIN configured: " + hasConfiguredValue(globalVariables.PIN));
+  console.log('memberNumber: "' + maskSensitiveGlobalValue(globalVariables.memberNumber) + '"');
+  console.log('PIN: "' + maskSensitiveGlobalValue(globalVariables.PIN) + '"');
   console.log('bookingPreference: "' + globalVariables.bookingPreference + '"');
   console.log('bookingAvailabilityMapCheck: "' + globalVariables.bookingAvailabilityMapCheck + '"');
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
@@ -28,9 +47,9 @@ function initializeGlobalVariables(globalVariables) {
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
   console.log("bookedDatesArray: " + globalVariables.bookedDatesArray.join(", "));
   console.log("bookedSiteType: " + globalVariables.bookedSiteType);
-  console.log("pushoverUserKey configured: " + hasConfiguredValue(globalVariables.pushoverUserKey));
-  console.log("pushoverApiTokenAvailability configured: " + hasConfiguredValue(globalVariables.pushoverApiTokenAvailability));
-  console.log("pushoverApiTokenReservation configured: " + hasConfiguredValue(globalVariables.pushoverApiTokenReservation))
+  console.log('pushoverUserKey: "' + maskSensitiveGlobalValue(globalVariables.pushoverUserKey) + '"');
+  console.log('pushoverApiTokenAvailability: "' + maskSensitiveGlobalValue(globalVariables.pushoverApiTokenAvailability) + '"');
+  console.log('pushoverApiTokenReservation: "' + maskSensitiveGlobalValue(globalVariables.pushoverApiTokenReservation) + '"')
 }
 
 // Call initializeGlobalVariables function in "Thousand Trails Member Login (Browser).js"

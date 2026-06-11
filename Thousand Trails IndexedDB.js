@@ -671,7 +671,7 @@ function redactSiteConstantForLogging(constant) {
 
     return {
         ...constant,
-        value: maskSensitiveValue(constant.value)
+        value: maskSensitiveSiteConstantValue(constant.value)
     };
 }
 
@@ -684,7 +684,7 @@ function isSensitiveSiteConstantName(name) {
         normalizedName.includes('apikey');
 }
 
-function maskSensitiveValue(value) {
+function maskSensitiveSiteConstantValue(value) {
     if (value === null || value === undefined || value === '') {
         return value;
     }

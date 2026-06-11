@@ -24,6 +24,28 @@ const thousandTrailsAutomationControl = window.thousandTrailsAutomationControl |
 };
 window.thousandTrailsAutomationControl = thousandTrailsAutomationControl;
 
+function isSensitiveLogName(name) {
+    const normalizedName = String(name || '').toLowerCase();
+    return normalizedName.includes('token') ||
+        normalizedName.includes('secret') ||
+        normalizedName.includes('password') ||
+        normalizedName.includes('userkey') ||
+        normalizedName.includes('apikey');
+}
+
+function maskSensitiveValue(value) {
+    if (value === null || value === undefined || value === '') {
+        return value;
+    }
+
+    const stringValue = String(value);
+    if (stringValue.length <= 8) {
+        return '********';
+    }
+
+    return `${stringValue.slice(0, 4)}...${stringValue.slice(-4)}`;
+}
+
 function initializeThousandTrailsAutomationControl() {
     thousandTrailsAutomationControl.isRunning = getStoredThousandTrailsAutomationRunState();
     injectThousandTrailsAutomationOverlayStyles();
