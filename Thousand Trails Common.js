@@ -505,6 +505,13 @@ async function handleMissingBookingDatabaseState(db, context = 'booking automati
         }
 
         console.warn('Availability table could not be rebuilt from current SiteConstant booking state.');
+        if (await currentBookingStateHasDesiredDates(db)) {
+            stopThousandTrailsAutomation(
+                'No Dates To Check',
+                'Thousand Trails automation stopped. No availability records could be generated from the configured desired dates.'
+            );
+            return true;
+        }
     }
 
     console.error(`Booking database state is missing while ${context}. SiteConstant rows: ${siteConstantCount}; Availability rows: ${availabilityCount}.`);
@@ -520,12 +527,67 @@ async function handleMissingBookingDatabaseState(db, context = 'booking automati
     return true;
 }
 
+async function currentBookingStateHasDesiredDates(db) {
+    const bookingPreference = (await getSiteConstantValue(db, 'BookingPreference')).toLowerCase();
+    const desiredArrivalDate = await getSiteConstantValue(db, 'DesiredArrivalDate');
+    const desiredDepartureDate = await getSiteConstantValue(db, 'DesiredDepartureDate');
+    const desiredDatesArrayValue = await getSiteConstantValue(db, 'DesiredDatesArray');
+
+    if (isValidDate(desiredArrivalDate) && isValidDate(desiredDepartureDate)) {
+        return true;
+    }
+
+    if (bookingPreference !== 'auto' && bookingPreference !== 'datearray') {
+        return false;
+    }
+
+    if (!desiredDatesArrayValue) {
+        return false;
+    }
+
+    try {
+        return hasValidDates(JSON.parse(desiredDatesArrayValue));
+    } catch (error) {
+        console.error('Unable to parse DesiredDatesArray while checking booking state:', error);
+        return false;
+    }
+}
+
+function getDesiredDateRangeNightCount(desiredArrivalDate, desiredDepartureDate) {
+    if (!isValidDate(desiredArrivalDate) || !isValidDate(desiredDepartureDate)) {
+        return null;
+    }
+
+    const arrivalDate = new Date(desiredArrivalDate);
+    const departureDate = new Date(desiredDepartureDate);
+    const nights = Math.round((departureDate.getTime() - arrivalDate.getTime()) / 86400000);
+    return nights > 0 ? nights : null;
+}
+
+async function normalizeMinimumConsecutiveDaysForDesiredRange(db, desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays) {
+    const requestedNights = getDesiredDateRangeNightCount(desiredArrivalDate, desiredDepartureDate);
+    const configuredMinimum = parsePositiveNumber(minimumConsecutiveDays) || 1;
+
+    if (!requestedNights) {
+        console.error(`Unable to normalize MinimumConsecutiveDays. Desired date range is invalid: ${desiredArrivalDate} - ${desiredDepartureDate}.`);
+        return configuredMinimum;
+    }
+
+    if (configuredMinimum <= requestedNights) {
+        return configuredMinimum;
+    }
+
+    console.warn(`MinimumConsecutiveDays (${configuredMinimum}) is greater than desired date range (${requestedNights} nights). Updating MinimumConsecutiveDays to ${requestedNights}.`);
+    await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', requestedNights);
+    return requestedNights;
+}
+
 async function rebuildAvailabilityFromCurrentBookingState(db) {
     const bookingPreference = (await getSiteConstantValue(db, 'BookingPreference')).toLowerCase();
     const desiredArrivalDate = await getSiteConstantValue(db, 'DesiredArrivalDate');
     const desiredDepartureDate = await getSiteConstantValue(db, 'DesiredDepartureDate');
     const desiredDatesArrayValue = await getSiteConstantValue(db, 'DesiredDatesArray');
-    const minimumConsecutiveDays = parsePositiveNumber(await getSiteConstantValue(db, 'MinimumConsecutiveDays')) || 1;
+    let minimumConsecutiveDays = parsePositiveNumber(await getSiteConstantValue(db, 'MinimumConsecutiveDays')) || 1;
     let desiredDatesArray = [];
 
     if (desiredDatesArrayValue) {
@@ -554,6 +616,7 @@ async function rebuildAvailabilityFromCurrentBookingState(db) {
             return false;
         }
 
+        minimumConsecutiveDays = await normalizeMinimumConsecutiveDaysForDesiredRange(db, desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays);
         await insertConsecutiveAvailabilityRecords(db, desiredArrivalDate, desiredDepartureDate, minimumConsecutiveDays);
         return await getObjectStoreRecordCount(db, 'Availability') > 0;
     }

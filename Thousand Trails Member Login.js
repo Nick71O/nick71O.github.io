@@ -293,7 +293,13 @@ async function launch() {
         //Handle consecutive booking preference
         console.log('SiteConstant Desired Arrival Date:', scDesiredArrivalConstant.value);
         console.log('SiteConstant Desired Departure Date:', scDesiredDepartureConstant.value);
-        await insertConsecutiveAvailabilityRecords(db, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, scMinimumConsecutiveDaysConstant.value);
+        const minimumConsecutiveDays = await normalizeMinimumConsecutiveDaysForDesiredRange(
+          db,
+          scDesiredArrivalConstant.value,
+          scDesiredDepartureConstant.value,
+          scMinimumConsecutiveDaysConstant.value
+        );
+        await insertConsecutiveAvailabilityRecords(db, scDesiredArrivalConstant.value, scDesiredDepartureConstant.value, minimumConsecutiveDays);
 
     } else if (isValidConstant(scDesiredArrivalConstant) && isValidConstant(scDesiredDepartureConstant)) {
         // Fallback: handles generic (non-consecutive) date range
@@ -312,6 +318,15 @@ async function launch() {
 
     await logSiteConstants(db);
     await logAvailabilityRecords(db);
+
+    const availabilityRecordCount = await getObjectStoreRecordCount(db, 'Availability');
+    if (availabilityRecordCount === 0) {
+      stopThousandTrailsAutomation(
+        'No Dates To Check',
+        'Thousand Trails automation stopped. No availability records could be generated from the configured desired dates.'
+      );
+      return;
+    }
 
   } catch (error) {
     console.error('Error performing operations:', error);
