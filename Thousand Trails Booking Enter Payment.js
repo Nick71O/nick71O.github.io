@@ -92,6 +92,12 @@ async function inputEnterPaymentFormAndSubmit() {
         return null;
     }
 
+    console.log("Sleeping...15 seconds before clicking Book Reservation");
+    const sleepCompleted = await sleep(15000);
+    if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking the payment confirmation button.')) {
+        return null;
+    }
+
     btnConfirm.disabled = false;
     console.log("Clicking Book Reservation button.");
     btnConfirm.click();

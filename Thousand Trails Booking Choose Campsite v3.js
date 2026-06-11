@@ -412,8 +412,8 @@ async function launch() {
  
                 if (clickCount <= 49) {
                     getTimestamp();
-                    console.log("Sleeping...25 seconds");
-                    await sleep(25000);
+                    console.log("Sleeping...15 seconds");
+                    await sleep(15000);
                     if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to payment.')) {
                         return;
                     }
