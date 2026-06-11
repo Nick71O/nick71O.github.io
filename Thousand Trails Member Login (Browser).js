@@ -7,10 +7,10 @@ var globalVariables = {
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
     humanVerificationReloadMinutes: 60,
-    reservationInputSiteType: "RV Site",
-    reservationInputEquipmentType: "Travel Trailer",
+    reservationInputSiteType: "RV Site", // options: RV Site | Tent Site | Cabin/Rental Accomodation
+    reservationInputEquipmentType: "Travel Trailer", // options: Motorhome | Fifth Wheel | Travel Trailer | Pickup camper | Tent | Other
     reservationInputLength: "27",
-    reservationInputWithSlideouts: "No",
+    reservationInputWithSlideouts: "No", // options: Yes | No
     reservationInputAdults: "2",
     reservationInputChildren: "3",
     reservationInputPets: "0",
