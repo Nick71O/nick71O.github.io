@@ -7,6 +7,13 @@ var globalVariables = {
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
     humanVerificationReloadMinutes: 60,
+    reservationInputSiteType: "RV Site",
+    reservationInputEquipmentType: "Travel Trailer",
+    reservationInputLength: "27",
+    reservationInputWithSlideouts: "No",
+    reservationInputAdults: "2",
+    reservationInputChildren: "3",
+    reservationInputPets: "0",
     desiredSiteTypes: [
         'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In',
         'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through',

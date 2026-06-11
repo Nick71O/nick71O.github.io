@@ -103,6 +103,22 @@ async function launch() {
         const scAvailableArrivalConstant = await getSiteConstant(db, 'AvailableArrivalDate');
         const scAvailableDepartureConstant = await getSiteConstant(db, 'AvailableDepartureDate')
         const scAvailableSiteTypeConstant = await getSiteConstant(db, 'AvailableSiteType');
+        const scReservationInputSiteTypeConstant = await getSiteConstant(db, 'ReservationInputSiteType');
+        const scReservationInputEquipmentTypeConstant = await getSiteConstant(db, 'ReservationInputEquipmentType');
+        const scReservationInputLengthConstant = await getSiteConstant(db, 'ReservationInputLength');
+        const scReservationInputWithSlideoutsConstant = await getSiteConstant(db, 'ReservationInputWithSlideouts');
+        const scReservationInputAdultsConstant = await getSiteConstant(db, 'ReservationInputAdults');
+        const scReservationInputChildrenConstant = await getSiteConstant(db, 'ReservationInputChildren');
+        const scReservationInputPetsConstant = await getSiteConstant(db, 'ReservationInputPets');
+        const reservationInput = getReservationInputFromSiteConstants({
+            siteType: scReservationInputSiteTypeConstant,
+            equipmentType: scReservationInputEquipmentTypeConstant,
+            length: scReservationInputLengthConstant,
+            withSlideouts: scReservationInputWithSlideoutsConstant,
+            adults: scReservationInputAdultsConstant,
+            children: scReservationInputChildrenConstant,
+            pets: scReservationInputPetsConstant
+        });
         let scDesiredArrivalDate = null;
         let scDesiredDepartureDate = null;
         let scDesiredDatesArray = null;
@@ -214,6 +230,8 @@ async function launch() {
            console.log('SiteConstant Available Site Type: ' + scAvailableSiteType);
        }
 
+        console.log('Reservation Input:', reservationInput);
+
         //if (scAvailabileArrivalConstant.value !== null && scAvailabileDepartureConstant.value !== null) {
 
         //} else {
@@ -221,7 +239,7 @@ async function launch() {
         if (nextAvailabilityDate) {
             console.log('Next Availability Date:', nextAvailabilityDate);
 
-            await inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate);
+            await inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate, reservationInput);
         }
         else {
             await logSiteConstants(db);
@@ -263,7 +281,7 @@ async function launch() {
                     console.log("\nAvailable Arrival Date:", availableArrivalDate);
                     console.log("Available Departure Date:", availableDepartureDate);
 
-                    await inputBookingReservationDetails(availableArrivalDate, availableDepartureDate);
+                    await inputBookingReservationDetails(availableArrivalDate, availableDepartureDate, reservationInput);
                     return;
                 } else {
                     console.log("\nNo available dates found.");
@@ -636,6 +654,40 @@ document.addEventListener("DOMContentLoaded", function () {
     setupEventListener();
 });
 
+function getReservationInputDefaults() {
+    return {
+        siteType: 'RV Site',
+        equipmentType: 'Travel Trailer',
+        length: '27',
+        withSlideouts: 'No',
+        adults: '2',
+        children: '3',
+        pets: '0'
+    };
+}
+
+function getReservationInputConstantValue(constant, fallback) {
+    if (!constant || constant.value === null || constant.value === undefined || String(constant.value).trim() === '') {
+        return fallback;
+    }
+
+    return String(constant.value).trim();
+}
+
+function getReservationInputFromSiteConstants(constants) {
+    const defaults = getReservationInputDefaults();
+
+    return {
+        siteType: getReservationInputConstantValue(constants.siteType, defaults.siteType),
+        equipmentType: getReservationInputConstantValue(constants.equipmentType, defaults.equipmentType),
+        length: getReservationInputConstantValue(constants.length, defaults.length),
+        withSlideouts: getReservationInputConstantValue(constants.withSlideouts, defaults.withSlideouts),
+        adults: getReservationInputConstantValue(constants.adults, defaults.adults),
+        children: getReservationInputConstantValue(constants.children, defaults.children),
+        pets: getReservationInputConstantValue(constants.pets, defaults.pets)
+    };
+}
+
 function selectBookingOption(selector, optionMatches, description) {
     const selectElement = document.querySelector(selector);
     if (!selectElement) {
@@ -659,15 +711,66 @@ function selectBookingOption(selector, optionMatches, description) {
     return true;
 }
 
-async function inputBookingReservationDetails(arrivalDate, departureDate) {
+function selectBookingOptionByValueOrText(selector, desiredValue, description) {
+    const desiredText = String(desiredValue ?? '').trim();
+    const optionMatches = (option) => {
+        const optionValue = String(option.value ?? '').trim();
+        const optionText = String(option.textContent ?? '').replace(/\s+/g, ' ').trim();
+
+        if (optionValue === desiredText || optionText.toLowerCase() === desiredText.toLowerCase()) {
+            return true;
+        }
+
+        return desiredText === '0' && (optionValue === '' || optionText.toLowerCase() === 'select');
+    };
+
+    return selectBookingOption(selector, optionMatches, `${description}: ${desiredText}`);
+}
+
+function setTextInputValue(inputElement, value) {
+    inputElement.value = String(value ?? '').trim();
+    inputElement.dispatchEvent(new Event('input', { bubbles: true }));
+    inputElement.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function selectSlideoutsOption(withSlideouts) {
+    const normalizedValue = String(withSlideouts ?? '').trim().toLowerCase();
+    const yesValues = ['yes', 'true', '1', 'y'];
+    const noValues = ['no', 'false', '0', 'n'];
+    const slideoutsRadioId = yesValues.includes(normalizedValue)
+        ? 'slideoutsYes'
+        : noValues.includes(normalizedValue)
+            ? 'slideoutsNo'
+            : null;
+
+    if (!slideoutsRadioId) {
+        console.error(`With Slideouts value is invalid: "${withSlideouts}". Use Yes/No, true/false, or 1/0.`);
+        return false;
+    }
+
+    const radio = document.getElementById(slideoutsRadioId);
+    if (!radio) {
+        console.error(`With Slideouts radio button not found: ${slideoutsRadioId}`);
+        return false;
+    }
+
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+}
+
+async function inputBookingReservationDetails(arrivalDate, departureDate, reservationInput) {
+    const bookingInput = Object.assign({}, getReservationInputDefaults(), reservationInput || {});
+
     // Check if the elements exist before performing actions
     const checkinInput = document.getElementById("checkin");
     const checkoutInput = document.getElementById("checkout");
     const btnStep2 = document.getElementById("btnStep2");
     const lengthInput = document.getElementById("length");
+    const slideoutsYesRadio = document.getElementById("slideoutsYes");
     const slideoutsNoRadio = document.getElementById("slideoutsNo");
 
-    if (checkinInput && checkoutInput && btnStep2 && lengthInput && slideoutsNoRadio) {
+    if (checkinInput && checkoutInput && btnStep2 && lengthInput && slideoutsYesRadio && slideoutsNoRadio) {
         // Set Arrival/Departure Date
         // Reset both datepickers regardless of current state
         const datepickerAvailable = typeof $ !== 'undefined' &&
@@ -700,10 +803,11 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
 
         // Use SumoSelect to update dropdown values
         const bookingOptionsSelected = [
-            selectBookingOption('#campingType', option => option.textContent.trim() === 'RV Site', 'Site Type: RV Site'),
-            selectBookingOption('#equipmentType', option => option.textContent.trim() === 'Travel Trailer', 'Equipment Type: Travel Trailer'),
-            selectBookingOption('#adults', option => option.value === '2', 'Adults: 2'),
-            selectBookingOption('#kids', option => option.value === '3', 'Kids: 3')
+            selectBookingOptionByValueOrText('#campingType', bookingInput.siteType, 'Site Type'),
+            selectBookingOptionByValueOrText('#equipmentType', bookingInput.equipmentType, 'Equipment Type'),
+            selectBookingOptionByValueOrText('#adults', bookingInput.adults, 'Adults'),
+            selectBookingOptionByValueOrText('#kids', bookingInput.children, 'Children'),
+            selectBookingOptionByValueOrText('#pets', bookingInput.pets, 'Pets')
         ].every(Boolean);
 
         if (!bookingOptionsSelected) {
@@ -717,15 +821,22 @@ async function inputBookingReservationDetails(arrivalDate, departureDate) {
             window.location.reload();
             return;
         }
-			
-	    // Pets: 1
-        //$('#pets')[0].sumo.selectItem($('#pets option[value="1"]').index());
 
-        // Set the length to 27
-        lengthInput.value = "27";
+        setTextInputValue(lengthInput, bookingInput.length);
 
-        // Select "No" for With Slideouts
-        slideoutsNoRadio.checked = true;
+        if (!selectSlideoutsOption(bookingInput.withSlideouts)) {
+            console.error("With Slideouts input was not valid or not ready!");
+            console.log("Sleeping...30 seconds");
+            await sleep(30000);
+            if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
+                return;
+            }
+            console.log("Reloading Page");
+            window.location.reload();
+            return;
+        }
+
+        console.log('Applied reservation details input:', bookingInput);
 
         // Trigger step 2
         btnStep2.click();
