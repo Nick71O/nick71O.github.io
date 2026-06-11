@@ -654,37 +654,23 @@ document.addEventListener("DOMContentLoaded", function () {
     setupEventListener();
 });
 
-function getReservationInputDefaults() {
-    return {
-        siteType: 'RV Site',
-        equipmentType: 'Travel Trailer',
-        length: '27',
-        withSlideouts: 'No',
-        adults: '2',
-        children: '3',
-        pets: '0'
-    };
-}
-
-function getReservationInputConstantValue(constant, fallback) {
+function getReservationInputConstantValue(constant, name) {
     if (!constant || constant.value === null || constant.value === undefined || String(constant.value).trim() === '') {
-        return fallback;
+        throw new Error(`Reservation input SiteConstant missing: ${name}`);
     }
 
     return String(constant.value).trim();
 }
 
 function getReservationInputFromSiteConstants(constants) {
-    const defaults = getReservationInputDefaults();
-
     return {
-        siteType: getReservationInputConstantValue(constants.siteType, defaults.siteType),
-        equipmentType: getReservationInputConstantValue(constants.equipmentType, defaults.equipmentType),
-        length: getReservationInputConstantValue(constants.length, defaults.length),
-        withSlideouts: getReservationInputConstantValue(constants.withSlideouts, defaults.withSlideouts),
-        adults: getReservationInputConstantValue(constants.adults, defaults.adults),
-        children: getReservationInputConstantValue(constants.children, defaults.children),
-        pets: getReservationInputConstantValue(constants.pets, defaults.pets)
+        siteType: getReservationInputConstantValue(constants.siteType, 'ReservationInputSiteType'),
+        equipmentType: getReservationInputConstantValue(constants.equipmentType, 'ReservationInputEquipmentType'),
+        length: getReservationInputConstantValue(constants.length, 'ReservationInputLength'),
+        withSlideouts: getReservationInputConstantValue(constants.withSlideouts, 'ReservationInputWithSlideouts'),
+        adults: getReservationInputConstantValue(constants.adults, 'ReservationInputAdults'),
+        children: getReservationInputConstantValue(constants.children, 'ReservationInputChildren'),
+        pets: getReservationInputConstantValue(constants.pets, 'ReservationInputPets')
     };
 }
 
@@ -760,7 +746,11 @@ function selectSlideoutsOption(withSlideouts) {
 }
 
 async function inputBookingReservationDetails(arrivalDate, departureDate, reservationInput) {
-    const bookingInput = Object.assign({}, getReservationInputDefaults(), reservationInput || {});
+    if (!reservationInput) {
+        throw new Error('Reservation input was not provided.');
+    }
+
+    const bookingInput = reservationInput;
 
     // Check if the elements exist before performing actions
     const checkinInput = document.getElementById("checkin");

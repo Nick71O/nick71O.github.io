@@ -2,35 +2,9 @@
  * Receives and processes global variables from another script (e.g., "Thousand Trails Member Login (Browser).js").
  * @param {Object} globalVariables - Object containing global variables.
  */
-const reservationInputDefaults = {
-  reservationInputSiteType: 'RV Site',
-  reservationInputEquipmentType: 'Travel Trailer',
-  reservationInputLength: '27',
-  reservationInputWithSlideouts: 'No',
-  reservationInputAdults: '2',
-  reservationInputChildren: '3',
-  reservationInputPets: '0'
-};
-
-function getConfiguredGlobalValue(source, name, fallback) {
-  if (!source || source[name] === null || source[name] === undefined || String(source[name]).trim() === '') {
-    return fallback;
-  }
-
-  return String(source[name]).trim();
-}
-
-function getReservationInputGlobals(source) {
-  return Object.keys(reservationInputDefaults).reduce((settings, name) => {
-    settings[name] = getConfiguredGlobalValue(source, name, reservationInputDefaults[name]);
-    return settings;
-  }, {});
-}
-
 function initializeGlobalVariables(globalVariables) {
   // Process the received globalVariables object
   const hasConfiguredValue = (value) => value !== null && value !== undefined && String(value).trim() !== '';
-  const reservationInput = getReservationInputGlobals(globalVariables);
 
   console.log("memberNumber configured: " + hasConfiguredValue(globalVariables.memberNumber));
   console.log("PIN configured: " + hasConfiguredValue(globalVariables.PIN));
@@ -39,13 +13,13 @@ function initializeGlobalVariables(globalVariables) {
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("availabilityCheckIntervalMinutes: " + globalVariables.availabilityCheckIntervalMinutes)
   console.log("humanVerificationReloadMinutes: " + globalVariables.humanVerificationReloadMinutes)
-  console.log('reservationInputSiteType: "' + reservationInput.reservationInputSiteType + '"');
-  console.log('reservationInputEquipmentType: "' + reservationInput.reservationInputEquipmentType + '"');
-  console.log('reservationInputLength: "' + reservationInput.reservationInputLength + '"');
-  console.log('reservationInputWithSlideouts: "' + reservationInput.reservationInputWithSlideouts + '"');
-  console.log('reservationInputAdults: "' + reservationInput.reservationInputAdults + '"');
-  console.log('reservationInputChildren: "' + reservationInput.reservationInputChildren + '"');
-  console.log('reservationInputPets: "' + reservationInput.reservationInputPets + '"');
+  console.log('reservationInputSiteType: "' + globalVariables.reservationInputSiteType + '"');
+  console.log('reservationInputEquipmentType: "' + globalVariables.reservationInputEquipmentType + '"');
+  console.log('reservationInputLength: "' + globalVariables.reservationInputLength + '"');
+  console.log('reservationInputWithSlideouts: "' + globalVariables.reservationInputWithSlideouts + '"');
+  console.log('reservationInputAdults: "' + globalVariables.reservationInputAdults + '"');
+  console.log('reservationInputChildren: "' + globalVariables.reservationInputChildren + '"');
+  console.log('reservationInputPets: "' + globalVariables.reservationInputPets + '"');
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
   console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
   console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
@@ -236,8 +210,6 @@ async function launch() {
       return;
     }
 
-    const reservationInput = getReservationInputGlobals(globalVariables);
-
     await deleteAllSiteConstants(db);
     await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
     await addOrUpdateSiteConstant(db, 'BookingAvailabilityMapCheck', globalVariables.bookingAvailabilityMapCheck);
@@ -246,13 +218,13 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'AvailabilityCheckIntervalMinutes', globalVariables.availabilityCheckIntervalMinutes);
     await addOrUpdateSiteConstant(db, 'HumanVerificationReloadMinutes', globalVariables.humanVerificationReloadMinutes || humanVerificationDefaultReloadMinutes);
-    await addOrUpdateSiteConstant(db, 'ReservationInputSiteType', reservationInput.reservationInputSiteType);
-    await addOrUpdateSiteConstant(db, 'ReservationInputEquipmentType', reservationInput.reservationInputEquipmentType);
-    await addOrUpdateSiteConstant(db, 'ReservationInputLength', reservationInput.reservationInputLength);
-    await addOrUpdateSiteConstant(db, 'ReservationInputWithSlideouts', reservationInput.reservationInputWithSlideouts);
-    await addOrUpdateSiteConstant(db, 'ReservationInputAdults', reservationInput.reservationInputAdults);
-    await addOrUpdateSiteConstant(db, 'ReservationInputChildren', reservationInput.reservationInputChildren);
-    await addOrUpdateSiteConstant(db, 'ReservationInputPets', reservationInput.reservationInputPets);
+    await addOrUpdateSiteConstant(db, 'ReservationInputSiteType', globalVariables.reservationInputSiteType);
+    await addOrUpdateSiteConstant(db, 'ReservationInputEquipmentType', globalVariables.reservationInputEquipmentType);
+    await addOrUpdateSiteConstant(db, 'ReservationInputLength', globalVariables.reservationInputLength);
+    await addOrUpdateSiteConstant(db, 'ReservationInputWithSlideouts', globalVariables.reservationInputWithSlideouts);
+    await addOrUpdateSiteConstant(db, 'ReservationInputAdults', globalVariables.reservationInputAdults);
+    await addOrUpdateSiteConstant(db, 'ReservationInputChildren', globalVariables.reservationInputChildren);
+    await addOrUpdateSiteConstant(db, 'ReservationInputPets', globalVariables.reservationInputPets);
     await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);
     await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', globalVariables.desiredDepartureDate);
     await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(globalVariables.desiredDatesArray));
