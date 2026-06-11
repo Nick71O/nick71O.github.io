@@ -38,6 +38,7 @@ function loadScript(src) {
 }
 
 var clickCount = 0;
+const reservationDetailsChooseCampsiteDelayMilliseconds = 1500;
 
 // IndexedDB library functions
 async function launch() {
@@ -829,6 +830,11 @@ async function inputBookingReservationDetails(arrivalDate, departureDate, reserv
         console.log('Applied reservation details input:', bookingInput);
 
         // Trigger step 2
+        console.log("Throttling...1.5 seconds");
+        const sleepCompleted = await sleep(reservationDetailsChooseCampsiteDelayMilliseconds);
+        if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before choosing a campsite.')) {
+            return;
+        }
         btnStep2.click();
     } else {
         console.error("Booking input elements not found!");
