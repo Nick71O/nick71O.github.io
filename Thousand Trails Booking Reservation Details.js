@@ -38,7 +38,6 @@ function loadScript(src) {
 }
 
 var clickCount = 0;
-const reservationDetailsChooseCampsiteDelayMilliseconds = 5000;
 
 // IndexedDB library functions
 async function launch() {
@@ -241,7 +240,7 @@ async function launch() {
         if (nextAvailabilityDate) {
             console.log('Next Availability Date:', nextAvailabilityDate);
 
-            await inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate, reservationInput);
+            await inputBookingReservationDetails(nextAvailabilityDate.arrivalDate, nextAvailabilityDate.departureDate, reservationInput, db);
         }
         else {
             await logSiteConstants(db);
@@ -283,7 +282,7 @@ async function launch() {
                     console.log("\nAvailable Arrival Date:", availableArrivalDate);
                     console.log("Available Departure Date:", availableDepartureDate);
 
-                    await inputBookingReservationDetails(availableArrivalDate, availableDepartureDate, reservationInput);
+                    await inputBookingReservationDetails(availableArrivalDate, availableDepartureDate, reservationInput, db);
                     return;
                 } else {
                     console.log("\nNo available dates found.");
@@ -752,7 +751,7 @@ function selectSlideoutsOption(withSlideouts) {
     return true;
 }
 
-async function inputBookingReservationDetails(arrivalDate, departureDate, reservationInput) {
+async function inputBookingReservationDetails(arrivalDate, departureDate, reservationInput, db) {
     if (!reservationInput) {
         throw new Error('Reservation input was not provided.');
     }
@@ -836,8 +835,9 @@ async function inputBookingReservationDetails(arrivalDate, departureDate, reserv
         console.log('Applied reservation details input:', bookingInput);
 
         // Trigger step 2
-        console.log("Throttling...5 seconds");
-        const sleepCompleted = await sleep(reservationDetailsChooseCampsiteDelayMilliseconds);
+        const chooseCampsiteDelayMilliseconds = await getReservationDetailsChooseCampsiteDelayMilliseconds(db);
+        console.log(`Throttling...${formatDelayMillisecondsForLog(chooseCampsiteDelayMilliseconds)}`);
+        const sleepCompleted = await sleep(chooseCampsiteDelayMilliseconds);
         if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before choosing a campsite.')) {
             return;
         }

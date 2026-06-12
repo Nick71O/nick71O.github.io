@@ -11,6 +11,8 @@ const baseURL = "https://members.thousandtrails.com"
 // Pushover API endpoint for sending messages
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
 const humanVerificationDefaultReloadMinutes = 60;
+const reservationDetailsChooseCampsiteDefaultDelaySeconds = 10;
+const chooseCampsiteNoSiteRedirectDefaultDelaySeconds = 10;
 const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerificationLastNotification';
 const humanVerificationResumePollMillis = 3000;
 const availabilitySummaryNotificationSignatureConstant = 'LastAvailabilitySummaryNotificationSignature';
@@ -755,6 +757,43 @@ function getGlobalVariableValue(name) {
 function parsePositiveNumber(value) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+async function getReservationDetailsChooseCampsiteDelayMilliseconds(db) {
+    return await getConfiguredDelayMilliseconds(
+        db,
+        'ReservationDetailsChooseCampsiteDelaySeconds',
+        'reservationDetailsChooseCampsiteDelaySeconds',
+        reservationDetailsChooseCampsiteDefaultDelaySeconds
+    );
+}
+
+async function getChooseCampsiteNoSiteRedirectDelayMilliseconds(db) {
+    return await getConfiguredDelayMilliseconds(
+        db,
+        'ChooseCampsiteNoSiteRedirectDelaySeconds',
+        'chooseCampsiteNoSiteRedirectDelaySeconds',
+        chooseCampsiteNoSiteRedirectDefaultDelaySeconds
+    );
+}
+
+async function getConfiguredDelayMilliseconds(db, siteConstantName, globalVariableName, defaultSeconds) {
+    const configuredSeconds =
+        parsePositiveNumber(getGlobalVariableValue(globalVariableName)) ||
+        parsePositiveNumber(await getSiteConstantValue(db, siteConstantName)) ||
+        defaultSeconds;
+
+    return Math.round(configuredSeconds * 1000);
+}
+
+function formatDelayMillisecondsForLog(milliseconds) {
+    const seconds = milliseconds / 1000;
+    const displaySeconds = Number.isInteger(seconds)
+        ? String(seconds)
+        : seconds.toFixed(1).replace(/\.0$/, '');
+    const label = displaySeconds === '1' ? 'second' : 'seconds';
+
+    return `${displaySeconds} ${label}`;
 }
 
 function wasHumanVerificationNotificationSentForCurrentPage() {

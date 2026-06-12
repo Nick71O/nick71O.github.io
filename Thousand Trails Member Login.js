@@ -23,6 +23,29 @@ function maskSensitiveGlobalValue(value) {
   return fallbackMaskSensitiveGlobalValue(value);
 }
 
+function getPositiveGlobalNumberValue(value, defaultValue) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : defaultValue;
+}
+
+function getReservationDetailsChooseCampsiteDelaySecondsValue(globalVariables) {
+  return getPositiveGlobalNumberValue(
+    globalVariables.reservationDetailsChooseCampsiteDelaySeconds,
+    typeof reservationDetailsChooseCampsiteDefaultDelaySeconds !== 'undefined'
+      ? reservationDetailsChooseCampsiteDefaultDelaySeconds
+      : 10
+  );
+}
+
+function getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables) {
+  return getPositiveGlobalNumberValue(
+    globalVariables.chooseCampsiteNoSiteRedirectDelaySeconds,
+    typeof chooseCampsiteNoSiteRedirectDefaultDelaySeconds !== 'undefined'
+      ? chooseCampsiteNoSiteRedirectDefaultDelaySeconds
+      : 10
+  );
+}
+
 function initializeGlobalVariables(globalVariables) {
   // Process the received globalVariables object
   console.log('memberNumber: "' + maskSensitiveGlobalValue(globalVariables.memberNumber) + '"');
@@ -32,6 +55,8 @@ function initializeGlobalVariables(globalVariables) {
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("availabilityCheckIntervalMinutes: " + globalVariables.availabilityCheckIntervalMinutes)
   console.log("humanVerificationReloadMinutes: " + globalVariables.humanVerificationReloadMinutes)
+  console.log("reservationDetailsChooseCampsiteDelaySeconds: " + getReservationDetailsChooseCampsiteDelaySecondsValue(globalVariables));
+  console.log("chooseCampsiteNoSiteRedirectDelaySeconds: " + getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables));
   console.log('reservationInputSiteType: "' + globalVariables.reservationInputSiteType + '"');
   console.log('reservationInputEquipmentType: "' + globalVariables.reservationInputEquipmentType + '"');
   console.log('reservationInputLength: "' + globalVariables.reservationInputLength + '"');
@@ -237,6 +262,8 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'AvailabilityCheckIntervalMinutes', globalVariables.availabilityCheckIntervalMinutes);
     await addOrUpdateSiteConstant(db, 'HumanVerificationReloadMinutes', globalVariables.humanVerificationReloadMinutes || humanVerificationDefaultReloadMinutes);
+    await addOrUpdateSiteConstant(db, 'ReservationDetailsChooseCampsiteDelaySeconds', getReservationDetailsChooseCampsiteDelaySecondsValue(globalVariables));
+    await addOrUpdateSiteConstant(db, 'ChooseCampsiteNoSiteRedirectDelaySeconds', getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'ReservationInputSiteType', globalVariables.reservationInputSiteType);
     await addOrUpdateSiteConstant(db, 'ReservationInputEquipmentType', globalVariables.reservationInputEquipmentType);
     await addOrUpdateSiteConstant(db, 'ReservationInputLength', globalVariables.reservationInputLength);

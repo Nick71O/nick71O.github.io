@@ -454,8 +454,9 @@ async function launch() {
             }
  
        }else{
-            console.log("Throttling...5 seconds");
-            await sleep(5000);
+            const noSiteRedirectDelayMilliseconds = await getChooseCampsiteNoSiteRedirectDelayMilliseconds(db);
+            console.log(`Throttling...${formatDelayMillisecondsForLog(noSiteRedirectDelayMilliseconds)}`);
+            await sleep(noSiteRedirectDelayMilliseconds);
             if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
                 return;
             }
