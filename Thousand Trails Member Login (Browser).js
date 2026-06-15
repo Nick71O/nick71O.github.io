@@ -7,12 +7,12 @@ var globalVariables = {
     minimumConsecutiveDays: 3,
     availabilityCheckIntervalMinutes: 5,
     humanVerificationReloadMinutes: 60,
+    memberLoginSubmitDelaySeconds: 10,
+    parksRedirectBookingDelaySeconds: 15,
     reservationDetailsChooseCampsiteDelaySeconds: 35,
     chooseCampsiteNoSiteRedirectDelaySeconds: 25,
     chooseCampsiteSelectSiteDelaySeconds: 25,
     enterPaymentBookReservationDelaySeconds: 45,
-    memberLoginSubmitDelaySeconds: 10,
-    parksRedirectBookingDelaySeconds: 15,
     reservationInputSiteType: "RV Site", // options: RV Site | Tent Site | Cabin/Rental Accomodation
     reservationInputEquipmentType: "Travel Trailer", // options: Motorhome | Fifth Wheel | Travel Trailer | Pickup camper | Tent | Other
     reservationInputLength: "27",
