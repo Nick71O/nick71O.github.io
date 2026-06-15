@@ -302,12 +302,12 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'MinimumConsecutiveDays', globalVariables.minimumConsecutiveDays);
     await addOrUpdateSiteConstant(db, 'AvailabilityCheckIntervalMinutes', globalVariables.availabilityCheckIntervalMinutes);
     await addOrUpdateSiteConstant(db, 'HumanVerificationReloadMinutes', globalVariables.humanVerificationReloadMinutes || humanVerificationDefaultReloadMinutes);
+    await addOrUpdateSiteConstant(db, 'MemberLoginSubmitDelaySeconds', getMemberLoginSubmitDelaySecondsValue(globalVariables));
+    await addOrUpdateSiteConstant(db, 'ParksRedirectBookingDelaySeconds', getParksRedirectBookingDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'ReservationDetailsChooseCampsiteDelaySeconds', getReservationDetailsChooseCampsiteDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'ChooseCampsiteNoSiteRedirectDelaySeconds', getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'ChooseCampsiteSelectSiteDelaySeconds', getChooseCampsiteSelectSiteDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'EnterPaymentBookReservationDelaySeconds', getEnterPaymentBookReservationDelaySecondsValue(globalVariables));
-    await addOrUpdateSiteConstant(db, 'MemberLoginSubmitDelaySeconds', getMemberLoginSubmitDelaySecondsValue(globalVariables));
-    await addOrUpdateSiteConstant(db, 'ParksRedirectBookingDelaySeconds', getParksRedirectBookingDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'ReservationInputSiteType', globalVariables.reservationInputSiteType);
     await addOrUpdateSiteConstant(db, 'ReservationInputEquipmentType', globalVariables.reservationInputEquipmentType);
     await addOrUpdateSiteConstant(db, 'ReservationInputLength', globalVariables.reservationInputLength);
