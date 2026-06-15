@@ -59,7 +59,7 @@ async function launch() {
             return;
         }
 
-        var errorMessage = await inputEnterPaymentFormAndSubmit();
+        var errorMessage = await inputEnterPaymentFormAndSubmit(db);
 
         if (errorMessage) {
             console.error(errorMessage);
@@ -71,7 +71,7 @@ async function launch() {
     }
 }
 
-async function inputEnterPaymentFormAndSubmit() {
+async function inputEnterPaymentFormAndSubmit(db) {
     const formReady = await waitForPaymentFormReady();
     if (!formReady) {
         return "Error: Required payment form elements not found!";
@@ -92,8 +92,9 @@ async function inputEnterPaymentFormAndSubmit() {
         return null;
     }
 
-    console.log("Sleeping...15 seconds before clicking Book Reservation");
-    const sleepCompleted = await sleep(15000);
+    const bookReservationDelayMilliseconds = await getEnterPaymentBookReservationDelayMilliseconds(db);
+    console.log(`Throttling...${formatDelayMillisecondsForLog(bookReservationDelayMilliseconds)} before clicking Book Reservation`);
+    const sleepCompleted = await sleep(bookReservationDelayMilliseconds);
     if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking the payment confirmation button.')) {
         return null;
     }

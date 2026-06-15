@@ -328,8 +328,6 @@ async function launch() {
 // Returns the first matching unprocessed record as { arrivalDate, departureDate }.
 // If no such records are found, returns null.
 async function getNextAvailabilityDate(db) {
-    console.log('Hello from getNextAvailabilityDate()');
-
     // Determine booking preference (consecutive or not)
     const scBookingPreferenceConstant = await getSiteConstant(db, 'BookingPreference');
     let scBookingPreference = scBookingPreferenceConstant?.value?.toLowerCase() || 'auto';
@@ -774,14 +772,13 @@ async function inputBookingReservationDetails(arrivalDate, departureDate, reserv
             typeof $(checkoutInput).datepicker === 'function';
 
         if (datepickerAvailable) {
+            // Rebuild datepickers so prior min/max constraints do not block the next availability record.
             if ($(checkinInput).hasClass("hasDatepicker")) {
-                console.log('Destroying checkin datepicker to override constraints...');
                 $(checkinInput).datepicker('destroy');
             }
             $(checkinInput).datepicker({ minDate: null, maxDate: null });
 
             if ($(checkoutInput).hasClass("hasDatepicker")) {
-                console.log('Destroying checkout datepicker to override constraints...');
                 $(checkoutInput).datepicker('destroy');
             }
             $(checkoutInput).datepicker({ minDate: null, maxDate: null });
@@ -836,7 +833,7 @@ async function inputBookingReservationDetails(arrivalDate, departureDate, reserv
 
         // Trigger step 2
         const chooseCampsiteDelayMilliseconds = await getReservationDetailsChooseCampsiteDelayMilliseconds(db);
-        console.log(`Throttling...${formatDelayMillisecondsForLog(chooseCampsiteDelayMilliseconds)}`);
+        console.log(`Throttling...${formatDelayMillisecondsForLog(chooseCampsiteDelayMilliseconds)} before clicking Choose Campsite`);
         const sleepCompleted = await sleep(chooseCampsiteDelayMilliseconds);
         if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before choosing a campsite.')) {
             return;

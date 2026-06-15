@@ -350,6 +350,13 @@ async function launch() {
             window.console.log('\nSearching page for the "Select Site" button');
             const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'none');
             if (isCampsiteAvailableResult.buttonFound) {
+                const selectSiteDelayMilliseconds = await getChooseCampsiteSelectSiteDelayMilliseconds(db);
+                console.log(`Throttling...${formatDelayMillisecondsForLog(selectSiteDelayMilliseconds)} before clicking Select Site`);
+                const selectSiteDelayCompleted = await sleep(selectSiteDelayMilliseconds);
+                if (!selectSiteDelayCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking Select Site.')) {
+                    return;
+                }
+
                 const selectSiteClickResult = await clickSelectSiteButtonWithRetry(
                     isCampsiteAvailableResult.selectButton,
                     isCampsiteAvailableResult.matchedSiteType
@@ -455,7 +462,7 @@ async function launch() {
  
        }else{
             const noSiteRedirectDelayMilliseconds = await getChooseCampsiteNoSiteRedirectDelayMilliseconds(db);
-            console.log(`Throttling...${formatDelayMillisecondsForLog(noSiteRedirectDelayMilliseconds)}`);
+            console.log(`Throttling...${formatDelayMillisecondsForLog(noSiteRedirectDelayMilliseconds)} before returning to edit reservation dates`);
             await sleep(noSiteRedirectDelayMilliseconds);
             if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
                 return;

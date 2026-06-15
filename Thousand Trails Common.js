@@ -13,6 +13,10 @@ const pushoverUrl = 'https://api.pushover.net/1/messages.json';
 const humanVerificationDefaultReloadMinutes = 60;
 const reservationDetailsChooseCampsiteDefaultDelaySeconds = 10;
 const chooseCampsiteNoSiteRedirectDefaultDelaySeconds = 10;
+const chooseCampsiteSelectSiteDefaultDelaySeconds = 45;
+const enterPaymentBookReservationDefaultDelaySeconds = 45;
+const memberLoginSubmitDefaultDelaySeconds = 45;
+const parksRedirectBookingDefaultDelaySeconds = 45;
 const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerificationLastNotification';
 const humanVerificationResumePollMillis = 3000;
 const availabilitySummaryNotificationSignatureConstant = 'LastAvailabilitySummaryNotificationSignature';
@@ -777,6 +781,42 @@ async function getChooseCampsiteNoSiteRedirectDelayMilliseconds(db) {
     );
 }
 
+async function getChooseCampsiteSelectSiteDelayMilliseconds(db) {
+    return await getConfiguredDelayMilliseconds(
+        db,
+        'ChooseCampsiteSelectSiteDelaySeconds',
+        'chooseCampsiteSelectSiteDelaySeconds',
+        chooseCampsiteSelectSiteDefaultDelaySeconds
+    );
+}
+
+async function getEnterPaymentBookReservationDelayMilliseconds(db) {
+    return await getConfiguredDelayMilliseconds(
+        db,
+        'EnterPaymentBookReservationDelaySeconds',
+        'enterPaymentBookReservationDelaySeconds',
+        enterPaymentBookReservationDefaultDelaySeconds
+    );
+}
+
+async function getMemberLoginSubmitDelayMilliseconds(db) {
+    return await getConfiguredDelayMilliseconds(
+        db,
+        'MemberLoginSubmitDelaySeconds',
+        'memberLoginSubmitDelaySeconds',
+        memberLoginSubmitDefaultDelaySeconds
+    );
+}
+
+async function getParksRedirectBookingDelayMilliseconds(db) {
+    return await getConfiguredDelayMilliseconds(
+        db,
+        'ParksRedirectBookingDelaySeconds',
+        'parksRedirectBookingDelaySeconds',
+        parksRedirectBookingDefaultDelaySeconds
+    );
+}
+
 async function getConfiguredDelayMilliseconds(db, siteConstantName, globalVariableName, defaultSeconds) {
     const configuredSeconds =
         parsePositiveNumber(getGlobalVariableValue(globalVariableName)) ||
@@ -1362,7 +1402,7 @@ async function availabilityCheckIntervalSleep(db) {
     }
 
     const processAvailabilityElapseTime = await getProcessAvailabilityElapseTime(db);
-    console.log(`Process Availability Elapse Time: ${processAvailabilityElapseTime} seconds`);
+    console.log(`Process Availability Elapse Time: ${formatThousandTrailsAutomationCountdown(processAvailabilityElapseTime * 1000)}`);
 
     const availabilityCheckIntervalInMillis = scAvailabilityCheckIntervalMinutes * 60 * 1000;
     const remainingTimeInMillis = availabilityCheckIntervalInMillis - (processAvailabilityElapseTime * 1000);

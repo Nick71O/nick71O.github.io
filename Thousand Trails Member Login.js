@@ -46,6 +46,42 @@ function getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables) {
   );
 }
 
+function getChooseCampsiteSelectSiteDelaySecondsValue(globalVariables) {
+  return getPositiveGlobalNumberValue(
+    globalVariables.chooseCampsiteSelectSiteDelaySeconds,
+    typeof chooseCampsiteSelectSiteDefaultDelaySeconds !== 'undefined'
+      ? chooseCampsiteSelectSiteDefaultDelaySeconds
+      : 45
+  );
+}
+
+function getEnterPaymentBookReservationDelaySecondsValue(globalVariables) {
+  return getPositiveGlobalNumberValue(
+    globalVariables.enterPaymentBookReservationDelaySeconds,
+    typeof enterPaymentBookReservationDefaultDelaySeconds !== 'undefined'
+      ? enterPaymentBookReservationDefaultDelaySeconds
+      : 45
+  );
+}
+
+function getMemberLoginSubmitDelaySecondsValue(globalVariables) {
+  return getPositiveGlobalNumberValue(
+    globalVariables.memberLoginSubmitDelaySeconds,
+    typeof memberLoginSubmitDefaultDelaySeconds !== 'undefined'
+      ? memberLoginSubmitDefaultDelaySeconds
+      : 45
+  );
+}
+
+function getParksRedirectBookingDelaySecondsValue(globalVariables) {
+  return getPositiveGlobalNumberValue(
+    globalVariables.parksRedirectBookingDelaySeconds,
+    typeof parksRedirectBookingDefaultDelaySeconds !== 'undefined'
+      ? parksRedirectBookingDefaultDelaySeconds
+      : 45
+  );
+}
+
 function initializeGlobalVariables(globalVariables) {
   // Process the received globalVariables object
   console.log('memberNumber: "' + maskSensitiveGlobalValue(globalVariables.memberNumber) + '"');
@@ -57,6 +93,10 @@ function initializeGlobalVariables(globalVariables) {
   console.log("humanVerificationReloadMinutes: " + globalVariables.humanVerificationReloadMinutes)
   console.log("reservationDetailsChooseCampsiteDelaySeconds: " + getReservationDetailsChooseCampsiteDelaySecondsValue(globalVariables));
   console.log("chooseCampsiteNoSiteRedirectDelaySeconds: " + getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables));
+  console.log("chooseCampsiteSelectSiteDelaySeconds: " + getChooseCampsiteSelectSiteDelaySecondsValue(globalVariables));
+  console.log("enterPaymentBookReservationDelaySeconds: " + getEnterPaymentBookReservationDelaySecondsValue(globalVariables));
+  console.log("memberLoginSubmitDelaySeconds: " + getMemberLoginSubmitDelaySecondsValue(globalVariables));
+  console.log("parksRedirectBookingDelaySeconds: " + getParksRedirectBookingDelaySecondsValue(globalVariables));
   console.log('reservationInputSiteType: "' + globalVariables.reservationInputSiteType + '"');
   console.log('reservationInputEquipmentType: "' + globalVariables.reservationInputEquipmentType + '"');
   console.log('reservationInputLength: "' + globalVariables.reservationInputLength + '"');
@@ -264,6 +304,10 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'HumanVerificationReloadMinutes', globalVariables.humanVerificationReloadMinutes || humanVerificationDefaultReloadMinutes);
     await addOrUpdateSiteConstant(db, 'ReservationDetailsChooseCampsiteDelaySeconds', getReservationDetailsChooseCampsiteDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'ChooseCampsiteNoSiteRedirectDelaySeconds', getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables));
+    await addOrUpdateSiteConstant(db, 'ChooseCampsiteSelectSiteDelaySeconds', getChooseCampsiteSelectSiteDelaySecondsValue(globalVariables));
+    await addOrUpdateSiteConstant(db, 'EnterPaymentBookReservationDelaySeconds', getEnterPaymentBookReservationDelaySecondsValue(globalVariables));
+    await addOrUpdateSiteConstant(db, 'MemberLoginSubmitDelaySeconds', getMemberLoginSubmitDelaySecondsValue(globalVariables));
+    await addOrUpdateSiteConstant(db, 'ParksRedirectBookingDelaySeconds', getParksRedirectBookingDelaySecondsValue(globalVariables));
     await addOrUpdateSiteConstant(db, 'ReservationInputSiteType', globalVariables.reservationInputSiteType);
     await addOrUpdateSiteConstant(db, 'ReservationInputEquipmentType', globalVariables.reservationInputEquipmentType);
     await addOrUpdateSiteConstant(db, 'ReservationInputLength', globalVariables.reservationInputLength);
@@ -359,7 +403,9 @@ async function launch() {
     console.error('Error performing operations:', error);
   }
 
-  await sleep(500);
+  const memberLoginSubmitDelayMilliseconds = await getMemberLoginSubmitDelayMilliseconds(db);
+  console.log(`Throttling...${formatDelayMillisecondsForLog(memberLoginSubmitDelayMilliseconds)} before clicking Login Submit`);
+  await sleep(memberLoginSubmitDelayMilliseconds);
   if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before submitting the login form.')) {
     return;
   }

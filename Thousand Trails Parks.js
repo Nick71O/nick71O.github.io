@@ -54,7 +54,7 @@ async function launch() {
 
         await logSiteConstants(db);
 
-        await redirectBookingPage();
+        await redirectBookingPage(db);
     } catch (error) {
         console.error('FAILED to redirect to the Campgrounds Booking Page. siteConstants in the IndexedDB was not loaded or blank', error);
         await sleep(5000);
@@ -67,13 +67,15 @@ async function launch() {
 }
 
 
-async function redirectBookingPage() {
+async function redirectBookingPage(db) {
     var bookingQueryString = "?robot=78"
     var bookingURL = baseURL + "/reserve/index" + bookingQueryString
 
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
-    await sleep(500);
+    const parksRedirectDelayMilliseconds = await getParksRedirectBookingDelayMilliseconds(db);
+    console.log(`Throttling...${formatDelayMillisecondsForLog(parksRedirectDelayMilliseconds)} before selecting campground`);
+    await sleep(parksRedirectDelayMilliseconds);
     if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
         return;
     }
