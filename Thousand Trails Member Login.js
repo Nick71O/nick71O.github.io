@@ -91,12 +91,12 @@ function initializeGlobalVariables(globalVariables) {
   console.log("minimumConsecutiveDays: " + globalVariables.minimumConsecutiveDays);
   console.log("availabilityCheckIntervalMinutes: " + globalVariables.availabilityCheckIntervalMinutes)
   console.log("humanVerificationReloadMinutes: " + globalVariables.humanVerificationReloadMinutes)
+  console.log("memberLoginSubmitDelaySeconds: " + getMemberLoginSubmitDelaySecondsValue(globalVariables));
+  console.log("parksRedirectBookingDelaySeconds: " + getParksRedirectBookingDelaySecondsValue(globalVariables));
   console.log("reservationDetailsChooseCampsiteDelaySeconds: " + getReservationDetailsChooseCampsiteDelaySecondsValue(globalVariables));
   console.log("chooseCampsiteNoSiteRedirectDelaySeconds: " + getChooseCampsiteNoSiteRedirectDelaySecondsValue(globalVariables));
   console.log("chooseCampsiteSelectSiteDelaySeconds: " + getChooseCampsiteSelectSiteDelaySecondsValue(globalVariables));
   console.log("enterPaymentBookReservationDelaySeconds: " + getEnterPaymentBookReservationDelaySecondsValue(globalVariables));
-  console.log("memberLoginSubmitDelaySeconds: " + getMemberLoginSubmitDelaySecondsValue(globalVariables));
-  console.log("parksRedirectBookingDelaySeconds: " + getParksRedirectBookingDelaySecondsValue(globalVariables));
   console.log('reservationInputSiteType: "' + globalVariables.reservationInputSiteType + '"');
   console.log('reservationInputEquipmentType: "' + globalVariables.reservationInputEquipmentType + '"');
   console.log('reservationInputLength: "' + globalVariables.reservationInputLength + '"');
