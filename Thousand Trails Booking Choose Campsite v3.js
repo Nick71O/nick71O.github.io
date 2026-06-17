@@ -373,10 +373,11 @@ async function launch() {
                     return;
                 }
 
-                if (selectSiteClickResult !== 'accepted') {
+                const selectSiteClickWasHandled = selectSiteClickResult === 'accepted' || selectSiteClickResult === 'reservation-error';
+                if (!selectSiteClickWasHandled) {
                     console.warn('Select Site button did not respond after retries. Reloading the campsite page for a clean retry.');
-                    console.log("Sleeping...5 seconds before reloading the campsite page after Select Site retry failure");
-                    await sleep(5000);
+                    console.log("Sleeping...25 seconds before reloading the campsite page after Select Site retry failure");
+                    await sleep(25000);
                     if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the campsite page.')) {
                         return;
                     }
@@ -384,8 +385,12 @@ async function launch() {
                     return;
                 }
 
-                clickCount = clickCount + 1;
-                console.log(`Selected "${isCampsiteAvailableResult.matchedSiteType}" Campsite (click count: ${clickCount})`);
+                if (selectSiteClickResult === 'accepted') {
+                    clickCount = clickCount + 1;
+                    console.log(`Selected "${isCampsiteAvailableResult.matchedSiteType}" Campsite (click count: ${clickCount})`);
+                } else {
+                    console.warn(`Select Site returned a reservation error for "${isCampsiteAvailableResult.matchedSiteType}". Selection was not counted.`);
+                }
  
                 // Calculate the number of nights
                 var oneDay = 24 * 60 * 60 * 1000; // hours * minutes * seconds * milliseconds
@@ -733,6 +738,11 @@ async function clickSelectSiteButtonWithRetry(selectButton, matchedSiteType) {
 
         if (responseState === 'human-verification') {
             return 'human-verification';
+        }
+
+        if (responseState === 'reservation-error') {
+            console.log(`Select Site click response detected: ${responseState}.`);
+            return responseState;
         }
 
         if (responseState !== 'no-response') {
