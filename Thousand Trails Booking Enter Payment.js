@@ -109,7 +109,7 @@ async function inputEnterPaymentFormAndSubmit(db) {
     }
 
     const bookReservationDelayMilliseconds = await getEnterPaymentBookReservationDelayMilliseconds(db);
-    const maxBookReservationAttempts = 5;
+    const maxBookReservationAttempts = 8;
 
     for (let attempt = 1; attempt <= maxBookReservationAttempts; attempt++) {
         console.log(`Throttling...${formatDelayMillisecondsForLog(bookReservationDelayMilliseconds)} before clicking Book Reservation (attempt ${attempt}/${maxBookReservationAttempts})`);

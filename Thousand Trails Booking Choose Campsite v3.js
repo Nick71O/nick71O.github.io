@@ -428,8 +428,9 @@ async function launch() {
  
                 if (clickCount <= 49) {
                     getTimestamp();
-                    console.log("Sleeping...15 seconds");
-                    await sleep(15000);
+                    const step3RedirectDelayMilliseconds = 15000;
+                    console.log(`Throttling...${formatDelayMillisecondsForLog(step3RedirectDelayMilliseconds)} before redirecting to Step 3 - Enter Payment`);
+                    await sleep(step3RedirectDelayMilliseconds);
                     if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to payment.')) {
                         return;
                     }
@@ -710,7 +711,7 @@ function getSelectableCampsiteOptions() {
 }
 
 async function clickSelectSiteButtonWithRetry(selectButton, matchedSiteType) {
-    const maxAttempts = 5;
+    const maxAttempts = 8;
     const responseTimeoutMillis = 10000;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
