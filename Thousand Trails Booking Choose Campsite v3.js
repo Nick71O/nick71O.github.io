@@ -374,6 +374,7 @@ async function launch() {
 
                 if (selectSiteClickResult !== 'accepted') {
                     console.warn('Select Site button did not respond after retries. Reloading the campsite page for a clean retry.');
+                    console.log("Sleeping...5 seconds before reloading the campsite page after Select Site retry failure");
                     await sleep(5000);
                     if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the campsite page.')) {
                         return;

@@ -65,6 +65,7 @@ async function launch() {
         await redirectBookingPage(db);
     } catch (error) {
         console.error('FAILED to redirect to the Campgrounds Booking Page. siteConstants in the IndexedDB was not loaded or blank', error);
+        console.log("Sleeping...5 seconds before reloading the parks page after redirect error");
         await sleep(5000);
         if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the parks page.')) {
             return;

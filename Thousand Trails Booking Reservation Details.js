@@ -312,6 +312,7 @@ async function launch() {
             await handleHumanVerificationIfPresent(db);
             return;
         }
+        console.log("Sleeping...5 seconds before reloading reservation details after error");
         await sleep(5000);
         if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
             return;
