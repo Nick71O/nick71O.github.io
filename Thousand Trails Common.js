@@ -1276,7 +1276,7 @@ async function pushUnconfiguredSelectableSiteTypesMessage(db, siteTypes) {
     const lastSignature = await getSiteConstantValue(db, unconfiguredSelectableSiteTypesNotificationSignatureConstant);
 
     if (lastSignature === hashedSignature) {
-        console.log('Skipping duplicate unconfigured selectable site type critical notification.');
+        console.log('Skipping duplicate unconfigured selectable site type notification.');
         return;
     }
 
@@ -1301,11 +1301,8 @@ async function pushUnconfiguredSelectableSiteTypesMessage(db, siteTypes) {
         pushoverKeys.apiTokenAvailability,
         pushoverUrl,
         message,
-        'siren',
-        2,
-        '',
-        60,
-        3600
+        'echo',
+        1
     );
 
     if (sent) {
