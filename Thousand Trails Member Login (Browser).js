@@ -20,11 +20,31 @@ var globalVariables = {
     reservationInputAdults: "2",
     reservationInputChildren: "3",
     reservationInputPets: "0",
-    desiredSiteTypes: [
-        'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In',
-        'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through',
-        'Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through Accessible'
-    ],   
+    campgroundName: "Lake & Shore",
+    desiredSiteTypesByCampground: {
+        "Lake & Shore": [
+            "Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In",
+            "Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through"
+        ],
+        "Moody Beach": [
+            "Member Deluxe RV Site - 30 Amp, Full Hook-Ups, Back-In",
+            "Member Deluxe RV Site - 30 Amp, Full Hook-Ups, Parallel",
+            "Member Deluxe RV Site - 50 Amp, Full Hook-Ups, Back-In"
+        ],
+        "Gateway to Cape Cod": [
+            "Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In",
+            "Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Pull Through",
+            "M Prem - 30/50Amp W/E/S PT",
+            "M H Prem - 30/50Amp W/E/S PT"
+        ],
+        "Rondout Valley": [
+            "Member Deluxe RV Site - 30/50 Amp, Full Hook-Ups, Back-In",
+            "Member Standard RV Site - 30/50 Amp, Water/Electric Hook-Ups, Back-In",
+            "M Dlx RV-30/50Amp W/E BI",
+            "M Stand RV-30/50Amp W/E/S BI",
+            "M Prem RV-30/50Amp W/E/S BI"
+        ]
+    },
     desiredArrivalDate: "06/27/2024",  
     desiredDepartureDate: "07/15/2024",
     desiredDatesArray: [

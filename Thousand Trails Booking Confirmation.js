@@ -278,7 +278,7 @@ async function launch() {
         // Call the sendPushMessage function with the required parameters
         await pushSiteBookedMessage(db, composeMessageToSend('step4', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
             scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
-            scBookedSiteType, null, null));
+            scBookedSiteType, null, null, await getConfiguredCampgroundName(db)));
 
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
@@ -301,7 +301,7 @@ async function launch() {
         }
 
         //you do need to change the type of searching...
-        await redirectBookingPage();
+        await redirectBookingPage(db);
         return;
 
     } catch (error) {
@@ -494,9 +494,12 @@ async function addBookedDatesToBookedDatesArray(db, bookedDatesArrayConstant, bo
     }
 }
 
-async function redirectBookingPage() {
-    var bookingQueryString = "?robot=78"
-    var bookingURL = baseURL + "/reserve/index" + bookingQueryString
+async function redirectBookingPage(db) {
+    var bookingURL = await getCampgroundEditReservationUrl(db);
+    if (!bookingURL) {
+        console.error('Campground Edit Reservation URL is missing. Cannot return to edit reservation dates.');
+        return;
+    }
 
     if (!isThousandTrailsAutomationRunning()) {
         console.log('Booking confirmation automation stopped before redirecting to the booking page.');

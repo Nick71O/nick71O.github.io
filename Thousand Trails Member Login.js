@@ -82,6 +82,24 @@ function getParksRedirectBookingDelaySecondsValue(globalVariables) {
   );
 }
 
+function getCampgroundNameValue(globalVariables) {
+  return String(globalVariables.campgroundName || '').trim();
+}
+
+function normalizeCampgroundNameForLookup(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function getDesiredSiteTypesForCampground(globalVariables, campgroundName) {
+  const desiredSiteTypesByCampground = globalVariables.desiredSiteTypesByCampground || {};
+  const normalizedCampgroundName = normalizeCampgroundNameForLookup(campgroundName);
+  const matchingCampgroundName = Object.keys(desiredSiteTypesByCampground).find(
+    name => normalizeCampgroundNameForLookup(name) === normalizedCampgroundName
+  );
+
+  return matchingCampgroundName ? desiredSiteTypesByCampground[matchingCampgroundName] : [];
+}
+
 function initializeGlobalVariables(globalVariables) {
   // Process the received globalVariables object
   console.log('memberNumber: "' + maskSensitiveGlobalValue(globalVariables.memberNumber) + '"');
@@ -104,10 +122,12 @@ function initializeGlobalVariables(globalVariables) {
   console.log('reservationInputAdults: "' + globalVariables.reservationInputAdults + '"');
   console.log('reservationInputChildren: "' + globalVariables.reservationInputChildren + '"');
   console.log('reservationInputPets: "' + globalVariables.reservationInputPets + '"');
+  const campgroundName = getCampgroundNameValue(globalVariables);
+  console.log('campgroundName: "' + campgroundName + '"');
+  console.log("desiredSiteTypes: " + getDesiredSiteTypesForCampground(globalVariables, campgroundName).join(", "));
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
   console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
   console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));
-  console.log("desiredSiteTypes: " + globalVariables.desiredSiteTypes.join(", "));
   console.log("bookedArrivalDate: " + globalVariables.bookedArrivalDate);
   console.log("bookedDepartureDate: " + globalVariables.bookedDepartureDate);
   console.log("bookedDatesArray: " + globalVariables.bookedDatesArray.join(", "));
@@ -196,7 +216,7 @@ function getLoginSubmitButtons() {
   return buttons;
 }
 
-async function click() {
+function fillLoginForm() {
   const memberid = document.getElementById('memberid');
   const pin = document.getElementById('pin');
 
@@ -207,7 +227,10 @@ async function click() {
 
   memberid.value = globalVariables.memberNumber;
   pin.value = globalVariables.PIN;
+  return true;
+}
 
+function clickLoginSubmitButton() {
   $elements = getLoginSubmitButtons();
   if (!$elements.length) {
     console.error('Login submit button was not found.');
@@ -294,6 +317,25 @@ async function launch() {
       return;
     }
 
+    const campgroundName = getCampgroundNameValue(globalVariables);
+    if (!campgroundName) {
+      console.error('campgroundName global variable is required. Automation stopped to avoid booking the wrong campground.');
+      stopThousandTrailsAutomation(
+        'Missing Campground Name',
+        'Thousand Trails automation stopped. campgroundName is required.'
+      );
+      return;
+    }
+    const desiredSiteTypes = getDesiredSiteTypesForCampground(globalVariables, campgroundName);
+    if (!Array.isArray(desiredSiteTypes) || desiredSiteTypes.length === 0) {
+      console.error(`desiredSiteTypesByCampground must include at least one site type for "${campgroundName}". Automation stopped to avoid booking the wrong site type.`);
+      stopThousandTrailsAutomation(
+        'Missing Desired Site Types',
+        `Thousand Trails automation stopped. desiredSiteTypesByCampground is missing site types for "${campgroundName}".`
+      );
+      return;
+    }
+
     await deleteAllSiteConstants(db);
     await addOrUpdateSiteConstant(db, 'BookingPreference', globalVariables.bookingPreference);
     await addOrUpdateSiteConstant(db, 'BookingAvailabilityMapCheck', globalVariables.bookingAvailabilityMapCheck);
@@ -315,10 +357,11 @@ async function launch() {
     await addOrUpdateSiteConstant(db, 'ReservationInputAdults', globalVariables.reservationInputAdults);
     await addOrUpdateSiteConstant(db, 'ReservationInputChildren', globalVariables.reservationInputChildren);
     await addOrUpdateSiteConstant(db, 'ReservationInputPets', globalVariables.reservationInputPets);
+    await addOrUpdateSiteConstant(db, 'CampgroundName', campgroundName);
+    await addOrUpdateSiteConstant(db, 'DesiredSiteTypes', JSON.stringify(desiredSiteTypes));
     await addOrUpdateSiteConstant(db, 'DesiredArrivalDate', globalVariables.desiredArrivalDate);
     await addOrUpdateSiteConstant(db, 'DesiredDepartureDate', globalVariables.desiredDepartureDate);
     await addOrUpdateSiteConstant(db, 'DesiredDatesArray', JSON.stringify(globalVariables.desiredDatesArray));
-    await addOrUpdateSiteConstant(db, 'DesiredSiteTypes', JSON.stringify(globalVariables.desiredSiteTypes));
     await addOrUpdateSiteConstant(db, 'BookedArrivalDate', globalVariables.bookedArrivalDate);
     await addOrUpdateSiteConstant(db, 'BookedDepartureDate', globalVariables.bookedDepartureDate);
     await addOrUpdateSiteConstant(db, 'BookedDatesArray', JSON.stringify(globalVariables.bookedDatesArray));
@@ -403,13 +446,25 @@ async function launch() {
     console.error('Error performing operations:', error);
   }
 
+  const loginFormFilled = fillLoginForm();
+  if (!loginFormFilled) {
+    console.log("Sleeping...30 seconds");
+    await sleep(30000);
+    if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading the login page.')) {
+      return;
+    }
+    console.log("Reloading Page");
+    window.location.reload();
+    return;
+  }
+
   const memberLoginSubmitDelayMilliseconds = await getMemberLoginSubmitDelayMilliseconds(db);
   console.log(`Throttling...${formatDelayMillisecondsForLog(memberLoginSubmitDelayMilliseconds)} before clicking Login Submit`);
   await sleep(memberLoginSubmitDelayMilliseconds);
   if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before submitting the login form.')) {
     return;
   }
-  const submitted = await click();
+  const submitted = clickLoginSubmitButton();
   if (!submitted) {
     console.log("Sleeping...30 seconds");
     await sleep(30000);

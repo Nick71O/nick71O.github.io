@@ -10,16 +10,18 @@ const callCenterHours = {
 const baseURL = "https://members.thousandtrails.com"
 // Pushover API endpoint for sending messages
 const pushoverUrl = 'https://api.pushover.net/1/messages.json';
-const humanVerificationDefaultReloadMinutes = 60;
-const reservationDetailsChooseCampsiteDefaultDelaySeconds = 10;
-const chooseCampsiteNoSiteRedirectDefaultDelaySeconds = 10;
-const chooseCampsiteSelectSiteDefaultDelaySeconds = 45;
+const pushoverTimeoutMillis = 10000;
+const humanVerificationDefaultReloadMinutes = 65;
+const memberLoginSubmitDefaultDelaySeconds = 10;
+const parksRedirectBookingDefaultDelaySeconds = 15;
+const reservationDetailsChooseCampsiteDefaultDelaySeconds = 35;
+const chooseCampsiteNoSiteRedirectDefaultDelaySeconds = 25;
+const chooseCampsiteSelectSiteDefaultDelaySeconds = 25;
 const enterPaymentBookReservationDefaultDelaySeconds = 45;
-const memberLoginSubmitDefaultDelaySeconds = 45;
-const parksRedirectBookingDefaultDelaySeconds = 45;
 const humanVerificationNotificationStorageKey = 'ThousandTrailsHumanVerificationLastNotification';
 const humanVerificationResumePollMillis = 3000;
 const availabilitySummaryNotificationSignatureConstant = 'LastAvailabilitySummaryNotificationSignature';
+const unconfiguredSelectableSiteTypesNotificationSignatureConstant = 'LastUnconfiguredSelectableSiteTypesNotificationSignature';
 const thousandTrailsAutomationStorageKey = 'ThousandTrailsAutomationRunState';
 const humanVerificationNotificationControl = window.thousandTrailsHumanVerificationNotificationControl || {
     sentForPage: false,
@@ -699,7 +701,7 @@ async function pushHumanVerificationMessage(db, reloadMinutes, reloadMillis) {
         }
 
         const message = [
-            'Thousand Trails - Lake & Shore',
+            await getConfiguredCampgroundNotificationTitle(db),
             '<b>Human verification required.</b>',
             '\nWaiting for manual input.',
             '\nAutomation will resume after verification clears.',
@@ -726,6 +728,24 @@ async function getHumanVerificationPushoverKeys(db) {
     }
 
     return { userKey, apiToken };
+}
+
+async function getAvailabilityPushoverKeys(db) {
+    const userKey = await getPushoverValue(db, 'PushoverUserKey', 'pushoverUserKey');
+    const apiTokenAvailability = await getPushoverValue(db, 'PushoverApiTokenAvailability', 'pushoverApiTokenAvailability');
+
+    if (!userKey) {
+        console.error('Error: PushoverUserKey is null or blank.');
+    }
+    if (!apiTokenAvailability) {
+        console.error('Error: PushoverApiTokenAvailability is null or blank.');
+    }
+
+    if (!userKey || !apiTokenAvailability) {
+        return null;
+    }
+
+    return { userKey, apiTokenAvailability };
 }
 
 async function getPushoverValue(db, siteConstantName, globalVariableName) {
@@ -761,6 +781,85 @@ function getGlobalVariableValue(name) {
 function parsePositiveNumber(value) {
     const parsed = Number(value);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+async function getConfiguredCampgroundName(db) {
+    return getGlobalVariableValue('campgroundName') ||
+        await getSiteConstantValue(db, 'CampgroundName');
+}
+
+async function getConfiguredCampgroundUrl(db) {
+    return await getSiteConstantValue(db, 'CampgroundUrl');
+}
+
+async function getCampgroundBookingUrl(db) {
+    const storedBookingUrl = await getSiteConstantValue(db, 'CampgroundBookingUrl');
+
+    if (storedBookingUrl) {
+        return normalizeCampgroundBookingUrl(storedBookingUrl);
+    }
+
+    const campgroundUrl = await getConfiguredCampgroundUrl(db);
+
+    const bookingUrl = getCampgroundBookingUrlFromDetailsUrl(campgroundUrl);
+    if (!bookingUrl) {
+        console.error('Campground booking URL is not available. Visit the parks page first so the booking link can be discovered.');
+    }
+
+    return bookingUrl;
+}
+
+async function getCampgroundEditReservationUrl(db) {
+    const storedEditReservationUrl = await getSiteConstantValue(db, 'CampgroundEditReservationUrl');
+
+    if (storedEditReservationUrl) {
+        return normalizeCampgroundBookingUrl(storedEditReservationUrl);
+    }
+
+    return await getCampgroundBookingUrl(db);
+}
+
+function getCampgroundBookingUrlFromDetailsUrl(campgroundUrl) {
+    const robotId = getCampgroundRobotIdFromUrl(campgroundUrl);
+
+    if (!robotId) {
+        return '';
+    }
+
+    return `${baseURL}/reserve/index?robot=${encodeURIComponent(robotId)}`;
+}
+
+function getCampgroundRobotIdFromUrl(campgroundUrl) {
+    try {
+        const detailsUrl = new URL(campgroundUrl, 'https://thousandtrails.com');
+        return detailsUrl.searchParams.get('robot_id') || detailsUrl.searchParams.get('robot') || '';
+    } catch (error) {
+        console.error('Unable to get campground robot ID from campground URL:', error);
+        return '';
+    }
+}
+
+function normalizeCampgroundBookingUrl(bookingUrl) {
+    if (!String(bookingUrl || '').trim()) {
+        return '';
+    }
+
+    try {
+        return new URL(bookingUrl, baseURL).href;
+    } catch (error) {
+        console.error('Unable to normalize campground booking URL:', error);
+        return '';
+    }
+}
+
+function getCampgroundNotificationTitle(campgroundName) {
+    return campgroundName
+        ? `Thousand Trails - ${campgroundName}`
+        : 'Thousand Trails';
+}
+
+async function getConfiguredCampgroundNotificationTitle(db) {
+    return getCampgroundNotificationTitle(await getConfiguredCampgroundName(db));
 }
 
 async function getReservationDetailsChooseCampsiteDelayMilliseconds(db) {
@@ -995,7 +1094,7 @@ async function pushSiteAvailabilityMessage(db, message) {
         return;
     }
 
-    const pushoverKeys = await getPushoverKeys(db);
+    const pushoverKeys = await getAvailabilityPushoverKeys(db);
     if (pushoverKeys) {
         const sent = await sendPushMessage(pushoverKeys.userKey, pushoverKeys.apiTokenAvailability, pushoverUrl, message, '', -1);
         if (sent) {
@@ -1160,8 +1259,70 @@ async function pushSiteBookedMessage(db, message) {
     }
 }
 
+async function pushUnconfiguredSelectableSiteTypesMessage(db, siteTypes, arrivalDate, departureDate) {
+    const uniqueSiteTypes = Array.from(new Set((siteTypes || [])
+        .map(siteType => String(siteType || '').replace(/\s+/g, ' ').trim())
+        .filter(Boolean)));
+
+    if (uniqueSiteTypes.length === 0) {
+        return;
+    }
+
+    const campgroundName = await getConfiguredCampgroundName(db);
+    const signatureSiteTypes = [...uniqueSiteTypes].sort((a, b) => a.localeCompare(b));
+    const signature = [
+        campgroundName,
+        arrivalDate || '',
+        departureDate || '',
+        ...signatureSiteTypes
+    ].join('|');
+    const hashedSignature = `fnv1a:${hashStringFNV1a(signature)}`;
+    const lastSignature = await getSiteConstantValue(db, unconfiguredSelectableSiteTypesNotificationSignatureConstant);
+
+    if (lastSignature === hashedSignature) {
+        console.log('Skipping duplicate unconfigured selectable site type critical notification.');
+        return;
+    }
+
+    const pushoverKeys = await getAvailabilityPushoverKeys(db);
+    if (!pushoverKeys) {
+        return;
+    }
+
+    const dateLine = arrivalDate && departureDate
+        ? `\nDates: ${escapeHtml(arrivalDate)} - ${escapeHtml(departureDate)}`
+        : '';
+    const siteTypeLines = uniqueSiteTypes
+        .map(siteType => `- ${escapeHtml(siteType)}`)
+        .join('\n');
+    const message = [
+        await getConfiguredCampgroundNotificationTitle(db),
+        '<b>Unconfigured selectable site type found.</b>',
+        dateLine,
+        '\nSelectable site type(s) not in desiredSiteTypesByCampground:',
+        siteTypeLines,
+        '\nAutomation will continue normally.'
+    ].filter(Boolean).join('\n');
+
+    const sent = await sendPushMessage(
+        pushoverKeys.userKey,
+        pushoverKeys.apiTokenAvailability,
+        pushoverUrl,
+        message,
+        'siren',
+        2,
+        '',
+        60,
+        3600
+    );
+
+    if (sent) {
+        await addOrUpdateSiteConstant(db, unconfiguredSelectableSiteTypesNotificationSignatureConstant, hashedSignature);
+    }
+}
+
 // Function to send a message using Pushover API
-async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = '', priority = '', ttl = '') {
+async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = '', priority = '', ttl = '', retry = '', expire = '', timeoutMillis = pushoverTimeoutMillis) {
     //const ttl = 3600; // TTL in seconds (1 hour)
     try {
         // Message data to send
@@ -1174,9 +1335,20 @@ async function sendPushMessage(userKey, apiToken, pushoverUrl, message, sound = 
             ttl: ttl,
             html: 1
         };
+        if (retry !== '') {
+            messageData.retry = retry;
+        }
+        if (expire !== '') {
+            messageData.expire = expire;
+        }
+
+        const axiosConfig = {};
+        if (timeoutMillis !== '') {
+            axiosConfig.timeout = timeoutMillis;
+        }
 
         // Send a POST request to Pushover API using Axios
-        const response = await axios.post(pushoverUrl, messageData);
+        const response = await axios.post(pushoverUrl, messageData, axiosConfig);
         console.log('Message sent:', response.data);
         return true;
     } catch (error) {
@@ -1200,11 +1372,12 @@ function composeMessageToSend(
     scBookedDatesArray,
     scBookedSiteType,
     availableDateArray,
-    reservationError
+    reservationError,
+    campgroundName
 ) {
     const messageBuilder = [];
 
-    messageBuilder.push('Thousand Trails - Lake & Shore');
+    messageBuilder.push(getCampgroundNotificationTitle(campgroundName));
     let availabileDatesTitle = 'Available Dates to Book';
 
     // Switch to handle different message types

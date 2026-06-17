@@ -255,7 +255,7 @@ async function launch() {
             try {
                 await pushSiteAvailabilityMessage(db, composeMessageToSend('step2', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
                     scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray,
-                    scBookedSiteType, availableDates, null));
+                    scBookedSiteType, availableDates, null, await getConfiguredCampgroundName(db)));
             } catch (error) {
                 console.error('Error sending site availability push message:', error);
             }

@@ -53,6 +53,14 @@ async function launch() {
         }
 
         await logSiteConstants(db);
+        const campgroundBookingUrl = await updateConfiguredCampgroundUrls(db);
+        if (!campgroundBookingUrl) {
+            stopThousandTrailsAutomation(
+                'Campground URL Not Found',
+                'Thousand Trails automation stopped. Campground booking URL could not be discovered from the parks page.'
+            );
+            return;
+        }
 
         await redirectBookingPage(db);
     } catch (error) {
@@ -68,8 +76,11 @@ async function launch() {
 
 
 async function redirectBookingPage(db) {
-    var bookingQueryString = "?robot=78"
-    var bookingURL = baseURL + "/reserve/index" + bookingQueryString
+    var bookingURL = await getCampgroundBookingUrl(db);
+    if (!bookingURL) {
+        console.error('Campground booking URL is missing. Cannot redirect to the Campgrounds Booking Page.');
+        return;
+    }
 
     console.log("Redirecting to the Campgrounds Booking Page");
     console.log(bookingURL);
@@ -80,4 +91,67 @@ async function redirectBookingPage(db) {
         return;
     }
     window.location.replace(bookingURL);
+}
+
+async function updateConfiguredCampgroundUrls(db) {
+    const campgroundName = await getConfiguredCampgroundName(db);
+    if (!campgroundName) {
+        console.error('CampgroundName SiteConstant is required. Cannot discover campground URLs.');
+        await clearConfiguredCampgroundUrls(db);
+        return '';
+    }
+
+    const campgroundLink = findCampgroundLink(campgroundName);
+
+    if (!campgroundLink) {
+        console.error(`Campground link not found for "${campgroundName}". Cannot discover campground booking URL.`);
+        await clearConfiguredCampgroundUrls(db);
+        return '';
+    }
+
+    const bookingLink = campgroundLink.closest('li')?.querySelector('a.btn-book[href]');
+    if (!bookingLink) {
+        console.error(`Booking link not found for "${campgroundName}". Cannot discover campground booking URL.`);
+        await clearConfiguredCampgroundUrls(db);
+        return '';
+    }
+
+    const campgroundUrl = normalizeCampgroundHref(campgroundLink.getAttribute('href'));
+    const bookingUrl = normalizeCampgroundBookingUrl(bookingLink.getAttribute('href'));
+    console.log(`Campground: ${campgroundName}`);
+    console.log(`Campground URL: ${campgroundUrl}`);
+    console.log(`Campground Booking URL: ${bookingUrl}`);
+    await addOrUpdateSiteConstant(db, 'CampgroundUrl', campgroundUrl);
+    await addOrUpdateSiteConstant(db, 'CampgroundBookingUrl', bookingUrl);
+    await addOrUpdateSiteConstant(db, 'CampgroundEditReservationUrl', '');
+    return bookingUrl;
+}
+
+async function clearConfiguredCampgroundUrls(db) {
+    await addOrUpdateSiteConstant(db, 'CampgroundUrl', '');
+    await addOrUpdateSiteConstant(db, 'CampgroundBookingUrl', '');
+    await addOrUpdateSiteConstant(db, 'CampgroundEditReservationUrl', '');
+}
+
+function findCampgroundLink(campgroundName) {
+    const normalizedName = normalizeCampgroundText(campgroundName);
+    const campgroundLinks = Array.from(document.querySelectorAll('a[href]'));
+
+    return campgroundLinks.find(link => {
+        const linkName = normalizeCampgroundText(link.textContent);
+
+        return linkName === normalizedName;
+    });
+}
+
+function normalizeCampgroundText(value) {
+    return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function normalizeCampgroundHref(value) {
+    try {
+        return new URL(value, 'https://thousandtrails.com').href;
+    } catch (error) {
+        return String(value || '').trim();
+    }
 }

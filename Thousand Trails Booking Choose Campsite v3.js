@@ -67,6 +67,7 @@ async function launch() {
 
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
+        await updateCampgroundEditReservationUrl(db);
   
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
@@ -147,6 +148,7 @@ async function launch() {
         if (isValidConstant(scDesiredSiteTypesConstant)) {
             scDesiredSiteTypes = JSON.parse(scDesiredSiteTypesConstant.value);
             console.log('SiteConstant Desired Site Types: ' + scDesiredSiteTypes);
+            await notifyIfUnconfiguredSelectableSiteTypesFound(db, scDesiredSiteTypes);
         }
  
         if (isValidConstant(scBookedArrivalConstant) && isValidConstant(scBookedDepartureConstant)) {
@@ -340,7 +342,7 @@ async function launch() {
             if (pageArrival !== scAvailableArrivalDate || pageDeparture !== scAvailableDepartureDate) {
                 console.error(`Available date mismatch. Stored: ${scAvailableArrivalDate} - ${scAvailableDepartureDate}; page: ${pageArrival || 'unknown'} - ${pageDeparture || 'unknown'}. Resetting before selecting a site.`);
                 await resetBookingAvailabilityProcess(db);
-                await redirectBookingPage();
+                await redirectBookingPage(db);
                 return;
             }
 
@@ -400,7 +402,7 @@ async function launch() {
                 try {
                     await pushBookSiteMessage(db, composeMessageToSend('step3', scBookingPreference, scDesiredArrivalDate, scDesiredDepartureDate, scDesiredDatesArray,
                      scAvailableArrivalDate, scAvailableDepartureDate, scAvailableSiteType, scBookedArrivalDate, scBookedDepartureDate, scBookedDatesArray, 
-                     scBookedSiteType, null, reservationError));
+                     scBookedSiteType, null, reservationError, await getConfiguredCampgroundName(db)));
                 } catch (error) {
                     console.error('Error sending booking push message:', error);
                 }
@@ -467,7 +469,7 @@ async function launch() {
             if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
                 return;
             }
-            await redirectBookingPage();
+            await redirectBookingPage(db);
        }
 
 
@@ -601,7 +603,7 @@ async function updateAvailabilityRecord(db, record, campsiteAvailable, checkedTi
  * @returns {{ buttonFound: boolean, matchedSiteType: string|null, selectButton: Element|null }}
  */
 function isCampsiteAvailable(scDesiredSiteTypes, clickMode = 'none') {
-    const siteTitles = document.querySelectorAll('.site-title.desktop');
+    const selectableSites = getSelectableCampsiteOptions();
     let buttonFound = false;
     let matchedSiteType = null;
     let selectButton = null;
@@ -611,44 +613,115 @@ function isCampsiteAvailable(scDesiredSiteTypes, clickMode = 'none') {
         return { buttonFound, matchedSiteType, selectButton };
     }
 
-    for (let title of siteTitles) {
-        const text = title.textContent.trim();
+    for (let desired of scDesiredSiteTypes) {
+        for (let selectableSite of selectableSites) {
+            if (siteTypesMatch(selectableSite.siteType, desired)) {
+                selectButton = selectableSite.selectButton;
+                buttonFound = true;
+                matchedSiteType = desired;
 
-        for (let desired of scDesiredSiteTypes) {
-            if (text.startsWith(desired)) {
-                const site = title.closest('.site');
-                if (!site) {
-                    console.warn(`Matched "${desired}" title, but no parent .site container was found.`);
-                    continue;
-                }
-
-                selectButton = site.querySelector('.select-site');
-
-                if (selectButton) {
-                    buttonFound = true;
-                    matchedSiteType = desired;
-
-                    if (clickMode === 'once') {
-                        console.log(`Clicking "${desired}" Select Site button...`);
-                        selectButton.click();
-                    } else if (clickMode === 'rapid') {
-                        console.log(`Rapid-clicking "${desired}" Select Site button...`);
-                        for (let i = 0; i < 20; i++) {
-                            try {
-                                selectButton.click();
-                            } catch (e) {
-                                console.error(`Click #${i + 1} failed:`, e);
-                            }
+                if (clickMode === 'once') {
+                    console.log(`Clicking "${desired}" Select Site button...`);
+                    selectButton.click();
+                } else if (clickMode === 'rapid') {
+                    console.log(`Rapid-clicking "${desired}" Select Site button...`);
+                    for (let i = 0; i < 20; i++) {
+                        try {
+                            selectButton.click();
+                        } catch (e) {
+                            console.error(`Click #${i + 1} failed:`, e);
                         }
                     }
-
-                    return { buttonFound, matchedSiteType, selectButton };
                 }
+
+                return { buttonFound, matchedSiteType, selectButton };
             }
         }
     }
 
     return { buttonFound, matchedSiteType, selectButton };
+}
+
+async function notifyIfUnconfiguredSelectableSiteTypesFound(db, scDesiredSiteTypes) {
+    const unconfiguredSiteTypes = getUnconfiguredSelectableSiteTypes(scDesiredSiteTypes);
+
+    if (unconfiguredSiteTypes.length === 0) {
+        return;
+    }
+
+    console.warn('Selectable site type(s) not found in desiredSiteTypesByCampground:', unconfiguredSiteTypes);
+    const bookingDates = getCurrentBookingDateSummary();
+    await pushUnconfiguredSelectableSiteTypesMessage(
+        db,
+        unconfiguredSiteTypes,
+        bookingDates.arrivalDate,
+        bookingDates.departureDate
+    );
+}
+
+function getUnconfiguredSelectableSiteTypes(scDesiredSiteTypes) {
+    if (!Array.isArray(scDesiredSiteTypes) || scDesiredSiteTypes.length === 0) {
+        return [];
+    }
+
+    const unconfiguredSiteTypes = getSelectableCampsiteOptions()
+        .map(selectableSite => selectableSite.siteType)
+        .filter(siteType => !scDesiredSiteTypes.some(desiredSiteType => siteTypesMatch(siteType, desiredSiteType)));
+
+    return Array.from(new Set(unconfiguredSiteTypes));
+}
+
+function siteTypesMatch(pageSiteType, desiredSiteType) {
+    return normalizeSiteTypeForMatch(pageSiteType) === normalizeSiteTypeForMatch(desiredSiteType);
+}
+
+function normalizeSiteTypeForMatch(siteType) {
+    return String(siteType || '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/:+$/, '')
+        .trim()
+        .toLowerCase();
+}
+
+function getSelectableCampsiteOptions() {
+    const siteTitles = document.querySelectorAll('.site-title.desktop');
+
+    return Array.from(siteTitles).map(title => {
+        const site = title.closest('.site');
+        if (!site) {
+            return null;
+        }
+
+        const selectButton = site.querySelector('.select-site');
+        if (!isSelectSiteButtonUsable(selectButton)) {
+            return null;
+        }
+
+        return {
+            siteType: title.textContent.replace(/\s+/g, ' ').trim(),
+            selectButton
+        };
+    }).filter(Boolean);
+}
+
+function getCurrentBookingDateSummary() {
+    return {
+        arrivalDate: getFormattedCartDate('cartCheckin'),
+        departureDate: getFormattedCartDate('cartCheckout')
+    };
+}
+
+function getFormattedCartDate(elementId) {
+    const dateElement = document.getElementById(elementId);
+    if (!dateElement) {
+        return '';
+    }
+
+    const parsedDate = new Date(dateElement.textContent.trim());
+    return parsedDate && !isNaN(parsedDate.getTime())
+        ? parsedDate.toLocaleDateString('en-us', formatDateOptions)
+        : '';
 }
 
 async function clickSelectSiteButtonWithRetry(selectButton, matchedSiteType) {
@@ -743,13 +816,22 @@ function isSelectSiteRequestInProgress() {
 }
 
 function isSelectSiteButtonUsable(selectButton) {
-    return Boolean(
-        selectButton &&
-        document.contains(selectButton) &&
-        !selectButton.disabled &&
-        selectButton.getAttribute('aria-disabled') !== 'true' &&
-        !selectButton.classList.contains('disabled')
-    );
+    if (!selectButton ||
+        !document.contains(selectButton) ||
+        selectButton.disabled ||
+        selectButton.getAttribute('aria-disabled') === 'true' ||
+        selectButton.classList.contains('disabled') ||
+        selectButton.closest('[hidden]')) {
+        return false;
+    }
+
+    const style = window.getComputedStyle ? window.getComputedStyle(selectButton) : null;
+    if (style && (style.display === 'none' || style.visibility === 'hidden' || style.visibility === 'collapse')) {
+        return false;
+    }
+
+    const rect = selectButton.getBoundingClientRect ? selectButton.getBoundingClientRect() : null;
+    return !rect || (rect.width > 0 && rect.height > 0);
 }
 
 function getReservationErrorText() {
@@ -766,9 +848,12 @@ function getReservationErrorText() {
     return reservationErrorElement.textContent.replace(/\s+/g, ' ').replace(/^×\s*/, '').trim();
 }
 
-async function redirectBookingPage() {
-   var bookingQueryString = "?robot=78"
-   var bookingURL = baseURL + "/reserve/index" + bookingQueryString
+async function redirectBookingPage(db) {
+   var bookingURL = await getCampgroundEditReservationUrl(db);
+   if (!bookingURL) {
+      console.error('Campground Edit Reservation URL is missing. Cannot return to edit reservation dates.');
+      return;
+   }
 
    console.log("Redirecting to the Campgrounds Booking Page");
    console.log(bookingURL);
@@ -779,20 +864,18 @@ async function redirectBookingPage() {
    window.location.replace(bookingURL);
 }
 
-async function openTabs(arrivalDate, departureDate) {
-   arrivalDate = arrivalDate.replace(/\//g, "%2F");
-   departureDate = departureDate.replace(/\//g, "%2F");
-   var loginURL = baseURL + "/login/index"
-   var bookingQueryString = "?locationid=78&arrivaldate=" + arrivalDate + "&departuredate=" + departureDate + "&adults=2&children=3&pets=0&autos=0&category=1&equiptype=3&length=27"
-   var bookingURL = baseURL + "/reserve/startbooking" + bookingQueryString
+async function updateCampgroundEditReservationUrl(db) {
+   const editReservationLink = document.querySelector('a.edit-reservation-link[href]');
 
-   console.log("Redirecting to the Campgrounds Booking Page");
-   console.log(bookingURL);
-   await sleep(500);
-   if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the booking page.')) {
-       return;
+   if (!editReservationLink) {
+      console.error('Edit Reservation link not found. Falling back to configured campground booking URL for return redirects.');
+      return await getCampgroundBookingUrl(db);
    }
-   window.location.replace(bookingURL);
+
+   const editReservationUrl = normalizeCampgroundBookingUrl(editReservationLink.getAttribute('href'));
+   console.log(`Campground Edit Reservation URL: ${editReservationUrl}`);
+   await addOrUpdateSiteConstant(db, 'CampgroundEditReservationUrl', editReservationUrl);
+   return editReservationUrl;
 }
 
 // Function to get elements by XPath
