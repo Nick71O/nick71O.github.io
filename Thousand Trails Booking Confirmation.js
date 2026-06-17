@@ -131,7 +131,7 @@ async function launch() {
 
        if (isValidConstant(scDesiredSiteTypesConstant)) {
            scDesiredSiteTypes = JSON.parse(scDesiredSiteTypesConstant.value);
-           console.log('SiteConstant Desired Site Types: ' + scDesiredSiteTypes);
+           console.log('SiteConstant Desired Site Types: ' + formatQuotedListForLog(scDesiredSiteTypes));
        }
 
         if (isValidConstant(scBookedArrivalConstant) && isValidConstant(scBookedDepartureConstant)) {

@@ -59,6 +59,14 @@ function maskSensitiveValue(value) {
     return `${stringValue.slice(0, 4)}...${stringValue.slice(-4)}`;
 }
 
+function formatQuotedListForLog(values) {
+    const list = Array.isArray(values) ? values : [values];
+
+    return list
+        .map(value => `"${String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`)
+        .join(', ');
+}
+
 function initializeThousandTrailsAutomationControl() {
     thousandTrailsAutomationControl.isRunning = getStoredThousandTrailsAutomationRunState();
     injectThousandTrailsAutomationOverlayStyles();
