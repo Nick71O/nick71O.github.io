@@ -67,7 +67,7 @@ async function launch() {
 
         await logSiteConstants(db);
         await logAvailabilityRecords(db);
-        await updateCampgroundEditReservationUrl(db);
+        await updateCampgroundBookingUrlFromEditReservationLink(db);
   
         const scDesiredArrivalConstant = await getSiteConstant(db, 'DesiredArrivalDate');
         const scDesiredDepartureConstant = await getSiteConstant(db, 'DesiredDepartureDate');
@@ -850,9 +850,9 @@ function getReservationErrorText() {
 }
 
 async function redirectBookingPage(db) {
-   var bookingURL = await getCampgroundEditReservationUrl(db);
+   var bookingURL = await getCampgroundBookingUrl(db);
    if (!bookingURL) {
-      console.error('Campground Edit Reservation URL is missing. Cannot return to edit reservation dates.');
+      console.error('Campground booking URL is missing. Cannot return to edit reservation dates.');
       return;
    }
 
@@ -865,7 +865,7 @@ async function redirectBookingPage(db) {
    window.location.replace(bookingURL);
 }
 
-async function updateCampgroundEditReservationUrl(db) {
+async function updateCampgroundBookingUrlFromEditReservationLink(db) {
    const editReservationLink = document.querySelector('a.edit-reservation-link[href]');
 
    if (!editReservationLink) {
@@ -873,10 +873,10 @@ async function updateCampgroundEditReservationUrl(db) {
       return await getCampgroundBookingUrl(db);
    }
 
-   const editReservationUrl = normalizeCampgroundBookingUrl(editReservationLink.getAttribute('href'));
-   console.log(`Campground Edit Reservation URL: ${editReservationUrl}`);
-   await addOrUpdateSiteConstant(db, 'CampgroundEditReservationUrl', editReservationUrl);
-   return editReservationUrl;
+   const bookingUrl = normalizeCampgroundBookingUrl(editReservationLink.getAttribute('href'));
+   console.log(`Campground Booking URL from Edit Reservation link: ${bookingUrl}`);
+   await addOrUpdateSiteConstant(db, 'CampgroundBookingUrl', bookingUrl);
+   return bookingUrl;
 }
 
 // Function to get elements by XPath

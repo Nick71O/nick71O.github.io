@@ -124,14 +124,12 @@ async function updateConfiguredCampgroundUrls(db) {
     console.log(`Campground Booking URL: ${bookingUrl}`);
     await addOrUpdateSiteConstant(db, 'CampgroundUrl', campgroundUrl);
     await addOrUpdateSiteConstant(db, 'CampgroundBookingUrl', bookingUrl);
-    await addOrUpdateSiteConstant(db, 'CampgroundEditReservationUrl', '');
     return bookingUrl;
 }
 
 async function clearConfiguredCampgroundUrls(db) {
     await addOrUpdateSiteConstant(db, 'CampgroundUrl', '');
     await addOrUpdateSiteConstant(db, 'CampgroundBookingUrl', '');
-    await addOrUpdateSiteConstant(db, 'CampgroundEditReservationUrl', '');
 }
 
 function findCampgroundLink(campgroundName) {

@@ -817,16 +817,6 @@ async function getCampgroundBookingUrl(db) {
     return bookingUrl;
 }
 
-async function getCampgroundEditReservationUrl(db) {
-    const storedEditReservationUrl = await getSiteConstantValue(db, 'CampgroundEditReservationUrl');
-
-    if (storedEditReservationUrl) {
-        return normalizeCampgroundBookingUrl(storedEditReservationUrl);
-    }
-
-    return await getCampgroundBookingUrl(db);
-}
-
 function getCampgroundBookingUrlFromDetailsUrl(campgroundUrl) {
     const robotId = getCampgroundRobotIdFromUrl(campgroundUrl);
 

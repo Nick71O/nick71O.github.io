@@ -495,9 +495,9 @@ async function addBookedDatesToBookedDatesArray(db, bookedDatesArrayConstant, bo
 }
 
 async function redirectBookingPage(db) {
-    var bookingURL = await getCampgroundEditReservationUrl(db);
+    var bookingURL = await getCampgroundBookingUrl(db);
     if (!bookingURL) {
-        console.error('Campground Edit Reservation URL is missing. Cannot return to edit reservation dates.');
+        console.error('Campground booking URL is missing. Cannot return to edit reservation dates.');
         return;
     }
 
