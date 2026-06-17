@@ -124,7 +124,7 @@ function initializeGlobalVariables(globalVariables) {
   console.log('reservationInputPets: "' + globalVariables.reservationInputPets + '"');
   const campgroundName = getCampgroundNameValue(globalVariables);
   console.log('campgroundName: "' + campgroundName + '"');
-  console.log("desiredSiteTypes: " + getDesiredSiteTypesForCampground(globalVariables, campgroundName).join(", "));
+  console.log("desiredSiteTypes: " + formatQuotedListForLog(getDesiredSiteTypesForCampground(globalVariables, campgroundName)));
   console.log("desiredArrivalDate: " + globalVariables.desiredArrivalDate);
   console.log("desiredDepartureDate: " + globalVariables.desiredDepartureDate)
   console.log("desiredDatesArray: " + globalVariables.desiredDatesArray.join(", "));

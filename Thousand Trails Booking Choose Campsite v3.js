@@ -353,6 +353,7 @@ async function launch() {
             const isCampsiteAvailableResult = isCampsiteAvailable(scDesiredSiteTypes, 'none');
             if (isCampsiteAvailableResult.buttonFound) {
                 const selectSiteDelayMilliseconds = await getChooseCampsiteSelectSiteDelayMilliseconds(db);
+                console.log(`Found "${isCampsiteAvailableResult.matchedSiteType}" Select Site button.`);
                 console.log(`Throttling...${formatDelayMillisecondsForLog(selectSiteDelayMilliseconds)} before clicking Select Site`);
                 const selectSiteDelayCompleted = await sleep(selectSiteDelayMilliseconds);
                 if (!selectSiteDelayCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before clicking Select Site.')) {
