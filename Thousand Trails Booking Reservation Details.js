@@ -38,6 +38,8 @@ function loadScript(src) {
 }
 
 var clickCount = 0;
+const reservationDetailsInputWaitTimeoutMilliseconds = 30000;
+const reservationDetailsInputWaitPollMilliseconds = 250;
 
 // IndexedDB library functions
 async function launch() {
@@ -724,6 +726,63 @@ function setTextInputValue(inputElement, value) {
     inputElement.dispatchEvent(new Event('change', { bubbles: true }));
 }
 
+function getReservationDetailsInputElements() {
+    return {
+        checkinInput: document.getElementById("checkin"),
+        checkoutInput: document.getElementById("checkout"),
+        btnStep2: document.getElementById("btnStep2"),
+        lengthInput: document.getElementById("length"),
+        slideoutsYesRadio: document.getElementById("slideoutsYes"),
+        slideoutsNoRadio: document.getElementById("slideoutsNo")
+    };
+}
+
+function getMissingReservationDetailsInputElementNames(elements) {
+    const requiredElements = [
+        { key: 'checkinInput', name: '#checkin' },
+        { key: 'checkoutInput', name: '#checkout' },
+        { key: 'btnStep2', name: '#btnStep2' },
+        { key: 'lengthInput', name: '#length' },
+        { key: 'slideoutsYesRadio', name: '#slideoutsYes' },
+        { key: 'slideoutsNoRadio', name: '#slideoutsNo' }
+    ];
+
+    return requiredElements
+        .filter(requiredElement => !elements[requiredElement.key])
+        .map(requiredElement => requiredElement.name);
+}
+
+async function waitForReservationDetailsInputElements() {
+    let elements = getReservationDetailsInputElements();
+    let missingElementNames = getMissingReservationDetailsInputElementNames(elements);
+
+    if (missingElementNames.length === 0) {
+        return elements;
+    }
+
+    console.warn(`Reservation details input elements are not ready. Missing: ${missingElementNames.join(', ')}. Waiting up to ${formatDelayMillisecondsForLog(reservationDetailsInputWaitTimeoutMilliseconds)}.`);
+    const waitStartTime = Date.now();
+
+    while (Date.now() - waitStartTime < reservationDetailsInputWaitTimeoutMilliseconds) {
+        const remainingMilliseconds = reservationDetailsInputWaitTimeoutMilliseconds - (Date.now() - waitStartTime);
+        const sleepCompleted = await sleep(Math.min(reservationDetailsInputWaitPollMilliseconds, remainingMilliseconds));
+        if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped while waiting for reservation details input elements.')) {
+            return null;
+        }
+
+        elements = getReservationDetailsInputElements();
+        missingElementNames = getMissingReservationDetailsInputElementNames(elements);
+
+        if (missingElementNames.length === 0) {
+            console.log('Reservation details input elements are ready.');
+            return elements;
+        }
+    }
+
+    console.error(`Reservation details input elements still missing after waiting ${formatDelayMillisecondsForLog(reservationDetailsInputWaitTimeoutMilliseconds)}: ${missingElementNames.join(', ')}`);
+    return null;
+}
+
 function selectSlideoutsOption(withSlideouts) {
     const normalizedValue = String(withSlideouts ?? '').trim().toLowerCase();
     const yesValues = ['yes', 'true', '1', 'y'];
@@ -756,100 +815,98 @@ async function inputBookingReservationDetails(arrivalDate, departureDate, reserv
     }
 
     const bookingInput = reservationInput;
-
-    // Check if the elements exist before performing actions
-    const checkinInput = document.getElementById("checkin");
-    const checkoutInput = document.getElementById("checkout");
-    const btnStep2 = document.getElementById("btnStep2");
-    const lengthInput = document.getElementById("length");
-    const slideoutsYesRadio = document.getElementById("slideoutsYes");
-    const slideoutsNoRadio = document.getElementById("slideoutsNo");
-
-    if (checkinInput && checkoutInput && btnStep2 && lengthInput && slideoutsYesRadio && slideoutsNoRadio) {
-        // Set Arrival/Departure Date
-        // Reset both datepickers regardless of current state
-        const datepickerAvailable = typeof $ !== 'undefined' &&
-            typeof $(checkinInput).datepicker === 'function' &&
-            typeof $(checkoutInput).datepicker === 'function';
-
-        if (datepickerAvailable) {
-            // Rebuild datepickers so prior min/max constraints do not block the next availability record.
-            if ($(checkinInput).hasClass("hasDatepicker")) {
-                $(checkinInput).datepicker('destroy');
-            }
-            $(checkinInput).datepicker({ minDate: null, maxDate: null });
-
-            if ($(checkoutInput).hasClass("hasDatepicker")) {
-                $(checkoutInput).datepicker('destroy');
-            }
-            $(checkoutInput).datepicker({ minDate: null, maxDate: null });
-
-            // Now safely set the dates using the datepicker API
-            $(checkinInput).datepicker("setDate", arrivalDate);
-            $(checkoutInput).datepicker("setDate", departureDate);
-        } else {
-            // If jQuery isn't available, fallback to plain DOM
-            checkinInput.value = arrivalDate;
-            checkoutInput.value = departureDate;
-            checkinInput.dispatchEvent(new Event('change', { bubbles: true }));
-            checkoutInput.dispatchEvent(new Event('change', { bubbles: true }));
-        }
-
-        // Use SumoSelect to update dropdown values
-        const bookingOptionsSelected = [
-            selectBookingOptionByValueOrText('#campingType', bookingInput.siteType, 'Site Type'),
-            selectBookingOptionByValueOrText('#equipmentType', bookingInput.equipmentType, 'Equipment Type'),
-            selectBookingOptionByValueOrText('#adults', bookingInput.adults, 'Adults'),
-            selectBookingOptionByValueOrText('#kids', bookingInput.children, 'Children'),
-            selectBookingOptionByValueOrText('#pets', bookingInput.pets, 'Pets')
-        ].every(Boolean);
-
-        if (!bookingOptionsSelected) {
-            console.error("Booking select elements not found or not ready!");
-            console.log("Sleeping...30 seconds");
-            await sleep(30000);
-            if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
-                return;
-            }
-            console.log("Reloading Page");
-            window.location.reload();
+    const inputElements = await waitForReservationDetailsInputElements();
+    if (!inputElements) {
+        if (!isThousandTrailsAutomationRunning()) {
             return;
         }
 
-        setTextInputValue(lengthInput, bookingInput.length);
-
-        if (!selectSlideoutsOption(bookingInput.withSlideouts)) {
-            console.error("With Slideouts input was not valid or not ready!");
-            console.log("Sleeping...30 seconds");
-            await sleep(30000);
-            if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
-                return;
-            }
-            console.log("Reloading Page");
-            window.location.reload();
-            return;
-        }
-
-        console.log('Applied reservation details input:', bookingInput);
-
-        // Trigger step 2
-        const chooseCampsiteDelayMilliseconds = await getReservationDetailsChooseCampsiteDelayMilliseconds(db);
-        console.log(`Throttling...${formatDelayMillisecondsForLog(chooseCampsiteDelayMilliseconds)} before clicking Choose Campsite`);
-        const sleepCompleted = await sleep(chooseCampsiteDelayMilliseconds);
-        if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before choosing a campsite.')) {
-            return;
-        }
-        btnStep2.click();
-    } else {
-        console.error("Booking input elements not found!");
-        console.log("Sleeping...30 seconds");
-        await sleep(30000);
-        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before redirecting to the login page.')) {
-            return;
-        }
+        console.error("Booking input elements not found after waiting. Redirecting to the login page.");
         await redirectLoginPage();
         return;
     }
+
+    const {
+        checkinInput,
+        checkoutInput,
+        btnStep2,
+        lengthInput
+    } = inputElements;
+
+    // Set Arrival/Departure Date
+    // Reset both datepickers regardless of current state
+    const datepickerAvailable = typeof $ !== 'undefined' &&
+        typeof $(checkinInput).datepicker === 'function' &&
+        typeof $(checkoutInput).datepicker === 'function';
+
+    if (datepickerAvailable) {
+        // Rebuild datepickers so prior min/max constraints do not block the next availability record.
+        if ($(checkinInput).hasClass("hasDatepicker")) {
+            $(checkinInput).datepicker('destroy');
+        }
+        $(checkinInput).datepicker({ minDate: null, maxDate: null });
+
+        if ($(checkoutInput).hasClass("hasDatepicker")) {
+            $(checkoutInput).datepicker('destroy');
+        }
+        $(checkoutInput).datepicker({ minDate: null, maxDate: null });
+
+        // Now safely set the dates using the datepicker API
+        $(checkinInput).datepicker("setDate", arrivalDate);
+        $(checkoutInput).datepicker("setDate", departureDate);
+    } else {
+        // If jQuery isn't available, fallback to plain DOM
+        checkinInput.value = arrivalDate;
+        checkoutInput.value = departureDate;
+        checkinInput.dispatchEvent(new Event('change', { bubbles: true }));
+        checkoutInput.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    // Use SumoSelect to update dropdown values
+    const bookingOptionsSelected = [
+        selectBookingOptionByValueOrText('#campingType', bookingInput.siteType, 'Site Type'),
+        selectBookingOptionByValueOrText('#equipmentType', bookingInput.equipmentType, 'Equipment Type'),
+        selectBookingOptionByValueOrText('#adults', bookingInput.adults, 'Adults'),
+        selectBookingOptionByValueOrText('#kids', bookingInput.children, 'Children'),
+        selectBookingOptionByValueOrText('#pets', bookingInput.pets, 'Pets')
+    ].every(Boolean);
+
+    if (!bookingOptionsSelected) {
+        console.error("Booking select elements not found or not ready!");
+        console.log("Sleeping...30 seconds");
+        await sleep(30000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
+            return;
+        }
+        console.log("Reloading Page");
+        window.location.reload();
+        return;
+    }
+
+    setTextInputValue(lengthInput, bookingInput.length);
+
+    if (!selectSlideoutsOption(bookingInput.withSlideouts)) {
+        console.error("With Slideouts input was not valid or not ready!");
+        console.log("Sleeping...30 seconds");
+        await sleep(30000);
+        if (!canContinueThousandTrailsAutomation('Thousand Trails automation stopped before reloading reservation details.')) {
+            return;
+        }
+        console.log("Reloading Page");
+        window.location.reload();
+        return;
+    }
+
+    console.log('Applied reservation details input:', bookingInput);
+
+    // Trigger step 2
+    const chooseCampsiteDelayMilliseconds = await getReservationDetailsChooseCampsiteDelayMilliseconds(db);
+    console.log(`Throttling...${formatDelayMillisecondsForLog(chooseCampsiteDelayMilliseconds)} before clicking Choose Campsite`);
+    const sleepCompleted = await sleep(chooseCampsiteDelayMilliseconds);
+    if (!sleepCompleted || !canContinueThousandTrailsAutomation('Thousand Trails automation stopped before choosing a campsite.')) {
+        return;
+    }
+    btnStep2.click();
 }
 
 async function redirectLoginPage() {
