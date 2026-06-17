@@ -652,12 +652,9 @@ async function notifyIfUnconfiguredSelectableSiteTypesFound(db, scDesiredSiteTyp
     }
 
     console.warn('Selectable site type(s) not found in desiredSiteTypesByCampground:', unconfiguredSiteTypes);
-    const bookingDates = getCurrentBookingDateSummary();
     await pushUnconfiguredSelectableSiteTypesMessage(
         db,
-        unconfiguredSiteTypes,
-        bookingDates.arrivalDate,
-        bookingDates.departureDate
+        unconfiguredSiteTypes
     );
 }
 
@@ -705,25 +702,6 @@ function getSelectableCampsiteOptions() {
             selectButton
         };
     }).filter(Boolean);
-}
-
-function getCurrentBookingDateSummary() {
-    return {
-        arrivalDate: getFormattedCartDate('cartCheckin'),
-        departureDate: getFormattedCartDate('cartCheckout')
-    };
-}
-
-function getFormattedCartDate(elementId) {
-    const dateElement = document.getElementById(elementId);
-    if (!dateElement) {
-        return '';
-    }
-
-    const parsedDate = new Date(dateElement.textContent.trim());
-    return parsedDate && !isNaN(parsedDate.getTime())
-        ? parsedDate.toLocaleDateString('en-us', formatDateOptions)
-        : '';
 }
 
 async function clickSelectSiteButtonWithRetry(selectButton, matchedSiteType) {

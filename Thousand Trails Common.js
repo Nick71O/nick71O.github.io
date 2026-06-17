@@ -1257,7 +1257,7 @@ async function pushSiteBookedMessage(db, message) {
     }
 }
 
-async function pushUnconfiguredSelectableSiteTypesMessage(db, siteTypes, arrivalDate, departureDate) {
+async function pushUnconfiguredSelectableSiteTypesMessage(db, siteTypes) {
     const uniqueSiteTypes = Array.from(new Set((siteTypes || [])
         .map(siteType => String(siteType || '').replace(/\s+/g, ' ').trim())
         .filter(Boolean)));
@@ -1270,8 +1270,6 @@ async function pushUnconfiguredSelectableSiteTypesMessage(db, siteTypes, arrival
     const signatureSiteTypes = [...uniqueSiteTypes].sort((a, b) => a.localeCompare(b));
     const signature = [
         campgroundName,
-        arrivalDate || '',
-        departureDate || '',
         ...signatureSiteTypes
     ].join('|');
     const hashedSignature = `fnv1a:${hashStringFNV1a(signature)}`;
@@ -1287,17 +1285,13 @@ async function pushUnconfiguredSelectableSiteTypesMessage(db, siteTypes, arrival
         return;
     }
 
-    const dateLine = arrivalDate && departureDate
-        ? `\nDates: ${escapeHtml(arrivalDate)} - ${escapeHtml(departureDate)}`
-        : '';
     const siteTypeLines = uniqueSiteTypes
-        .map(siteType => `- ${escapeHtml(siteType)}`)
+        .map(siteType => `- "${escapeHtml(siteType)}"`)
         .join('\n');
     const message = [
         await getConfiguredCampgroundNotificationTitle(db),
         '<b>Unconfigured selectable site type found.</b>',
-        dateLine,
-        '\nSelectable site type(s) not in desiredSiteTypesByCampground:',
+        '\n<u>Missing from desiredSiteTypesByCampground:</u>',
         siteTypeLines,
         '\nAutomation will continue normally.'
     ].filter(Boolean).join('\n');
